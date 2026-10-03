@@ -96,6 +96,6 @@ La arquitectura inicial se organiza en tres capas principales:
 
 - **Presentación:** permite la interacción de los usuarios con el sistema mediante la aplicación web y la API REST.
 - **Lógica de negocio:** contiene los principales módulos responsables de las funcionalidades del sistema: registro de usuarios, banco de preguntas, rendición de examen, procesamiento de resultados, ranking y reportes, analítica del estudiante e inteligencia artificial.
-- **Datos:** permite almacenar y consultar la información mediante Redis (almacenamiento temporal durante el examen) y PostgreSQL (almacenamiento definitivo).
+- **Datos:** permite almacenar y consultar la información mediante Redis (almacenamiento temporal durante el examen) y PostgreSQL (almacenamiento definitivo)
 
-Además, el módulo de **Rendición de Examen** guarda las respuestas en **Redis**, y el módulo de **Procesamiento de Resultados** las calcula en segundo plano y las consolida en **PostgreSQL**.
+Además, el módulo de **Rendición de Examen** guarda las respuestas en **Redis**, y el módulo de **Procesamiento de Resultados** las calcula en segundo plano y las consolida en **PostgreSQL**
