@@ -1,109 +1,79 @@
 
-# Estilo arquitectónico
+# Arquitectura del sistema EVALUA-NET
 
-## 1. Estilo arquitectónico seleccionado
+El sistema EVALUA-NET utiliza una **arquitectura de monolito modular con procesamiento asíncrono**, organizada mediante Clean Architecture.
 
-Para el sistema de simulacros de exámenes virtuales con inteligencia artificial de la Academia Sofía, se selecciona el estilo arquitectónico de **Monolito Modular con Procesamiento Asíncrono y Servicio de IA Independiente**.
+El backend está dividido en seis módulos principales: Gestión de Usuarios, Banco de Preguntas, Rendición de Examen, Procesamiento de Resultados, Ranking y Reportes, y Analítica del Estudiante.
 
-Este estilo permite organizar las funcionalidades principales del sistema en módulos separados dentro de una misma aplicación backend, facilitando su mantenimiento y evolución.
+Utiliza PostgreSQL para almacenar información, Redis para las respuestas temporales y RabbitMQ con workers para procesar resultados de forma asíncrona. Además, se integra con un servicio independiente de inteligencia artificial.
 
-El procesamiento de resultados y rankings se realiza mediante colas de mensajes y workers, mientras que el servicio de inteligencia artificial funciona de manera independiente sobre los resultados consolidados.
-
-## 2. Justificación del estilo arquitectónico
-
-La elección del estilo arquitectónico responde a los siguientes drivers:
-
-| Driver | Justificación |
-|---|---|
-| DA01 – Escalabilidad | Permite desplegar varias instancias del backend para atender hasta 5,000 postulantes simultáneos. |
-| DA02 – Rendimiento | Redis reduce la carga de almacenamiento durante la rendición de exámenes. |
-| DA03 – Disponibilidad | El balanceador de carga distribuye las solicitudes entre las instancias disponibles. |
-| DA06 – Eficiencia de costos | Kubernetes permite ajustar la cantidad de instancias según la demanda. |
-| DA07 – Procesamiento asíncrono | RabbitMQ y los workers permiten procesar resultados y rankings sin bloquear el sistema. |
-| DA10 – Mantenibilidad | La separación por módulos facilita incorporar nuevas funcionalidades sin modificar todo el sistema. |
-
-## 3. Módulos principales
-
-El backend se organiza en los siguientes módulos:
-
-- **Gestión de Usuarios:** permite al administrador registrar postulantes, generar automáticamente sus credenciales de acceso y gestionar los roles y permisos del sistema. No incluye procesos de matrícula ni pagos. 
-- **Banco de Preguntas:** gestiona las preguntas y los exámenes.
-- **Rendición de Examen:** controla el desarrollo del simulacro y el registro de respuestas.
-- **Procesamiento de Resultados:** coordina el cálculo de puntajes mediante workers.
-- **Ranking y Reportes:** genera rankings generales, por carrera y por sede.
-- **Analítica del Estudiante:** permite consultar el rendimiento académico y su evolución.
-
-El servicio de inteligencia artificial se mantiene independiente para identificar cursos débiles y generar recomendaciones personalizadas de refuerzo académico.
-
-## 4. Diagrama del estilo arquitectónico
+## Diagrama de arquitectura
 
 ```mermaid
-flowchart TD
-    subgraph CLIENTES["CLIENTES"]
-        P["Postulante"]
-        D["Docente"]
-        A["Administrador"]
+flowchart TB
+    U["Postulante / Docente / Administrador"]
+    WEB["Aplicación Web"]
+
+    subgraph BACKEND["Backend EVALUA-NET - Monolito modular"]
+        API["API REST"]
+
+        subgraph MODULOS["Módulos del sistema"]
+            M1["Gestión de Usuarios"]
+            M2["Banco de Preguntas"]
+            M3["Rendición de Examen"]
+            M4["Procesamiento de Resultados"]
+            M5["Ranking y Reportes"]
+            M6["Analítica del Estudiante"]
+        end
     end
 
-    WEB["Aplicación Web - Offline First"]
-    LB["Balanceador de Carga"]
-
-    subgraph BACKEND["MONOLITO MODULAR - API REST"]
-        U["Gestion de Usuarios"]
-        B["Banco de Preguntas"]
-        E["Rendición de Examen"]
-        R["Procesamiento de Resultados"]
-        K["Ranking y Reportes"]
-        AN["Analítica del Estudiante"]
-    end
-
-    REDIS[("Redis - Respuestas temporales")]
-    MQ["RabbitMQ - Cola de mensajes"]
-    W["Workers - Cálculo de puntajes y ranking"]
-    PG[("PostgreSQL - Datos definitivos")]
+    DB[("PostgreSQL")]
+    REDIS[("Redis")]
+    MQ["RabbitMQ"]
+    WORKER["Workers"]
     IA["Servicio independiente de IA"]
 
-    P --> WEB
-    D --> WEB
-    A --> WEB
+    U --> WEB
+    WEB --> API
 
-    WEB --> LB
-    LB --> BACKEND
+    API --> M1
+    API --> M2
+    API --> M3
+    API --> M4
+    API --> M5
+    API --> M6
 
-    E --> REDIS
-    R --> MQ
-    MQ --> W
-    W --> PG
+    MODULOS --> DB
+    M3 --> REDIS
+    M3 --> MQ
+    MQ --> WORKER
+    WORKER --> DB
+    M6 --> IA
 
-    U --> PG
-    B --> PG
-    K --> PG
-    AN --> PG
+    classDef app fill:#1976d2,stroke:#0d47a1,color:#ffffff
+    classDef modulo fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
+    classDef datos fill:#fff3e0,stroke:#ef6c00,color:#5d4037
+    classDef externo fill:#e8f5e9,stroke:#388e3c,color:#1b5e20
 
-    IA --> PG
-
-    subgraph INFRA["INFRAESTRUCTURA"]
-        DOCKER["Contenedores Docker"]
-        K8S["Kubernetes - Autoscaling"]
-    end
-
-    DOCKER --- K8S
-    K8S -.-> BACKEND
+    class WEB,API app
+    class M1,M2,M3,M4,M5,M6 modulo
+    class DB,REDIS datos
+    class MQ,WORKER,IA externo
 ```
 
-## 5. Relación con las decisiones arquitectónicas
+# Estilo arquitectónico
 
-| Decisión | Aplicación en el estilo |
-|---|---|
-| ADR-001 – Monolito modular | Organización del backend en módulos funcionales. |
-| ADR-003 – Redis | Almacenamiento temporal de respuestas activas. |
-| ADR-004 – RabbitMQ | Procesamiento asíncrono mediante workers. |
-| ADR-005 – Kubernetes | Escalamiento automático de las instancias del backend. |
-| ADR-006 – Offline-first | Conservación local y sincronización de respuestas desde el cliente. |
-| ADR-008 – API REST | Comunicación entre la aplicación web y el backend. |
+**Estilo seleccionado:** Monolito modular con procesamiento asíncrono.
 
-## 6. Conclusión
+El backend de EVALUA-NET se organiza en módulos independientes dentro de una sola aplicación, mientras que los workers ejecutan tareas de procesamiento en segundo plano y el servicio de IA funciona de manera independiente.
 
-El monolito modular con procesamiento asíncrono permite organizar las funcionalidades de la Academia Sofía en componentes mantenibles, mientras que Redis, RabbitMQ y Kubernetes contribuyen a responder a las necesidades de rendimiento, disponibilidad y escalabilidad.
+Esta decisión responde principalmente a los drivers **DA01 (Escalabilidad), DA02 (Rendimiento), DA07 (Procesamiento asíncrono) y DA10 (Mantenibilidad)**, y está registrada en **ADR-001**.
 
-El servicio de inteligencia artificial independiente permite generar recomendaciones académicas sin interferir directamente con la rendición de los exámenes.
+## Reglas de la arquitectura
+
+1. Todos los módulos del negocio forman parte de una sola aplicación backend.
+2. Cada módulo se organiza internamente mediante Clean Architecture.
+3. Un módulo no accede directamente a los repositorios ni a las tablas de otro módulo.
+4. La comunicación entre módulos se realiza mediante sus interfaces públicas.
+5. Las tareas de procesamiento asíncrono se ejecutan mediante RabbitMQ y workers independientes.
+6. El servicio de inteligencia artificial se mantiene separado del backend principal.
