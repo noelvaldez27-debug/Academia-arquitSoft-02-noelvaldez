@@ -1,156 +1,48 @@
 
-# Enfoque arquitectónico: Clean Architecture
+# Enfoque arquitectónico
 
-## 1. Enfoque arquitectónico seleccionado
+**Proyecto:** EVALUA-NET – Sistema de simulacros de exámenes virtuales con IA – Academia Sofía
 
-Para el sistema de simulacros de exámenes virtuales con inteligencia artificial de la Academia Sofía, se selecciona el enfoque **Clean Architecture**.
+| **Elemento** | **Descripción aplicada a EVALUA-NET** |
+|---|---|
+| Patrón / enfoque arquitectónico | Clean Architecture (Arquitectura Limpia). |
+| Objetivo | Separar las responsabilidades del sistema y controlar las dependencias hacia el dominio. |
+| ¿Qué problema resuelve? | Evita el acoplamiento entre la interfaz web, las reglas del negocio de los simulacros y las tecnologías externas, como PostgreSQL, Redis, RabbitMQ y el servicio de inteligencia artificial. |
+| Capas definidas | Presentación, Aplicación, Dominio e Infraestructura. |
+| Beneficios | • Facilita el mantenimiento y las pruebas unitarias.<br>• Permite cambiar tecnologías sin modificar las reglas del negocio.<br>• Mejora la organización de los módulos y la separación de responsabilidades. |
 
-Este enfoque permite separar las reglas del negocio de los detalles tecnológicos, facilitando el mantenimiento, las pruebas y la incorporación de nuevas funcionalidades.
-
-Se aplicará dentro del monolito modular definido en el estilo arquitectónico, manteniendo el procesamiento asíncrono mediante workers y el servicio de inteligencia artificial independiente.
-
-## 2. Justificación del enfoque
-
-La elección de Clean Architecture responde principalmente al driver DA10 – Mantenibilidad y a la decisión ADR-002.
-
-Permite organizar el sistema en capas con responsabilidades definidas, evitando que las reglas del negocio dependan directamente de tecnologías como Redis, PostgreSQL, RabbitMQ o servicios externos de inteligencia artificial.
-
-También facilita modificar componentes tecnológicos sin afectar las reglas principales de los simulacros.
-
-## 3. Capas de Clean Architecture
-
-### 3.1. Dominio
-
-Contiene las entidades y reglas principales del negocio, independientes de frameworks y bases de datos.
-
-Elementos principales:
-
-- Postulante.
-- Pregunta.
-- Simulacro.
-- Respuesta.
-- Resultado.
-- Reglas de cálculo de puntajes.
-- Reglas de tiempo y cierre del examen.
-
-### 3.2. Aplicación
-
-Contiene los casos de uso que coordinan las operaciones del sistema.
-
-Casos de uso principales:
-
-- Registrar postulante y generar credenciales.
-- Gestionar banco de preguntas.
-- Iniciar y rendir simulacro.
-- Registrar y sincronizar respuestas.
-- Finalizar examen y calcular puntaje.
-- Consultar resultados y rankings.
-- Consultar historial y desempeño académico.
-- Generar recomendaciones de refuerzo académico.
-
-Esta capa define interfaces para acceder a la persistencia y comunicarse con servicios externos, sin depender directamente de sus implementaciones.
-
-### 3.3. Presentación
-
-Permite la interacción entre los usuarios y el sistema.
-
-Componentes principales:
-
-- Aplicación web para postulantes, docentes y administradores.
-- Controladores de API REST.
-- Validación de solicitudes.
-- Visualización de notas, rankings y gráficos.
-- Interfaz para rendir simulacros y registrar respuestas.
-
-El cliente web incorpora almacenamiento local y sincronización de respuestas para soportar conectividad intermitente.
-
-### 3.4. Infraestructura
-
-Contiene las implementaciones tecnológicas utilizadas por los casos de uso.
-
-Componentes principales:
-
-- PostgreSQL para almacenamiento definitivo.
-- Redis para respuestas temporales y fichas activas.
-- RabbitMQ para mensajería asíncrona.
-- Workers para procesamiento de puntajes y rankings.
-- Adaptador para el servicio independiente de IA.
-- Implementaciones de repositorios.
-- Autenticación y mecanismos de cifrado.
-
-Docker y Kubernetes se utilizan para desplegar y escalar los componentes del sistema.
-
-## 4. Diagrama de Clean Architecture
+## Diagrama de Clean Architecture
 
 ```mermaid
 flowchart TB
+    P["Presentación<br/>Controladores y API REST"]
+    A["Aplicación<br/>Casos de uso"]
+    D["Dominio<br/>Entidades y reglas del negocio"]
+    I["Infraestructura<br/>PostgreSQL, Redis, RabbitMQ y adaptador de IA"]
 
-    subgraph PRESENTACION["PRESENTACIÓN"]
-        WEB["Aplicación Web"]
-        API["Controladores API REST"]
-        OFF["Almacenamiento local y sincronización"]
-    end
+    P -->|"Ejecuta casos de uso"| A
+    A -->|"Utiliza entidades"| D
 
-    subgraph APLICACION["APLICACIÓN"]
-        UC1["Registrar postulante"]
-        UC2["Gestionar preguntas"]
-        UC3["Rendir simulacro"]
-        UC4["Procesar resultados"]
-        UC5["Consultar rankings y desempeño"]
-        UC6["Generar recomendaciones"]
-        PORT["Interfaces / Puertos"]
-    end
+    P -.->|"Dependencia de código"| A
+    I -.->|"Implementa contratos"| A
 
-    subgraph DOMINIO["DOMINIO"]
-        ENT["Postulante, Pregunta, Simulacro, Respuesta, Resultado"]
-        REGLAS["Reglas de evaluación y cierre"]
-    end
-
-    subgraph INFRAESTRUCTURA["INFRAESTRUCTURA"]
-        PG[("PostgreSQL")]
-        REDIS[("Redis")]
-        MQ["RabbitMQ"]
-        WORK["Workers"]
-        IA["Adaptador de IA"]
-    end
-
-    WEB --> API
-    WEB --> OFF
-    API --> APLICACION
-    APLICACION --> DOMINIO
-    APLICACION --> PORT
-
-    INFRAESTRUCTURA -.-> PORT
-
-    WORK --> MQ
-    IA --> PORT
+    style D fill:#bbdefb,stroke:#1565c0,color:#0d47a1
+    style A fill:#e3f2fd,stroke:#1976d2,color:#0d47a1
+    style P fill:#e8f5e9,stroke:#388e3c,color:#1b5e20
+    style I fill:#fff3e0,stroke:#f57c00,color:#e65100
 ```
 
-## 5. Regla de dependencias
+## Leyenda
 
-En Clean Architecture, las dependencias del código deben apuntar hacia las capas internas.
+- **Flecha continua:** llamada en tiempo de ejecución entre las capas.
+- **Flecha punteada:** dependencia de código hacia las capas internas.
+- **Flecha punteada de implementación:** la infraestructura implementa contratos definidos en las capas internas.
+- **Capas:** el Dominio contiene las reglas del negocio; Aplicación coordina los casos de uso; Presentación e Infraestructura interactúan con usuarios y tecnologías.
 
-- La capa de Dominio no depende de las demás capas.
-- La capa de Aplicación depende del Dominio.
-- La capa de Presentación utiliza los casos de uso de Aplicación.
-- La capa de Infraestructura implementa las interfaces definidas por Aplicación.
+## Regla de dependencia
 
-Las tecnologías externas se conectan mediante adaptadores, evitando que las reglas del negocio dependan directamente de ellas.
-
-## 6. Relación con las decisiones arquitectónicas
-
-| Decisión | Aplicación del enfoque |
-|---|---|
-| ADR-001 – Monolito modular | Clean Architecture organiza las responsabilidades internas de los módulos. |
-| ADR-002 – Clean Architecture | Separa Dominio, Aplicación, Presentación e Infraestructura. |
-| ADR-003 – Redis | Implementación de almacenamiento temporal mediante adaptadores. |
-| ADR-004 – RabbitMQ | Mensajería asíncrona mediante interfaces y adaptadores. |
-| ADR-006 – Offline-first | Almacenamiento local y sincronización desde la presentación web. |
-| ADR-007 – Seguridad | Autenticación y autorización integradas mediante interfaces y mecanismos de infraestructura. |
-| ADR-008 – API REST | Controladores de presentación que invocan los casos de uso. |
-
-## 7. Conclusión
-
-Clean Architecture permite organizar el sistema de simulacros virtuales de la Academia Sofía en capas independientes, facilitando su mantenimiento y evolución.
-
-El enfoque protege las reglas del negocio frente a cambios tecnológicos y permite integrar PostgreSQL, Redis, RabbitMQ y el servicio de inteligencia artificial sin acoplar directamente estas tecnologías al núcleo del sistema.
+1. El Dominio no depende de las capas externas ni de tecnologías como PostgreSQL o Redis.
+2. Los casos de uso de Aplicación trabajan con entidades e interfaces, sin conocer las implementaciones concretas.
+3. Los repositorios y adaptadores de Infraestructura implementan los contratos definidos en las capas internas.
+4. Cambiar PostgreSQL, Redis, RabbitMQ o el proveedor de IA no debe requerir modificar las reglas del Dominio.
+5. Todos los módulos del backend de EVALUA-NET seguirán esta organización para mantener una arquitectura uniforme.
