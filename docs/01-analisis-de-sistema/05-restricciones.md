@@ -13,3 +13,4 @@
 | RC09 | Autenticación propia | El acceso debe realizarse con credenciales generadas por el sistema (usuario dni@sofia.edu y contraseña inicial igual al DNI), sin autoregistro del postulante. |
 | RC10 | Examen único por simulacro | Todos los postulantes de un mismo simulacro deben recibir la misma versión y el mismo orden del examen. |
 | RC11 | Sin integraciones externas | El sistema no se integra con la transmisión de clases virtuales de la academia (fuera de alcance). |
+| RC12 | Validación docente de preguntas generadas | Las preguntas propuestas por la inteligencia artificial a partir de las separatas no deben incorporarse al banco de preguntas sin la revisión y aprobación previa del docente. |

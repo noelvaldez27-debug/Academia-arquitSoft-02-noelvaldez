@@ -1,4 +1,3 @@
-
 # Decisiones arquitectónicas
 
 | ID | Decisión arquitectónica | Driver relacionado | Justificación | Resultado |
@@ -11,3 +10,4 @@
 | ADR-006 | Enfoque offline-first | DA04 – Resiliencia | Evitar la pérdida de respuestas cuando el postulante tenga problemas de conexión a internet. | Almacenamiento local y sincronización automática de respuestas. |
 | ADR-007 | Autenticación y control de acceso por roles | DA05 – Seguridad | Proteger los datos personales y académicos restringiendo el acceso según el tipo de usuario. | Autenticación propia, cifrado y autorización por roles. |
 | ADR-008 | Comunicación mediante API REST | DA09 – API REST | Separar la interfaz web de los servicios mediante una comunicación estandarizada. | API REST entre frontend y backend. |
+| ADR-009 | Procesamiento de separatas en segundo plano con extracción por tipo de archivo | DA07 – Procesamiento asíncrono; DA10 – Mantenibilidad; DA05 – Seguridad | Leer directamente el texto de los archivos Word y PDF con texto, y usar inteligencia artificial solo para imágenes y PDF escaneados. El procesamiento se hace en segundo plano para no bloquear la plataforma, cada formato tiene su propio extractor para poder agregar formatos sin afectar el resto, y se validan el tipo y el tamaño de los archivos subidos. | Extractores por tipo de archivo, procesamiento mediante RabbitMQ y revisión del docente antes de incorporar las preguntas al banco. |

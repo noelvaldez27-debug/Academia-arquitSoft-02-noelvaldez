@@ -18,6 +18,10 @@
 | RF12 | El sistema debe identificar las preguntas y temas con mayor tasa de error a nivel grupal. |
 | RF13 | El sistema debe identificar los cursos débiles de cada postulante y generar una recomendación personalizada de refuerzo académico. |
 | RF14 | El sistema debe permitir exportar los resultados y el cuadro de méritos. |
+| RF15 | El sistema debe permitir al docente subir separatas en formato Word, PDF o imagen, rechazando los formatos no admitidos y los archivos que superen el tamaño máximo permitido. |
+| RF16 | El sistema debe extraer el texto de cada separata subida en segundo plano, leyéndolo directamente en los archivos Word y PDF con texto, y mediante inteligencia artificial en las imágenes y PDF escaneados. |
+| RF17 | El sistema debe generar, con apoyo de la inteligencia artificial, propuestas de preguntas con sus alternativas a partir del texto extraído de la separata. |
+| RF18 | El sistema debe permitir al docente revisar, corregir, aprobar o descartar las preguntas propuestas, e incorporar al banco de preguntas únicamente las aprobadas. |
 
 ## Relación entre historias de usuario y requisitos funcionales
 
@@ -34,3 +38,5 @@
 | HU09 Recibir recomendación de refuerzo | RF13 |
 | HU10 Consultar preguntas con mayor error | RF12 |
 | HU11 Exportar resultados | RF14 |
+| HU12 Subir separatas | RF15, RF16, RF17 |
+| HU13 Revisar y aprobar preguntas generadas | RF18, RF03 |

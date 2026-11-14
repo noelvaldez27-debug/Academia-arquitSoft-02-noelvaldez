@@ -1,6 +1,5 @@
 # Historias de usuario
 
-
 | ID | Historia de usuario |
 | --- | --- |
 | HU01 | Como administrador, quiero registrar estudiantes, para contar con un padrón centralizado de la academia. |
@@ -14,3 +13,5 @@
 | HU09 | Como postulante, quiero recibir una recomendación personalizada de refuerzo académico, para mejorar en los cursos donde cometo más errores. |
 | HU10 | Como docente, quiero consultar las preguntas y temas con mayor tasa de error del grupo, para reforzarlos en clase. |
 | HU11 | Como administrador, quiero emitir reportes de inscripción y participación y exportar los resultados, para apoyar las decisiones de la dirección académica. |
+| HU12 | Como docente, quiero subir mis separatas en el formato que tenga (Word, PDF o imagen), para que el sistema genere preguntas a partir de ellas sin tener que escribirlas una por una. |
+| HU13 | Como docente, quiero revisar, corregir y aprobar las preguntas que propone la inteligencia artificial, para que solo entren al banco de preguntas las que yo valido. |
