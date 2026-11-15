@@ -1,4 +1,3 @@
-
 # Principios de diseño (SOLID)
 
 **Proyecto:** EVALUA-NET – Sistema de simulacros de exámenes virtuales con IA – Academia Sofía
@@ -13,51 +12,25 @@ Documentar cómo se aplicarán los principios SOLID en el backend de EVALUA-NET,
 - **Enfoque interno:** Clean Architecture (presentación, aplicación, dominio e infraestructura).
 - **Tecnología de referencia:** Node.js + TypeScript.
 - **Módulo de referencia:** Rendición de Examen, porque integra el registro de respuestas, almacenamiento temporal con Redis, persistencia en PostgreSQL y procesamiento mediante RabbitMQ.
+- **Módulo complementario:** Banco de Preguntas, porque la extracción de texto de las separatas (PDF, DOCX e imagen) muestra con claridad los principios abierto/cerrado y de sustitución de Liskov.
 
-## SOLID en el módulo Rendición de Examen
+## SOLID en los módulos Rendición de Examen y Banco de Preguntas
 
-El siguiente diagrama representa cómo se aplican los principios SOLID en las principales clases e interfaces del módulo.
+El siguiente diagrama indica, junto a cada clase e interfaz, el principio SOLID que cumple.
 
-```mermaid
-flowchart TB
-    subgraph P["Presentación"]
-        C["ExamenController<br/>Recibe solicitudes HTTP"]
-    end
+![Principios SOLID aplicados en los módulos Rendición de Examen y Banco de Preguntas](../imagen/solid-rendicion-examen.png)
 
-    subgraph A["Aplicación"]
-        UC["RegistrarRespuestaUseCase<br/>Coordina el registro"]
-    end
-
-    subgraph D["Dominio y contratos internos"]
-        E["Examen<br/>Valida reglas del negocio"]
-        R["ExamenRepository<br/>Interfaz de persistencia"]
-        T["RespuestasTemporalesPort<br/>Interfaz de almacenamiento temporal"]
-    end
-
-    subgraph I["Infraestructura"]
-        PG["PostgresExamenRepository"]
-        RD["RedisRespuestasAdapter"]
-    end
-
-    C --> UC
-    UC --> E
-    UC --> R
-    UC --> T
-    PG -.->|Implementa| R
-    RD -.->|Implementa| T
-```
-
-**Descripción:** El diagrama muestra la separación de responsabilidades entre las capas y el uso de interfaces para evitar que los casos de uso dependan directamente de PostgreSQL o Redis.
+**Descripción:** El diagrama muestra la separación de responsabilidades entre las capas. Los casos de uso dependen de interfaces y no de PostgreSQL, Redis, RabbitMQ ni de los extractores de texto. Las implementaciones concretas se crean y se conectan en la raíz de composición de cada módulo.
 
 ### Aplicación de los principios SOLID
 
 | **Principio** | **Dónde se aplica (capa)** | **Cómo se cumple en EVALUA-NET** | **Archivos de referencia** |
 |---|---|---|---|
 | **S** · Responsabilidad única | Todas las capas | Cada clase tiene una función específica: el controlador recibe solicitudes, el caso de uso registra respuestas, la entidad valida las reglas del examen y el repositorio almacena los datos. | `examen.controller.ts`, `registrar-respuesta.use-case.ts`, `examen.ts`, `postgres-examen-repository.ts` |
-| **O** · Abierto/cerrado | Infraestructura | Si se necesita cambiar Redis por otra tecnología de almacenamiento temporal, se crea un nuevo adaptador sin modificar el caso de uso. | `respuestas-temporales.port.ts`, `redis-respuestas.adapter.ts` |
-| **L** · Sustitución de Liskov | Infraestructura | Cualquier adaptador que implemente `RespuestasTemporalesPort` debe permitir guardar y recuperar respuestas respetando el mismo contrato, sin alterar el funcionamiento del caso de uso. | `respuestas-temporales.port.ts`, `redis-respuestas.adapter.ts` |
-| **I** · Segregación de interfaces | Dominio y Aplicación | Cada interfaz contiene únicamente las operaciones necesarias: `ExamenRepository` permite guardar y buscar exámenes, mientras que `RespuestasTemporalesPort` permite almacenar y recuperar respuestas. | `examen-repository.ts`, `respuestas-temporales.port.ts` |
-| **D** · Inversión de dependencias | Aplicación | Los casos de uso reciben interfaces mediante sus constructores y no conocen directamente PostgreSQL ni Redis. Las implementaciones concretas se conectan en la raíz de composición. | `registrar-respuesta.use-case.ts`, `rendicion.module.ts` |
+| **O** · Abierto/cerrado | Infraestructura | Si se necesita cambiar Redis por otra tecnología de almacenamiento temporal, se crea un nuevo adaptador sin modificar el caso de uso. Lo mismo ocurre con las separatas: para aceptar un formato nuevo se agrega un extractor, sin modificar `ExtraerTextoUseCase`. | `respuestas-temporales.port.ts`, `redis-respuestas.adapter.ts`, `extractor-de-texto.port.ts`, `extractor-ocr.adapter.ts` |
+| **L** · Sustitución de Liskov | Infraestructura | Cualquier adaptador que implemente `RespuestasTemporalesPort` debe permitir guardar y recuperar respuestas respetando el mismo contrato, sin alterar el funcionamiento del caso de uso. Los extractores de PDF, DOCX y OCR son intercambiables, porque todos cumplen `ExtractorDeTextoPort`. | `respuestas-temporales.port.ts`, `redis-respuestas.adapter.ts`, `extractor-pdf.adapter.ts`, `extractor-docx.adapter.ts` |
+| **I** · Segregación de interfaces | Dominio y Aplicación | Cada interfaz contiene únicamente las operaciones necesarias: `ExamenRepository` permite guardar y buscar exámenes, `RespuestasTemporalesPort` permite almacenar y recuperar respuestas y `PublicadorExamenPort` solo publica la finalización. | `examen-repository.ts`, `respuestas-temporales.port.ts`, `publicador-examen.port.ts` |
+| **D** · Inversión de dependencias | Aplicación | Los casos de uso reciben interfaces mediante sus constructores y no conocen directamente PostgreSQL, Redis ni los extractores. Las implementaciones concretas se conectan en la raíz de composición. | `registrar-respuesta.use-case.ts`, `rendicion.module.ts`, `extraer-texto.use-case.ts`, `banco-preguntas.module.ts` |
 
 **Nota:** Los archivos corresponden al diseño propuesto del sistema y servirán como referencia durante su implementación.
 
@@ -70,16 +43,28 @@ flowchart TB
 | Se quiere probar el registro de respuestas | Se necesitaría conectar el sistema a Redis y PostgreSQL. | Se pueden utilizar repositorios y adaptadores simulados. |
 | Cambia una regla para finalizar el examen | Se tendría que buscar la validación en controladores y servicios. | La regla se modifica en la entidad `Examen`. |
 | Se incorpora otro mecanismo de mensajería | Se modificarían directamente los casos de uso que publican eventos. | Se crea otro adaptador que implemente `PublicadorExamenPort`. |
+| El docente sube una separata en un formato nuevo | El caso de uso tendría condicionales por cada formato y habría que modificarlo cada vez. | Se crea un extractor nuevo que implemente `ExtractorDeTextoPort`. |
+| Se cambia el proveedor de IA | Habría que modificar los casos de uso que generan preguntas. | Se reemplaza el adaptador que implementa `GeneradorDePreguntasPort`. |
 
 ## Relación con Clean Architecture y los patrones
 
 | **Principio** | **Lo cumple en el proyecto** |
 |---|---|
 | Responsabilidad única | La separación de responsabilidades entre Presentación, Aplicación, Dominio e Infraestructura. |
-| Abierto/cerrado | El patrón Adapter, que permite agregar nuevas implementaciones sin modificar los casos de uso. |
+| Abierto/cerrado | Los patrones Adapter y Strategy, que permiten agregar nuevas implementaciones sin modificar los casos de uso. |
 | Sustitución de Liskov | Los adaptadores que implementan una misma interfaz y mantienen su comportamiento esperado. |
-| Segregación de interfaces | Los contratos específicos como `ExamenRepository`, `RespuestasTemporalesPort` y `PublicadorExamenPort`. |
+| Segregación de interfaces | Los contratos específicos como `ExamenRepository`, `RespuestasTemporalesPort`, `PublicadorExamenPort` y `ExtractorDeTextoPort`. |
 | Inversión de dependencias | Los patrones Repository y Dependency Injection, que permiten que los casos de uso dependan de interfaces y no de implementaciones concretas. |
+
+## Para memorizar
+
+| **Letra** | **Idea corta** | **Ejemplo en EVALUA-NET** |
+|---|---|---|
+| **S** | Una clase, una tarea. | El controlador recibe la solicitud; no calcula notas. |
+| **O** | Se agrega código nuevo, no se modifica el existente. | Un extractor nuevo para otro formato de separata. |
+| **L** | Los reemplazos deben comportarse igual. | Los extractores de PDF, DOCX y OCR son intercambiables. |
+| **I** | Interfaces pequeñas. | `PublicadorExamenPort` solo publica la finalización. |
+| **D** | Depender de interfaces, no de tecnologías. | `RegistrarRespuestaUseCase` usa `RespuestasTemporalesPort`, no Redis. |
 
 ## Beneficios
 
@@ -87,5 +72,5 @@ flowchart TB
 - Permite cambiar tecnologías como PostgreSQL, Redis o RabbitMQ sin modificar las reglas del negocio, siempre que se respeten los contratos.
 - Reduce el acoplamiento entre los componentes del backend.
 - Facilita las pruebas mediante repositorios y adaptadores simulados.
+- Permite aceptar nuevos formatos de separatas y cambiar el proveedor de IA sin afectar los casos de uso.
 - Permite incorporar nuevas funcionalidades sin afectar innecesariamente el código existente.
-
