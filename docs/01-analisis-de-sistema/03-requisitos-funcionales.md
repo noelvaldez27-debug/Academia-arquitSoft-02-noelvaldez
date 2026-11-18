@@ -22,6 +22,7 @@
 | RF16 | El sistema debe extraer el texto de cada separata subida en segundo plano, leyéndolo directamente en los archivos Word y PDF con texto, y mediante inteligencia artificial en las imágenes y PDF escaneados. |
 | RF17 | El sistema debe generar, con apoyo de la inteligencia artificial, propuestas de preguntas con sus alternativas a partir del texto extraído de la separata. |
 | RF18 | El sistema debe permitir al docente revisar, corregir, aprobar o descartar las preguntas propuestas, e incorporar al banco de preguntas únicamente las aprobadas. |
+| RF19 | El sistema debe permitir al administrador registrar docentes y generar automáticamente sus credenciales de acceso con la misma regla que los postulantes, sin autoregistro. |
 
 ## Relación entre historias de usuario y requisitos funcionales
 
@@ -40,3 +41,4 @@
 | HU11 Exportar resultados | RF14 |
 | HU12 Subir separatas | RF15, RF16, RF17 |
 | HU13 Revisar y aprobar preguntas generadas | RF18, RF03 |
+| HU14 Registrar docentes | RF19 |

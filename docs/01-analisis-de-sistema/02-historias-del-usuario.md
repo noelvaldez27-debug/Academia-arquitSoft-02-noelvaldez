@@ -15,3 +15,4 @@
 | HU11 | Como administrador, quiero emitir reportes de inscripción y participación y exportar los resultados, para apoyar las decisiones de la dirección académica. |
 | HU12 | Como docente, quiero subir mis separatas en el formato que tenga (Word, PDF o imagen), para que el sistema genere preguntas a partir de ellas sin tener que escribirlas una por una. |
 | HU13 | Como docente, quiero revisar, corregir y aprobar las preguntas que propone la inteligencia artificial, para que solo entren al banco de preguntas las que yo valido. |
+| HU14 | Como administrador, quiero registrar docentes con credenciales generadas automáticamente, para que puedan ingresar al sistema a subir separatas y consultar reportes sin necesidad de autoregistro. |
