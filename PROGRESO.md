@@ -9,7 +9,7 @@
 ## Módulos
 | # | Módulo | Estado |
 | --- | --- | --- |
-| 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | sin empezar |
+| 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | en curso |
 | 1 | Gestión de Usuarios | sin empezar |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
@@ -29,15 +29,15 @@
 - En pruebas automatizadas y de carga se usa el adaptador simulado de `ServicioIA`, nunca la IA real
 
 ## Última tarea completada
-(ninguna todavía)
+Tarea 1 de `specs/base/tasks.md`: inicializar el proyecto Node.js + TypeScript (package.json, tsconfig.json, carpetas src/modules/ y src/compartido/, src/index.ts). `npx tsc --noEmit` pasa sin errores.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Empezar a programar el módulo 0, con `specs/base/tasks.md`: tarea 1 (inicializar el proyecto Node.js + TypeScript).
-Las especificaciones ya están listas: `specs/base/tasks.md`, `specs/usuarios/tasks.md` y `specs/usuarios/spec.md`.
-Antes de empezar el módulo Usuarios hay que resolver con el usuario los puntos de "Pendiente de confirmar" de `specs/usuarios/spec.md` (datos del estudiante, tiempo de vida del JWT y cambio de contraseña en el primer inicio de sesión). 
+Tarea 2 de `specs/base/tasks.md`: configurar Jest con TypeScript y reporte de cobertura (instalar `jest`, `ts-jest`, `@types/jest`; crear `jest.config.ts`; agregar script `"test"` en `package.json`; verificar que `npm test` corra sin errores).
 
 ## Notas para el siguiente editor
-(ninguna)
+- El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos funcionan en sandbox normal.
+- `npm install` también requiere red (BypassSandbox: true).
+- El proyecto está en `main`, rama activa. `npx tsc --noEmit` pasa sin errores con la configuración actual.
