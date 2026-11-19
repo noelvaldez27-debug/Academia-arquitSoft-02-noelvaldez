@@ -29,15 +29,18 @@
 - En pruebas automatizadas y de carga se usa el adaptador simulado de `ServicioIA`, nunca la IA real
 
 ## Última tarea completada
-Tarea 1 de `specs/base/tasks.md`: inicializar el proyecto Node.js + TypeScript (package.json, tsconfig.json, carpetas src/modules/ y src/compartido/, src/index.ts). `npx tsc --noEmit` pasa sin errores.
+Tarea 2 de `specs/base/tasks.md`: configurar Jest con TypeScript y reporte de cobertura. Se instalaron `jest`, `ts-jest`, `@types/jest`. Se creó `jest.config.ts` con `passWithNoTests`, cobertura sobre `src/**/*.ts` excluyendo `index.ts` y archivos `.test.ts`. Se agregaron scripts `"test"` y `"test:cov"` en `package.json`. `npm test` y `npm run test:cov` pasan con código 0. `npx tsc --noEmit` sigue sin errores.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 2 de `specs/base/tasks.md`: configurar Jest con TypeScript y reporte de cobertura (instalar `jest`, `ts-jest`, `@types/jest`; crear `jest.config.ts`; agregar script `"test"` en `package.json`; verificar que `npm test` corra sin errores).
+Tarea 3 de `specs/base/tasks.md`: crear el `Dockerfile` del backend.
 
 ## Notas para el siguiente editor
 - El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos funcionan en sandbox normal.
 - `npm install` también requiere red (BypassSandbox: true).
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit` pasa sin errores con la configuración actual.
+- **TypeScript está fijado en la serie 5 (^5.8) y NO debe subirse a TS 7.** Motivo: `ts-jest@29` (última versión estable) solo soporta `typescript >= 4.3 < 7`. Si se sube TypeScript a 7, `npm install` falla con ERESOLVE. Mantener en `^5.8` hasta que `ts-jest` publique soporte oficial para TS 7.
+- Las advertencias de `glob` y las vulnerabilidades moderadas que muestra `npm audit` son internas de `jest`/`ts-jest`; no son del código del proyecto y no requieren acción ahora.
+- El warning de `@parcel/watcher` (allow-scripts) es de la infraestructura interna de Jest; no afecta la ejecución de pruebas.

@@ -4,7 +4,7 @@
 > Este módulo no tiene casos de uso propios: deja listo lo que todos los demás módulos necesitan.
 
 - [x] 1. Inicializar el proyecto Node.js + TypeScript (package.json, tsconfig, carpetas src/modules/ y src/compartido/)
-- [ ] 2. Configurar Jest con TypeScript y reporte de cobertura
+- [x] 2. Configurar Jest con TypeScript y reporte de cobertura
 - [ ] 3. Dockerfile del backend
 - [ ] 4. docker-compose.yml con el backend, PostgreSQL, Redis y RabbitMQ
 - [ ] 5. Configuración desde variables de entorno: `.env.example` documentado y `.env` en `.gitignore` (ningún secreto en el repositorio)
