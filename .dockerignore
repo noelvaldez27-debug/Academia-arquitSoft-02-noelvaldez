@@ -11,6 +11,9 @@ coverage/
 .git/
 .gitignore
 
+# Almacenamiento local de archivos (separatas en desarrollo)
+/uploads/
+
 # Variables de entorno y secretos (nunca deben entrar a la imagen)
 .env
 .env.*

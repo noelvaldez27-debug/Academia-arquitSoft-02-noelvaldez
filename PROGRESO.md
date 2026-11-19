@@ -28,23 +28,28 @@
 - Aplicación web con React + Tailwind, en `frontend/`, fuera de `src/modules/` (ADR-014)
 - En pruebas automatizadas y de carga se usa el adaptador simulado de `ServicioIA`, nunca la IA real
 - Versiones fijadas de servicios de infraestructura en Docker Compose: PostgreSQL 16 (`postgres:16-alpine`), Redis 7 (`redis:7-alpine`), RabbitMQ 3.13 con interfaz de gestión (`rabbitmq:3.13-management-alpine`).
+- IA y adjuntos: `ServicioIA` se definió con entrada de texto (`proponer(texto, curso)`); el soporte de adjuntos binarios para imágenes y PDF escaneados (ADR-011) queda pendiente para la especificación del módulo Banco de Preguntas.
 
 ## Última tarea completada
-Tarea 7 de `specs/base/tasks.md`: implementar el servidor base HTTP con endpoint de salud (`/health`) y Swagger UI montado en `/api-docs` en `src/compartido/infraestructura/servidor.ts`, junto con la especificación OpenAPI tipada como objeto TypeScript en `src/compartido/infraestructura/especificacion-openapi.ts`. Se desacopló la construcción de la app (`crearApp()`) del arranque en `src/index.ts`, el cual lee la variable `PORT` (por defecto 3000) y escucha en `0.0.0.0`. Se agregaron pruebas HTTP de integración con `supertest` y Jest (sin abrir puertos reales fijos), alcanzando 35 pruebas pasando con 100% de cobertura de código y validación estricta en TypeScript (`npx tsc --noEmit`).
+Tarea 8 de `specs/base/tasks.md`: implementar los puertos compartidos `AlmacenArchivos` (con métodos `guardar` y `obtener`) y `ServicioIA` (con métodos `proponer` y `recomendar`) en `src/compartido/aplicacion/`, junto con sus adaptadores `AlmacenArchivosLocal` y `ServicioIASimulado` en `src/compartido/infraestructura/`. El adaptador de disco local previene estrictamente accesos fuera del directorio base (vía `path.relative`, rechazando rutas absolutas, vacías, caracteres nulos o escapes a carpetas hermanas) y se configura con la función `obtenerRutaAlmacenLocalDesdeEnv()` leyendo `ALMACEN_LOCAL_PATH` (documentada en `.env.example`, ignorando `/uploads/` en `.gitignore` y `.dockerignore`). El adaptador de IA es determinista y no depende de servicios externos. Pruebas unitarias completas en directorio temporal del sistema con Jest, alcanzando 52 pruebas pasando con 100% de cobertura en todas las métricas.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 8 de `specs/base/tasks.md`: implementar los puertos compartidos `ServicioIA` y `AlmacenArchivos` con sus adaptadores simulado (IA) y de disco local (archivos) en `src/compartido/`, según ADR-010 y ADR-012.
+Tarea 9 de `specs/base/tasks.md`: configurar el workflow de GitHub Actions en `.github/workflows/ci.yml` que instale dependencias, verifique tipos con TypeScript (`npx tsc --noEmit`) y ejecute Jest con cobertura (`npm run test:cov`) en cada push y pull request a la rama `main`.
 
 ## Notas para el siguiente editor
 - Librerías instaladas:
   - En `dependencies`: `pg` (^8.23.1), `ioredis` (^6.0.0), `amqplib` (^2.4.0), `express` (^5.3.0), `swagger-ui-express` (^5.0.1).
   - En `devDependencies`: `@types/pg` (^8.23.1), `@types/amqplib` (^0.10.8), `@types/express` (^5.0.6), `@types/swagger-ui-express` (^4.1.8), `supertest` (^7.3.2), `@types/supertest` (^7.2.1), `jest`, `ts-jest`, `typescript` (^5.9.3).
-- Arquitectura del servidor: `crearApp()` exporta la instancia de Express sin llamar a `.listen()`, permitiendo pruebas HTTP limpias mediante `supertest(app)`. El arranque se ejecuta exclusivamente desde `src/index.ts`.
-- La especificación OpenAPI vive en código TypeScript (`src/compartido/infraestructura/especificacion-openapi.ts`), por lo que se compila limpiamente en `dist/` sin requerir tareas adicionales de copiado en el Dockerfile.
-- Pruebas: 35 pruebas pasando con 100% de cobertura. Al ejecutarse en el sandbox de Antigravity en Windows, `supertest` requiere `BypassSandbox: true` porque enlaza un socket de loopback efímero para simular las peticiones HTTP.
+- Arquitectura de puertos y adaptadores compartidos (`src/compartido/`):
+  - `src/compartido/aplicacion/almacen-archivos.ts` (`AlmacenArchivos`).
+  - `src/compartido/aplicacion/servicio-ia.ts` (`ServicioIA`, `PreguntaPropuesta`).
+  - `src/compartido/infraestructura/almacen-archivos-local.ts` (`AlmacenArchivosLocal`, `obtenerRutaAlmacenLocalDesdeEnv`).
+  - `src/compartido/infraestructura/servicio-ia-simulado.ts` (`ServicioIASimulado`).
+- Observación para la Tarea 11: `docker-compose.yml` deberá pasar la variable `ALMACEN_LOCAL_PATH` al servicio `backend` y montar un volumen para dicha carpeta con permisos de escritura para el usuario `node`.
+- Pruebas: 52 pruebas pasando con 100% de cobertura en Stmts, Branch, Funcs y Lines. Al ejecutarse en el sandbox de Antigravity en Windows, `supertest` requiere `BypassSandbox: true` porque enlaza un socket de loopback efímero para simular las peticiones HTTP.
 - El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos de lectura funcionan en sandbox normal.
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit`, `npm test` y `npm run test:cov` pasan sin errores.
 - TypeScript se mantiene en la serie 5 (`^5.9.3`). No actualizar a TypeScript 7+ ya que `ts-jest@29` no lo soporta.

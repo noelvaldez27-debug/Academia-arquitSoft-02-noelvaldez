@@ -18,3 +18,11 @@ export {
 
 export { especificacionOpenApi } from './especificacion-openapi';
 export { crearApp } from './servidor';
+
+export {
+  obtenerRutaAlmacenLocalDesdeEnv,
+  AlmacenArchivosLocal,
+} from './almacen-archivos-local';
+
+export { ServicioIASimulado } from './servicio-ia-simulado';
+
