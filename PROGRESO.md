@@ -29,15 +29,16 @@
 - En pruebas automatizadas y de carga se usa el adaptador simulado de `ServicioIA`, nunca la IA real
 
 ## Última tarea completada
-Tarea 1 de `specs/base/tasks.md`: inicializar el proyecto Node.js + TypeScript (package.json, tsconfig.json, carpetas src/modules/ y src/compartido/, src/index.ts). `npx tsc --noEmit` pasa sin errores.
+Tarea 2 de `specs/base/tasks.md`: configurar Jest con TypeScript y reporte de cobertura. Scripts `"test": "jest"` y `"test:cov": "jest --coverage"` agregados a `package.json`. `npm test`, `npm run test:cov` y `npx tsc --noEmit` pasan sin errores.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 2 de `specs/base/tasks.md`: configurar Jest con TypeScript y reporte de cobertura (instalar `jest`, `ts-jest`, `@types/jest`; crear `jest.config.ts`; agregar script `"test"` en `package.json`; verificar que `npm test` corra sin errores).
+Tarea 3 de `specs/base/tasks.md`: crear el `Dockerfile` del backend (imagen Node.js ≥20, copiar fuente, instalar dependencias de producción, compilar con `tsc`, exponer el puerto y lanzar `node dist/index.js`).
 
 ## Notas para el siguiente editor
 - El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos funcionan en sandbox normal.
 - `npm install` también requiere red (BypassSandbox: true).
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit` pasa sin errores con la configuración actual.
+- TypeScript se mantiene en `^5.8` (o la versión actual `^5.9.3`): `ts-jest@29` no soporta TypeScript 7+. No actualizar TypeScript hasta que ts-jest lo soporte.
