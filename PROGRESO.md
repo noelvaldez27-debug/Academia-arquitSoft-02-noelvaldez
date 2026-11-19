@@ -31,15 +31,20 @@
 - IA y adjuntos: `ServicioIA` se definió con entrada de texto (`proponer(texto, curso)`); el soporte de adjuntos binarios para imágenes y PDF escaneados (ADR-011) queda pendiente para la especificación del módulo Banco de Preguntas.
 
 ## Última tarea completada
-Tarea 8 de `specs/base/tasks.md`: implementar los puertos compartidos `AlmacenArchivos` (con métodos `guardar` y `obtener`) y `ServicioIA` (con métodos `proponer` y `recomendar`) en `src/compartido/aplicacion/`, junto con sus adaptadores `AlmacenArchivosLocal` y `ServicioIASimulado` en `src/compartido/infraestructura/`. El adaptador de disco local previene estrictamente accesos fuera del directorio base (vía `path.relative`, rechazando rutas absolutas, vacías, caracteres nulos o escapes a carpetas hermanas) y se configura con la función `obtenerRutaAlmacenLocalDesdeEnv()` leyendo `ALMACEN_LOCAL_PATH` (documentada en `.env.example`, ignorando `/uploads/` en `.gitignore` y `.dockerignore`). El adaptador de IA es determinista y no depende de servicios externos. Pruebas unitarias completas en directorio temporal del sistema con Jest, alcanzando 52 pruebas pasando con 100% de cobertura en todas las métricas.
+Tarea 9 de `specs/base/tasks.md`: configurar el workflow de GitHub Actions en `.github/workflows/ci.yml`. Se dispara con `push` y `pull_request` hacia la rama `main`, con permisos explícitos `permissions: contents: read` a nivel de workflow, usando Node.js 20 con caché de npm (`actions/setup-node@v4`), `actions/checkout@v4`, instalación limpia con `npm ci`, compilación (`npm run build`) y ejecución de pruebas con reporte de cobertura (`npm run test:cov`), sin pasos de Docker ni servicios externos adicionales.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 9 de `specs/base/tasks.md`: configurar el workflow de GitHub Actions en `.github/workflows/ci.yml` que instale dependencias, verifique tipos con TypeScript (`npx tsc --noEmit`) y ejecute Jest con cobertura (`npm run test:cov`) en cada push y pull request a la rama `main`.
+Tarea 10 de `specs/base/tasks.md`: crear `docs/despliegue.md` con el procedimiento para levantar el proyecto con `docker compose up`.
 
 ## Notas para el siguiente editor
+- Pendiente para Banco de Preguntas (ADR-011): el puerto `ServicioIA` solo tiene `proponer` y `recomendar`, sin archivos adjuntos. El ADR-011 dice que las imágenes y los PDF escaneados pasan por `ServicioIA`. Se decide en el módulo Banco de Preguntas si `proponer` recibe un adjunto opcional o si se agrega otro método. No resolverlo ahora.
+- Workflow de CI (`.github/workflows/ci.yml`):
+  - Utiliza Node.js 20 (alineado con la imagen `node:20-alpine` del Dockerfile y `"node": ">=20"` de `package.json`).
+  - Utiliza versiones fijas de acciones (`actions/checkout@v4`, `actions/setup-node@v4`).
+  - La verificación real se realiza en la pestaña Actions de GitHub tras el push.
 - Librerías instaladas:
   - En `dependencies`: `pg` (^8.23.1), `ioredis` (^6.0.0), `amqplib` (^2.4.0), `express` (^5.3.0), `swagger-ui-express` (^5.0.1).
   - En `devDependencies`: `@types/pg` (^8.23.1), `@types/amqplib` (^0.10.8), `@types/express` (^5.0.6), `@types/swagger-ui-express` (^4.1.8), `supertest` (^7.3.2), `@types/supertest` (^7.2.1), `jest`, `ts-jest`, `typescript` (^5.9.3).
