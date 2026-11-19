@@ -30,13 +30,13 @@
 - Versiones fijadas de servicios de infraestructura en Docker Compose: PostgreSQL 16 (`postgres:16-alpine`), Redis 7 (`redis:7-alpine`), RabbitMQ 3.13 con interfaz de gestión (`rabbitmq:3.13-management-alpine`).
 
 ## Última tarea completada
-Tarea 4 de `specs/base/tasks.md`: crear `docker-compose.yml` con los servicios `backend`, `postgres`, `redis` y `rabbitmq`. El backend utiliza el Dockerfile de la tarea 3 y depende de que los servicios de infraestructura estén saludables (`condition: service_healthy`). PostgreSQL implementa healthcheck con `pg_isready`, Redis con `redis-cli ping` (autenticado) y RabbitMQ con `rabbitmq-diagnostics ping`. Se utilizan volúmenes nombrados (`postgres_data`, `redis_data`, `rabbitmq_data`) para la persistencia. Se emplean variables de entorno con valores por defecto para desarrollo sin contraseñas reales quemadas. El archivo fue validado sintácticamente con `docker-compose config`.
+Tarea 5 de `specs/base/tasks.md`: crear `.env.example` documentado con todas las variables requeridas por `docker-compose.yml` (backend, PostgreSQL, Redis y RabbitMQ) con comentarios explicativos y valores de ejemplo falsos sin secretos. Se actualizó `.gitignore` para ignorar `.env` y `.env.*` protegiendo `.env.example` (`!.env.example`), verificado con `git check-ignore -v`. Se comprobó que `.env` no existe ni se versiona, y se validó la carga de variables con `docker-compose --env-file .env.example config`.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 5 de `specs/base/tasks.md`: configurar variables de entorno documentadas en `.env.example` y asegurar que `.env` esté en `.gitignore` (ningún secreto en el repositorio). No crear variables no documentadas y documentar cada variable según lo requerido por el backend, postgres, redis y rabbitmq.
+Tarea 6 de `specs/base/tasks.md`: crear las conexiones base a PostgreSQL, Redis y RabbitMQ en `src/compartido/infraestructura/` consumiendo las variables de entorno configuradas.
 
 ## Notas para el siguiente editor
 - El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos funcionan en sandbox normal.
@@ -44,4 +44,5 @@ Tarea 5 de `specs/base/tasks.md`: configurar variables de entorno documentadas e
 - `docker build` también requiere `BypassSandbox: true` y que Docker Desktop esté corriendo.
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit` y `npm test` pasan sin errores.
 - TypeScript se mantiene en `^5.8` (o la versión actual `^5.9.3`): `ts-jest@29` no soporta TypeScript 7+. No actualizar TypeScript hasta que ts-jest lo soporte.
-- El binario `docker compose` en Windows/CLI actual se invocó como `docker-compose config`, validando exitosamente la sintaxis de `docker-compose.yml`.
+- El binario `docker compose` en Windows/CLI actual se invocó como `docker-compose config` y `docker-compose --env-file .env.example config`, validando exitosamente la sintaxis de `docker-compose.yml` con `.env.example`.
+- Nunca crear ni comitear `.env` en el repositorio; cada desarrollador debe crearlo localmente copiando `.env.example`.
