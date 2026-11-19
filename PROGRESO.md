@@ -2,7 +2,7 @@
 
 ## Estado actual
 - Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3
-- Fase 2 (desarrollo): Sprint 2 en preparación. Aún no hay código
+- Fase 2 (desarrollo): especificaciones del módulo 0 y de Usuarios listas; falta escribir el código
 - Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
 - Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`)
 
@@ -35,10 +35,9 @@
 (ninguna)
 
 ## Siguiente paso exacto
-Preparar las especificaciones antes de escribir código:
-1. Crear `specs/base/tasks.md` para el módulo 0
-2. Actualizar `specs/usuarios/tasks.md` con las tareas del Sprint 2: registro de docentes por el Administrador, script de arranque del primer Administrador, documentación OpenAPI y reporte de cobertura de Jest
-3. Crear `specs/usuarios/spec.md` con los criterios de aceptación del módulo
+Empezar a programar el módulo 0, con `specs/base/tasks.md`: tarea 1 (inicializar el proyecto Node.js + TypeScript).
+Las especificaciones ya están listas: `specs/base/tasks.md`, `specs/usuarios/tasks.md` y `specs/usuarios/spec.md`.
+Antes de empezar el módulo Usuarios hay que resolver con el usuario los puntos de "Pendiente de confirmar" de `specs/usuarios/spec.md` (datos del estudiante, tiempo de vida del JWT y cambio de contraseña en el primer inicio de sesión). 
 
 ## Notas para el siguiente editor
 (ninguna)
