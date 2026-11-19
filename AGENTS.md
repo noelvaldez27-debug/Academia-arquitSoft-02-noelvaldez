@@ -55,3 +55,14 @@ src/modules/<modulo>/
 8. Un módulo está terminado solo cuando tiene: código por capas, endpoints documentados en OpenAPI, pruebas Jest que pasan con su reporte de cobertura, y sus tareas marcadas en `tasks.md`.
 9. Todo debe arrancar con `docker compose up` y sin configuración manual, para que el despliegue del Sprint 3 sea reproducible.
 10. En las pruebas automatizadas y de carga usa el adaptador simulado de `ServicioIA`, nunca la IA real, para no gastar la cuota gratuita.
+
+
+## Skills (procedimientos reutilizables)
+Están en la carpeta `skills/`. Léelos cuando la tarea coincida; no los reinventes:
+- `skills/implementar-caso-de-uso.md`: cómo escribir un caso de uso por capas, de adentro hacia afuera
+- `skills/escribir-pruebas-jest.md`: cómo probar un caso de uso y revisar la cobertura
+- `skills/cerrar-sesion.md`: cómo dejar el traspaso listo antes de cambiar de IDE o cuando se acaben los tokens. Úsalo siempre al terminar
+
+## Enunciados del docente
+- `docs/sprint-2.md`: lo que se evalúa en la implementación del backend
+- `docs/sprint-3.md`: lo que se evalúa en la integración y el despliegue
