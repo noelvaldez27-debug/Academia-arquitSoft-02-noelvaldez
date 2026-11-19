@@ -1,0 +1,31 @@
+# Dependencias instaladas localmente (se reinstalan dentro del contenedor)
+node_modules/
+
+# Artefactos de compilación (se generan dentro del contenedor)
+dist/
+
+# Cobertura de pruebas
+coverage/
+
+# Control de versiones
+.git/
+.gitignore
+
+# Variables de entorno y secretos (nunca deben entrar a la imagen)
+.env
+.env.*
+!.env.example
+
+# Archivos de IDE y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Archivos de documentación y especificaciones (no necesarios en producción)
+docs/
+specs/
+skills/
+
+# Archivos de configuración de CI/CD locales
+.github/

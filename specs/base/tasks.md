@@ -5,7 +5,7 @@
 
 - [x] 1. Inicializar el proyecto Node.js + TypeScript (package.json, tsconfig, carpetas src/modules/ y src/compartido/)
 - [x] 2. Configurar Jest con TypeScript y reporte de cobertura
-- [ ] 3. Dockerfile del backend
+- [x] 3. Dockerfile del backend
 - [ ] 4. docker-compose.yml con el backend, PostgreSQL, Redis y RabbitMQ
 - [ ] 5. Configuración desde variables de entorno: `.env.example` documentado y `.env` en `.gitignore` (ningún secreto en el repositorio)
 - [ ] 6. Conexiones base a PostgreSQL, Redis y RabbitMQ en `src/compartido/infraestructura/`

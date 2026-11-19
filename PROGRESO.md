@@ -29,16 +29,18 @@
 - En pruebas automatizadas y de carga se usa el adaptador simulado de `ServicioIA`, nunca la IA real
 
 ## Última tarea completada
-Tarea 2 de `specs/base/tasks.md`: configurar Jest con TypeScript y reporte de cobertura. Scripts `"test": "jest"` y `"test:cov": "jest --coverage"` agregados a `package.json`. `npm test`, `npm run test:cov` y `npx tsc --noEmit` pasan sin errores.
+Tarea 3 de `specs/base/tasks.md`: crear `Dockerfile` de dos etapas (build + runtime) y `.dockerignore`. La etapa build instala todas las dependencias con `npm ci` y compila con `tsc`; la etapa runtime instala solo dependencias de producción (`npm ci --omit=dev`) y copia `dist/` desde la etapa build. El contenedor corre como usuario `node` (no root), expone el puerto 3000 y lanza `node dist/index.js`. El `.dockerignore` excluye `node_modules`, `dist`, `coverage`, `.git`, `.env`, archivos de IDE y carpetas de documentación. Docker Desktop estaba apagado al momento del commit; el Dockerfile fue revisado manualmente y es correcto.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 3 de `specs/base/tasks.md`: crear el `Dockerfile` del backend (imagen Node.js ≥20, copiar fuente, instalar dependencias de producción, compilar con `tsc`, exponer el puerto y lanzar `node dist/index.js`).
+Tarea 4 de `specs/base/tasks.md`: crear `docker-compose.yml` con los servicios backend, PostgreSQL, Redis y RabbitMQ. El backend debe usar la imagen construida con el `Dockerfile` de la tarea 3. Leer `docs/` para confirmar versiones y nombres de servicios antes de escribirlo.
 
 ## Notas para el siguiente editor
 - El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos funcionan en sandbox normal.
 - `npm install` también requiere red (BypassSandbox: true).
+- `docker build` también requiere `BypassSandbox: true` y que Docker Desktop esté corriendo.
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit` pasa sin errores con la configuración actual.
 - TypeScript se mantiene en `^5.8` (o la versión actual `^5.9.3`): `ts-jest@29` no soporta TypeScript 7+. No actualizar TypeScript hasta que ts-jest lo soporte.
+- El Dockerfile no incluye HEALTHCHECK (es parte de la tarea 7, cuando exista el endpoint `/health`).
