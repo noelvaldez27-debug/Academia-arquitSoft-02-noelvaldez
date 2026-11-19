@@ -30,21 +30,22 @@
 - Versiones fijadas de servicios de infraestructura en Docker Compose: PostgreSQL 16 (`postgres:16-alpine`), Redis 7 (`redis:7-alpine`), RabbitMQ 3.13 con interfaz de gestión (`rabbitmq:3.13-management-alpine`).
 
 ## Última tarea completada
-Tarea 6 de `specs/base/tasks.md`: crear las conexiones base a PostgreSQL (`pg`), Redis (`ioredis`) y RabbitMQ (`amqplib`) en `src/compartido/infraestructura/` con tipado estricto, funciones para crear y cerrar conexiones de forma diferida (sin abrirse al importar), validación estricta de variables de entorno requeridas sin fallbacks y con mensajes de error explícitos. Se completaron 29 pruebas unitarias en Jest con mocks (sin necesidad de levantar Docker ni servicios reales) alcanzando 100% de cobertura de código. Se actualizó `.env.example` documentando las variables del backend (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `REDIS_HOST`, `RABBITMQ_HOST`) para permitir la ejecución local fuera de Docker, validado con `docker-compose --env-file .env.example config`.
+Tarea 7 de `specs/base/tasks.md`: implementar el servidor base HTTP con endpoint de salud (`/health`) y Swagger UI montado en `/api-docs` en `src/compartido/infraestructura/servidor.ts`, junto con la especificación OpenAPI tipada como objeto TypeScript en `src/compartido/infraestructura/especificacion-openapi.ts`. Se desacopló la construcción de la app (`crearApp()`) del arranque en `src/index.ts`, el cual lee la variable `PORT` (por defecto 3000) y escucha en `0.0.0.0`. Se agregaron pruebas HTTP de integración con `supertest` y Jest (sin abrir puertos reales fijos), alcanzando 35 pruebas pasando con 100% de cobertura de código y validación estricta en TypeScript (`npx tsc --noEmit`).
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 7 de `specs/base/tasks.md`: implementar el servidor base HTTP con endpoint de salud (`/health`) y Swagger montado en `/api-docs` en `src/compartido/infraestructura/` y su punto de entrada.
+Tarea 8 de `specs/base/tasks.md`: implementar los puertos compartidos `ServicioIA` y `AlmacenArchivos` con sus adaptadores simulado (IA) y de disco local (archivos) en `src/compartido/`, según ADR-010 y ADR-012.
 
 ## Notas para el siguiente editor
-- Librerías instaladas: `pg` (^8.23.1), `ioredis` (^6.0.0) y `amqplib` (^2.4.0) como `dependencies`; `@types/pg` y `@types/amqplib` como `devDependencies`. `ioredis` provee sus propios tipos nativos, por lo que no se requiere `@types/ioredis`.
-- Las funciones de conexión leen únicamente las variables enviadas por `docker-compose.yml`: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD` y `RABBITMQ_VHOST`. Si falta alguna, se lanza un `Error` descriptivo.
-- El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos funcionan en sandbox normal.
-- `npm install` también requiere red (BypassSandbox: true).
-- `docker build` también requiere `BypassSandbox: true` y que Docker Desktop esté corriendo.
-- El proyecto está en `main`, rama activa. `npx tsc --noEmit`, `npm test` (29 pruebas pasando) y `npm run test:cov` (100% de cobertura) pasan sin errores.
-- TypeScript se mantiene en `^5.8` (o la versión actual `^5.9.3`): `ts-jest@29` no soporta TypeScript 7+. No actualizar TypeScript hasta que ts-jest lo soporte.
-- El binario `docker compose` en Windows/CLI actual se invocó como `docker-compose config` y `docker-compose --env-file .env.example config`, validando exitosamente la sintaxis de `docker-compose.yml` con `.env.example`.
+- Librerías instaladas:
+  - En `dependencies`: `pg` (^8.23.1), `ioredis` (^6.0.0), `amqplib` (^2.4.0), `express` (^5.3.0), `swagger-ui-express` (^5.0.1).
+  - En `devDependencies`: `@types/pg` (^8.23.1), `@types/amqplib` (^0.10.8), `@types/express` (^5.0.6), `@types/swagger-ui-express` (^4.1.8), `supertest` (^7.3.2), `@types/supertest` (^7.2.1), `jest`, `ts-jest`, `typescript` (^5.9.3).
+- Arquitectura del servidor: `crearApp()` exporta la instancia de Express sin llamar a `.listen()`, permitiendo pruebas HTTP limpias mediante `supertest(app)`. El arranque se ejecuta exclusivamente desde `src/index.ts`.
+- La especificación OpenAPI vive en código TypeScript (`src/compartido/infraestructura/especificacion-openapi.ts`), por lo que se compila limpiamente en `dist/` sin requerir tareas adicionales de copiado en el Dockerfile.
+- Pruebas: 35 pruebas pasando con 100% de cobertura. Al ejecutarse en el sandbox de Antigravity en Windows, `supertest` requiere `BypassSandbox: true` porque enlaza un socket de loopback efímero para simular las peticiones HTTP.
+- El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos de lectura funcionan en sandbox normal.
+- El proyecto está en `main`, rama activa. `npx tsc --noEmit`, `npm test` y `npm run test:cov` pasan sin errores.
+- TypeScript se mantiene en la serie 5 (`^5.9.3`). No actualizar a TypeScript 7+ ya que `ts-jest@29` no lo soporta.
 - Nunca crear ni comitear `.env` en el repositorio; cada desarrollador debe crearlo localmente copiando `.env.example`.

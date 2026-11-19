@@ -15,3 +15,6 @@ export {
   crearConexionRabbitMQ,
   cerrarConexionRabbitMQ,
 } from './conexion-rabbitmq';
+
+export { especificacionOpenApi } from './especificacion-openapi';
+export { crearApp } from './servidor';
