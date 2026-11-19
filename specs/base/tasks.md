@@ -8,7 +8,7 @@
 - [x] 3. Dockerfile del backend
 - [x] 4. docker-compose.yml con el backend, PostgreSQL, Redis y RabbitMQ
 - [x] 5. Configuración desde variables de entorno: `.env.example` documentado y `.env` en `.gitignore` (ningún secreto en el repositorio)
-- [ ] 6. Conexiones base a PostgreSQL, Redis y RabbitMQ en `src/compartido/infraestructura/`
+- [x] 6. Conexiones base a PostgreSQL, Redis y RabbitMQ en `src/compartido/infraestructura/`
 - [ ] 7. Servidor base con endpoint de salud (`/health`) y Swagger montado en `/api-docs`
 - [ ] 8. Puertos compartidos `ServicioIA` y `AlmacenArchivos` con sus adaptadores simulado (IA) y de disco local (archivos), según ADR-010 y ADR-012
 - [ ] 9. Workflow de GitHub Actions que instala, compila y ejecuta Jest con cobertura en cada push

@@ -30,19 +30,21 @@
 - Versiones fijadas de servicios de infraestructura en Docker Compose: PostgreSQL 16 (`postgres:16-alpine`), Redis 7 (`redis:7-alpine`), RabbitMQ 3.13 con interfaz de gestión (`rabbitmq:3.13-management-alpine`).
 
 ## Última tarea completada
-Tarea 5 de `specs/base/tasks.md`: crear `.env.example` documentado con todas las variables requeridas por `docker-compose.yml` (backend, PostgreSQL, Redis y RabbitMQ) con comentarios explicativos y valores de ejemplo falsos sin secretos. Se actualizó `.gitignore` para ignorar `.env` y `.env.*` protegiendo `.env.example` (`!.env.example`), verificado con `git check-ignore -v`. Se comprobó que `.env` no existe ni se versiona, y se validó la carga de variables con `docker-compose --env-file .env.example config`.
+Tarea 6 de `specs/base/tasks.md`: crear las conexiones base a PostgreSQL (`pg`), Redis (`ioredis`) y RabbitMQ (`amqplib`) en `src/compartido/infraestructura/` con tipado estricto, funciones para crear y cerrar conexiones de forma diferida (sin abrirse al importar), validación estricta de variables de entorno requeridas sin fallbacks y con mensajes de error explícitos. Se completaron 29 pruebas unitarias en Jest con mocks (sin necesidad de levantar Docker ni servicios reales) alcanzando 100% de cobertura de código. Se actualizó `.env.example` documentando las variables del backend (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `REDIS_HOST`, `RABBITMQ_HOST`) para permitir la ejecución local fuera de Docker, validado con `docker-compose --env-file .env.example config`.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 6 de `specs/base/tasks.md`: crear las conexiones base a PostgreSQL, Redis y RabbitMQ en `src/compartido/infraestructura/` consumiendo las variables de entorno configuradas.
+Tarea 7 de `specs/base/tasks.md`: implementar el servidor base HTTP con endpoint de salud (`/health`) y Swagger montado en `/api-docs` en `src/compartido/infraestructura/` y su punto de entrada.
 
 ## Notas para el siguiente editor
+- Librerías instaladas: `pg` (^8.23.1), `ioredis` (^6.0.0) y `amqplib` (^2.4.0) como `dependencies`; `@types/pg` y `@types/amqplib` como `devDependencies`. `ioredis` provee sus propios tipos nativos, por lo que no se requiere `@types/ioredis`.
+- Las funciones de conexión leen únicamente las variables enviadas por `docker-compose.yml`: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD` y `RABBITMQ_VHOST`. Si falta alguna, se lanza un `Error` descriptivo.
 - El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos funcionan en sandbox normal.
 - `npm install` también requiere red (BypassSandbox: true).
 - `docker build` también requiere `BypassSandbox: true` y que Docker Desktop esté corriendo.
-- El proyecto está en `main`, rama activa. `npx tsc --noEmit` y `npm test` pasan sin errores.
+- El proyecto está en `main`, rama activa. `npx tsc --noEmit`, `npm test` (29 pruebas pasando) y `npm run test:cov` (100% de cobertura) pasan sin errores.
 - TypeScript se mantiene en `^5.8` (o la versión actual `^5.9.3`): `ts-jest@29` no soporta TypeScript 7+. No actualizar TypeScript hasta que ts-jest lo soporte.
 - El binario `docker compose` en Windows/CLI actual se invocó como `docker-compose config` y `docker-compose --env-file .env.example config`, validando exitosamente la sintaxis de `docker-compose.yml` con `.env.example`.
 - Nunca crear ni comitear `.env` en el repositorio; cada desarrollador debe crearlo localmente copiando `.env.example`.
