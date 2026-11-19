@@ -1,0 +1,22 @@
+{
+  "name": "evalua-net-backend",
+  "version": "0.1.0",
+  "description": "Backend del sistema EVALUA-NET — Academia Preuniversitaria Sofía",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  }
+}
