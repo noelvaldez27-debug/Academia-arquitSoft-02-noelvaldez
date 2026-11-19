@@ -29,15 +29,16 @@
 - En pruebas automatizadas y de carga se usa el adaptador simulado de `ServicioIA`, nunca la IA real
 - Versiones fijadas de servicios de infraestructura en Docker Compose: PostgreSQL 16 (`postgres:16-alpine`), Redis 7 (`redis:7-alpine`), RabbitMQ 3.13 con interfaz de gestión (`rabbitmq:3.13-management-alpine`).
 - IA y adjuntos: `ServicioIA` se definió con entrada de texto (`proponer(texto, curso)`); el soporte de adjuntos binarios para imágenes y PDF escaneados (ADR-011) queda pendiente para la especificación del módulo Banco de Preguntas.
+- Por ahora solo se trabaja el Sprint 2. El Sprint 3 (aplicación web, despliegue en AWS, adaptador de S3, actualización de C4) queda en pausa hasta que el usuario lo confirme. No iniciar nada de eso por iniciativa propia.
 
 ## Última tarea completada
-Tarea 9 de `specs/base/tasks.md`: configurar el workflow de GitHub Actions en `.github/workflows/ci.yml`. Se dispara con `push` y `pull_request` hacia la rama `main`, con permisos explícitos `permissions: contents: read` a nivel de workflow, usando Node.js 20 con caché de npm (`actions/setup-node@v4`), `actions/checkout@v4`, instalación limpia con `npm ci`, compilación (`npm run build`) y ejecución de pruebas con reporte de cobertura (`npm run test:cov`), sin pasos de Docker ni servicios externos adicionales.
+Tarea 10 de `specs/base/tasks.md`: crear `docs/despliegue.md` con el procedimiento y requisitos para levantar el proyecto con `docker compose up` en el entorno local del desarrollador (incluyendo variables `.env`, comandos de build, verificación de `/health` y `/api-docs`, logs, detención sin borrado de volúmenes y pruebas sin Docker).
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Tarea 10 de `specs/base/tasks.md`: crear `docs/despliegue.md` con el procedimiento para levantar el proyecto con `docker compose up`.
+Tarea 11 de `specs/base/tasks.md`: verificar que `docker compose up` levanta todo sin configuración manual y que `/health` responde (requiere tener Docker Desktop encendido).
 
 ## Notas para el siguiente editor
 - Pendiente para Banco de Preguntas (ADR-011): el puerto `ServicioIA` solo tiene `proponer` y `recomendar`, sin archivos adjuntos. El ADR-011 dice que las imágenes y los PDF escaneados pasan por `ServicioIA`. Se decide en el módulo Banco de Preguntas si `proponer` recibe un adjunto opcional o si se agrega otro método. No resolverlo ahora.
