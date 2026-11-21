@@ -24,6 +24,8 @@ RUN npm ci --omit=dev
 # Copiar el artefacto compilado desde la etapa build
 COPY --from=build /app/dist ./dist
 
+RUN mkdir -p /app/uploads && chown node:node /app/uploads
+
 # Correr como usuario no root (node viene incluido en la imagen node:alpine)
 USER node
 

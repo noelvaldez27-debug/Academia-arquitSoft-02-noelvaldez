@@ -94,6 +94,11 @@ services:
 
       # Clave JWT (AC04: nunca en texto plano en logs)
       JWT_SECRET: ${JWT_SECRET:-cambiar_en_produccion}
+
+      # Almacenamiento de archivos (separatas — ADR-012)
+      ALMACEN_LOCAL_PATH: /app/uploads
+    volumes:
+      - almacen_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -106,3 +111,4 @@ volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
+  almacen_data:
