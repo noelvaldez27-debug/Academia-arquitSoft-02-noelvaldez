@@ -1,6 +1,6 @@
 # Despliegue local con Docker Compose
 
-> **Nota importante:** Este procedimiento describe la configuración prevista y está pendiente de verificación práctica en la tarea 11 del proyecto. Aún no se ha ejecutado `docker compose up` en este entorno, por lo que las instrucciones se ajustarán y confirmarán según los resultados de dicha prueba.
+> **Estado de verificación:** Procedimiento verificado de manera práctica en la tarea 11 del proyecto. Se ejecutó `docker compose up -d --build`, confirmando el inicio correcto de los 4 servicios (`postgres`, `redis`, `rabbitmq` en estado *healthy*, y `backend` en estado *Up*), así como la respuesta HTTP 200 en `/health` y `/api-docs/`, la ejecución del contenedor backend con el usuario `node` y los permisos de escritura sobre el volumen `/app/uploads`.
 
 Guía paso a paso para levantar y ejecutar el entorno de desarrollo local de EVALUA-NET en la computadora del desarrollador utilizando Docker Compose.
 
@@ -85,12 +85,13 @@ Una vez levantados los contenedores, verifica su funcionamiento abriendo tu nave
   [http://localhost:3000/health](http://localhost:3000/health)
   Debe responder con estado HTTP 200 y un JSON indicando el estado del servicio:
   ```json
-  {"status":"ok"}
+  {"status":"ok","timestamp":"..."}
   ```
+  > **Limitación importante:** El endpoint `/health` actual solo confirma que el servidor HTTP Express levantó y está respondiendo solicitudes. No realiza consultas activas ni verifica la conectividad interna con PostgreSQL, Redis ni RabbitMQ (dicha verificación de infraestructura la gestionan individualmente los *healthchecks* de Docker Compose mediante `depends_on`).
 
 - **Documentación Swagger / OpenAPI:**
-  [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-  Muestra la interfaz interactiva con todos los endpoints disponibles del backend.
+  [http://localhost:3000/api-docs/](http://localhost:3000/api-docs/)
+  Muestra la interfaz interactiva con todos los endpoints disponibles del backend (en clientes HTTP programáticos o scripts, asegúrate de incluir la barra final `/api-docs/` para acceder directamente a la documentación sin redirecciones).
 
 - **Consola de administración de RabbitMQ:**
   [http://localhost:15672](http://localhost:15672)
@@ -164,8 +165,11 @@ Si deseas ejecutar las pruebas unitarias y de integración en tu computadora sin
 - **Docker Desktop no está en ejecución:**
   Si recibes el error `error during connect: ... open //./pipe/docker_engine: The system cannot find the file specified`, abre la aplicación Docker Desktop y espera a que indique que el motor está activo.
 
-- **Conflicto de puertos en el sistema (puerto 3000 o 15672 en uso):**
-  Si otra aplicación en tu computadora está ocupando el puerto 3000, puedes cambiar la variable `PORT` en tu archivo `.env` (por ejemplo `PORT=3001`) y reiniciar con `docker compose up --build`.
+- **Inconsistencia al modificar `PORT` en `.env` (puerto interno vs externo):**
+  Actualmente, `docker-compose.yml` mapea `${PORT:-3000}:3000`. Si se cambia `PORT` en `.env` a un valor distinto (por ejemplo `PORT=3001`), el servidor Express dentro del contenedor escuchará en el puerto 3001, pero Docker seguirá redirigiendo el tráfico del host al puerto 3000 interno del contenedor, provocando que el contenedor deje de responder en el host. Por ello, en el entorno Docker Compose actual se debe mantener `PORT=3000` en `.env`.
+
+- **Conflicto de puertos en el host (puerto 3000 o 15672 en uso):**
+  Si otra aplicación en tu computadora está ocupando el puerto 3000 o 15672, repórtalo o detén la aplicación en conflicto antes de iniciar los contenedores. No modifiques la variable `PORT` en `.env` sin ajustar la configuración del compose.
 
 - **Falta el archivo `.env`:**
   Si Docker Compose muestra advertencias de variables no definidas o usa valores vacíos, asegúrate de haber ejecutado `Copy-Item -Path .env.example -Destination .env` en la raíz del proyecto.
