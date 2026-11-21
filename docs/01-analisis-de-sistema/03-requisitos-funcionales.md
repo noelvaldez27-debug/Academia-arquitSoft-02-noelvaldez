@@ -4,7 +4,7 @@
 
 | ID | Requisito funcional |
 | --- | --- |
-| RF01 | El sistema debe permitir al personal encargado registrar estudiantes. |
+| RF01 | El sistema debe permitir al administrador registrar estudiantes de uno en uno, indicando su nombre, DNI, sede y carrera. El administrador de sede solo puede registrar estudiantes de su sede. |
 | RF02 | El sistema debe generar automáticamente las credenciales de acceso de cada postulante (usuario dni@sofia.edu y contraseña inicial igual a su DNI). |
 | RF03 | El sistema debe permitir cargar y editar el banco de preguntas por curso. |
 | RF04 | El sistema debe permitir rendir el examen completo dentro del sistema. |
@@ -22,13 +22,20 @@
 | RF16 | El sistema debe extraer el texto de cada separata subida en segundo plano, leyéndolo directamente en los archivos Word y PDF con texto, y mediante inteligencia artificial en las imágenes y PDF escaneados. |
 | RF17 | El sistema debe generar, con apoyo de la inteligencia artificial, propuestas de preguntas con sus alternativas a partir del texto extraído de la separata. |
 | RF18 | El sistema debe permitir al docente revisar, corregir, aprobar o descartar las preguntas propuestas, e incorporar al banco de preguntas únicamente las aprobadas. |
-| RF19 | El sistema debe permitir al administrador registrar docentes y generar automáticamente sus credenciales de acceso (usuario dni@sofia.edu y contraseña inicial igual a su DNI), sin autoregistro. |
+| RF19 | El sistema debe permitir al administrador general registrar docentes y generar automáticamente sus credenciales de acceso (usuario dni@sofia.edu y contraseña inicial igual a su DNI), sin autoregistro. |
+| RF20 | El sistema debe permitir a todo usuario iniciar sesión con su correo y contraseña, y restringir cada función según su rol y, en el caso del administrador de sede, según su sede. |
+| RF21 | El sistema debe permitir al administrador registrar estudiantes de forma masiva subiendo un archivo Excel con nombre, DNI, sede y carrera, procesarlo en segundo plano, omitir los DNI que ya existen, rechazar las filas inválidas indicando su número y motivo, y mostrar el resultado de la carga. El administrador de sede solo puede cargar estudiantes de su sede. |
+| RF22 | El sistema debe asociar a cada estudiante con una sede y una carrera, y permitir agregar nuevas sedes sin afectar el resto del sistema. |
+| RF23 | El sistema debe permitir al administrador consultar la lista de usuarios, con filtro por rol y por sede, sin mostrar nunca contraseñas. El administrador de sede solo ve a los estudiantes de su sede. |
+| RF24 | El sistema debe permitir al administrador desactivar y reactivar usuarios sin borrarlos, para conservar el historial de exámenes y resultados. El administrador de sede solo puede hacerlo con estudiantes de su sede, y nadie puede desactivarse a sí mismo ni desactivar al único administrador general. |
+| RF25 | El sistema debe crear al administrador general al ponerse en marcha, con datos tomados de la configuración, y permitirle crear las cuentas de los administradores de cada sede, definiendo su nombre, correo, contraseña inicial y sede. Existe un solo administrador general. |
+| RF26 | El sistema debe permitir a todo usuario cambiar su propia contraseña de forma opcional, y al administrador cambiar su propio correo. |
 
 ## Relación entre historias de usuario y requisitos funcionales
 
 | Historia de usuario | Requisitos funcionales relacionados |
 | --- | --- |
-| HU01 Registrar estudiantes | RF01 |
+| HU01 Registrar estudiantes | RF01, RF22 |
 | HU02 Generar credenciales automáticas | RF02 |
 | HU03 Gestionar banco de preguntas | RF03 |
 | HU04 Rendir simulacro virtual | RF04, RF06, RF07 |
@@ -42,3 +49,11 @@
 | HU12 Subir separatas | RF15, RF16, RF17 |
 | HU13 Revisar y aprobar preguntas generadas | RF18, RF03 |
 | HU14 Registrar docentes | RF19 |
+| HU15 Registrar estudiantes con un archivo Excel | RF21, RF22 |
+| HU16 Trabajar solo con los estudiantes de mi sede | RF20, RF01, RF21, RF23, RF24 |
+| HU17 Consultar la lista de usuarios | RF23 |
+| HU18 Desactivar y reactivar usuarios | RF24 |
+| HU19 Crear administradores de sede | RF25 |
+| HU20 Iniciar sesión | RF20 |
+| HU21 Cambiar mi contraseña | RF26 |
+| HU22 Cambiar el correo del administrador | RF26 |
