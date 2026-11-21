@@ -21,7 +21,7 @@ Antes de comenzar, asegúrate de tener instalado en tu computadora:
 Clona el repositorio desde GitHub y navega al directorio del proyecto:
 
 ```bash
-git clone https://github.com/NoelValdez/Academia-arquitSoft-02-noelvaldez.git
+git clone https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez.git
 cd Academia-arquitSoft-02-noelvaldez
 ```
 
@@ -29,7 +29,7 @@ cd Academia-arquitSoft-02-noelvaldez
 
 ## 3. Configuración de variables de entorno
 
-El proyecto requiere un archivo `.env` en la raíz para definir las credenciales y puertos de los servicios.
+El proyecto arranca aunque no exista un archivo `.env`, porque el compose trae valores de respaldo de ejemplo. Aun así conviene crear uno propio, para no usar las contraseñas de ejemplo.
 
 ### Crear el archivo `.env` en Windows (PowerShell)
 
@@ -43,9 +43,9 @@ Copy-Item -Path .env.example -Destination .env
 
 Abre el archivo `.env` recién creado con tu editor de texto y cambia las contraseñas y claves de prueba por valores seguros propios para tu entorno local:
 
-- `POSTGRES_PASSWORD`: Contraseña para el usuario de PostgreSQL (`evalua_user`).
+- `POSTGRES_PASSWORD`: Contraseña para el usuario de PostgreSQL (definido en  `POSTGRES_USER`).
 - `REDIS_PASSWORD`: Contraseña para la autenticación en Redis.
-- `RABBITMQ_PASSWORD`: Contraseña para el usuario de RabbitMQ (`rabbit_user`).
+- `RABBITMQ_PASSWORD`: Contraseña para el usuario de RabbitMQ (definido en  `RABBITMQ_USER`).
 - `JWT_SECRET`: Clave secreta utilizada para firmar los tokens de autenticación JWT.
 
 > **Advertencia de seguridad obligatoria:**
@@ -169,10 +169,10 @@ Si deseas ejecutar las pruebas unitarias y de integración en tu computadora sin
   Actualmente, `docker-compose.yml` mapea `${PORT:-3000}:3000`. Si se cambia `PORT` en `.env` a un valor distinto (por ejemplo `PORT=3001`), el servidor Express dentro del contenedor escuchará en el puerto 3001, pero Docker seguirá redirigiendo el tráfico del host al puerto 3000 interno del contenedor, provocando que el contenedor deje de responder en el host. Por ello, en el entorno Docker Compose actual se debe mantener `PORT=3000` en `.env`.
 
 - **Conflicto de puertos en el host (puerto 3000 o 15672 en uso):**
-  Si otra aplicación en tu computadora está ocupando el puerto 3000 o 15672, repórtalo o detén la aplicación en conflicto antes de iniciar los contenedores. No modifiques la variable `PORT` en `.env` sin ajustar la configuración del compose.
+  Si otra aplicación en tu computadora está ocupando el puerto 3000 o 15672, detén la aplicación en conflicto antes de iniciar los contenedores. No modifiques la variable `PORT` en `.env` sin ajustar la configuración del compose.
 
-- **Falta el archivo `.env`:**
-  Si Docker Compose muestra advertencias de variables no definidas o usa valores vacíos, asegúrate de haber ejecutado `Copy-Item -Path .env.example -Destination .env` en la raíz del proyecto.
+- **No existe el archivo `.env`:**
+  El compose usa valores de respaldo de ejemplo y arranca igual. Para usar tus propias contraseñas, crea el archivo con `Copy-Item -Path .env.example -Destination .env` en la raíz del proyecto.
 
 - **El backend tarda en arrancar:**
   El servicio `backend` depende de que `postgres`, `redis` y `rabbitmq` pasen sus pruebas de salud (`condition: service_healthy`). Es normal que tarde entre 15 y 30 segundos en iniciar en el primer arranque mientras se inicializan los tres motores.
