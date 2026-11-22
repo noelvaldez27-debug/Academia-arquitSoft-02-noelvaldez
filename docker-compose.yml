@@ -103,6 +103,10 @@ services:
       ADMIN_GENERAL_NOMBRE:   ${ADMIN_GENERAL_NOMBRE}
       ADMIN_GENERAL_CORREO:   ${ADMIN_GENERAL_CORREO}
       ADMIN_GENERAL_PASSWORD: ${ADMIN_GENERAL_PASSWORD}
+
+      # Carga masiva desde Excel (CA-U13, ADR-016)
+      CARGA_MASIVA_MAX_MB:    ${CARGA_MASIVA_MAX_MB:-10}
+      CARGA_MASIVA_MAX_FILAS: ${CARGA_MASIVA_MAX_FILAS:-10000}
     volumes:
       - almacen_data:/app/uploads
     depends_on:

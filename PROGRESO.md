@@ -52,13 +52,13 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 19 de `specs/usuarios/tasks.md`: Infraestructura: migración 003 que crea las tablas `cargas_masivas` y `filas_carga_masiva` con índices. Entidad de dominio `CargaMasiva` con estados y métodos de incremento; puerto `CargaMasivaRepository`; repositorio `PostgresCargaMasivaRepository` con todas las operaciones (guardar, buscarPorId, actualizar, guardarFilas en bloques de 200, obtenerFilasPorLote, contarLotes, marcarFilaProcesada). Pruebas: `carga-masiva.test.ts` (6 casos) y `postgres-carga-masiva-repository.test.ts` (9 casos), pool simulado sin Docker. La consulta SQL `whereSql` en postgres-usuario-repository.ts ya era segura: solo fragmentos fijos con marcadores $N, sin concatenación de valores de usuario.
+Tarea 20 de `specs/usuarios/tasks.md`: Lectura y validación del archivo .xlsx. Librerías elegidas: `exceljs@4.4.0` (lector xlsx, puro JS sin binarios nativos, mantiene activamente, 2 vulnerabilidades moderadas en uuid—no altas/críticas) y `multer@2.5.0` (recepción de archivos multipart, middleware estándar). Se implementó `leerYValidarExcel` en `src/modules/usuarios/aplicacion/leer-excel.ts` con verificación de firma PK, límite de tamaño/filas, lectura de primera hoja, validación de columnas y por fila, detección de DNI repetidos en el archivo, y alcance por sede. Variables nuevas: `CARGA_MASIVA_MAX_MB=10` y `CARGA_MASIVA_MAX_FILAS=10000`, documentadas en `.env.example` y pasadas al compose con valores por defecto.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 20 de `specs/usuarios/tasks.md`: Lectura y validación del archivo .xlsx.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 21 de `specs/usuarios/tasks.md`: Caso de uso procesarCargaMasiva en segundo plano con RabbitMQ.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
