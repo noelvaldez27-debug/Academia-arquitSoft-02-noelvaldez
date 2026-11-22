@@ -23,4 +23,6 @@ export * from './registrar-administrador-sede.command';
 export * from './registrar-administrador-sede.use-case';
 export * from './listar-sedes.use-case';
 export * from './crear-sede.use-case';
+export * from './consultar-usuario.port';
+export * from './consultar-usuario.use-case';
 

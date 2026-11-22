@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 17 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 18 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -52,15 +52,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 17 de `specs/usuarios/tasks.md`: Casos de uso `ListarSedesUseCase` y `CrearSedeUseCase` en `src/modules/usuarios/aplicacion/`. Endpoints `GET /api/usuarios/sedes` y `POST /api/usuarios/sedes`. Cualquier administrador puede listar las sedes existentes; solo el Administrador General puede crear sedes nuevas sin cambiar código (AC05). Si el nombre ya existe responde 409 (`ErrorConflicto`); si un admin de sede, docente o postulante intenta crear responde 403 (`ErrorAccesoDenegado`). Documentado en OpenAPI.
+Tarea 18 de `specs/usuarios/tasks.md`: Exposición de la API pública del módulo en `src/modules/usuarios/index.ts` exclusivamente mediante puertos, contratos y tipos de autorización y consulta (CA-U07). Se expone `MiddlewareAutenticacion` y tipos asociados (`RolUsuario`, `AlcanceAdministrador`, `UsuarioAutenticadoRequest`) para protección de rutas de otros módulos; puerto `ServicioConsultaUsuarios`, caso de uso `ConsultarUsuarioUseCase` y DTO `UsuarioPublicoDTO` para consultar usuarios por ID con sede y carrera sin contraseñas ni hashes (AC04); y la raíz de composición `UsuariosModule`.
 
 ## Tarea en curso / pendiente a medias
-(ninguna — tarea 17 completada)
+(ninguna — lote de tareas 14 a 18 finalizado según solicitud del usuario)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 18 de `specs/usuarios/tasks.md`: Exponer la API pública del módulo en index.ts, solo mediante puertos: autenticar y autorizar por rol y sede (para que los otros módulos protejan sus rutas) y consultar un usuario por su identificador, con su sede y su carrera y sin contraseñas ni hashes (CA-U07).
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 19 de `specs/usuarios/tasks.md`: Infraestructura: migración de la tabla de cargas masivas (estado, sede, totales, errores por fila) y su repositorio (CA-U13).
 
 ## Notas para el siguiente editor
+- Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
 - Tarea 17 completada: Casos de uso `ListarSedesUseCase` y `CrearSedeUseCase` con endpoints `GET /api/usuarios/sedes` y `POST /api/usuarios/sedes`. La creación de sedes valida unicidad de nombre en la tabla `sedes` y está restringida exclusivamente al Administrador General (`AlcanceAdministrador.General`).
 - Tarea 16 completada: Caso de uso `RegistrarAdministradorSedeUseCase` y endpoint `POST /api/usuarios/administradores-sede`. Crea cuentas con rol `Administrador` y alcance `Sede`. Excepción a la regla del DNI de RC09. Se valida que el correo no esté duplicado y que la sede exista previamente en la tabla de sedes. Solo el administrador general puede invocarlo.
 - Tarea 15 completada: Casos de uso `DesactivarUsuarioUseCase` y `ReactivarUsuarioUseCase`. Los endpoints `PATCH /api/usuarios/:id/desactivar` y `PATCH /api/usuarios/:id/reactivar` actualizan el campo `activo` a través de `UsuarioRepository.actualizar`. Como el `MiddlewareAutenticacion` consulta la BD en cada petición, cualquier usuario desactivado pierde el acceso de inmediato (401).

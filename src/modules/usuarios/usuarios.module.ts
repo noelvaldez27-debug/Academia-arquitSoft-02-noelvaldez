@@ -16,6 +16,8 @@ import { ReactivarUsuarioUseCase } from './aplicacion/reactivar-usuario.use-case
 import { RegistrarAdministradorSedeUseCase } from './aplicacion/registrar-administrador-sede.use-case';
 import { ListarSedesUseCase } from './aplicacion/listar-sedes.use-case';
 import { CrearSedeUseCase } from './aplicacion/crear-sede.use-case';
+import { ConsultarUsuarioUseCase } from './aplicacion/consultar-usuario.use-case';
+import { ServicioConsultaUsuarios } from './aplicacion/consultar-usuario.port';
 import { UsuarioController } from './presentacion/usuario.controller';
 import { MiddlewareAutenticacion } from './presentacion/autenticacion.middleware';
 import { crearRutasUsuario } from './presentacion/usuario.routes';
@@ -44,6 +46,8 @@ export class UsuariosModule {
   public readonly registrarAdministradorSedeUseCase: RegistrarAdministradorSedeUseCase;
   public readonly listarSedesUseCase: ListarSedesUseCase;
   public readonly crearSedeUseCase: CrearSedeUseCase;
+  public readonly consultarUsuarioUseCase: ConsultarUsuarioUseCase;
+  public readonly servicioConsultaUsuarios: ServicioConsultaUsuarios;
   public readonly controller: UsuarioController;
 
   constructor(config: ConfigModuloUsuarios) {
@@ -88,6 +92,8 @@ export class UsuariosModule {
     );
     this.listarSedesUseCase = new ListarSedesUseCase(sedeRepo);
     this.crearSedeUseCase = new CrearSedeUseCase(sedeRepo);
+    this.consultarUsuarioUseCase = new ConsultarUsuarioUseCase(usuarioRepo);
+    this.servicioConsultaUsuarios = this.consultarUsuarioUseCase;
 
     this.middlewareAutenticacion = new MiddlewareAutenticacion(tokenAdapter, usuarioRepo);
     this.controller = new UsuarioController(

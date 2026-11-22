@@ -33,12 +33,15 @@ describe('Módulo Gestión de Usuarios — Raíz de composición', () => {
     expect(modulo.registrarAdministradorSedeUseCase).toBeDefined();
     expect(modulo.listarSedesUseCase).toBeDefined();
     expect(modulo.crearSedeUseCase).toBeDefined();
+    expect(modulo.consultarUsuarioUseCase).toBeDefined();
+    expect(modulo.servicioConsultaUsuarios).toBeDefined();
   });
 
-  it('debe exportar UsuariosModule y los componentes en la API pública del módulo', () => {
+  it('debe exportar UsuariosModule y los puertos en la API pública del módulo (CA-U07)', () => {
     expect(ModuloUsuarios.UsuariosModule).toBeDefined();
-    expect(ModuloUsuarios.UsuarioController).toBeDefined();
-    expect(ModuloUsuarios.crearRutasUsuario).toBeDefined();
     expect(ModuloUsuarios.MiddlewareAutenticacion).toBeDefined();
+    expect(ModuloUsuarios.ConsultarUsuarioUseCase).toBeDefined();
+    expect(ModuloUsuarios.RolUsuario).toBeDefined();
+    expect(ModuloUsuarios.AlcanceAdministrador).toBeDefined();
   });
 });
