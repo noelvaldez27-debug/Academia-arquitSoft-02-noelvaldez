@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 14 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 15 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -52,15 +52,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 14 de `specs/usuarios/tasks.md`: Caso de uso `ListarUsuariosUseCase` en `src/modules/usuarios/aplicacion/listar-usuarios.use-case.ts`. Endpoint `GET /api/usuarios` paginado (default 20, max 100) con filtros opcionales por rol y sede. El Administrador General puede filtrar o ver todos; el Administrador de Sede solo puede listar postulantes de su sede (si intenta ver otra sede u otro rol recibe 403). Nunca expone contraseñas ni hashes (AC04). Documentado en OpenAPI.
+Tarea 15 de `specs/usuarios/tasks.md`: Casos de uso `DesactivarUsuarioUseCase` y `ReactivarUsuarioUseCase` en `src/modules/usuarios/aplicacion/`. Endpoints `PATCH /api/usuarios/:id/desactivar` y `PATCH /api/usuarios/:id/reactivar`. Nadie puede desactivarse a sí mismo ni al Administrador General (400). Administrador de sede solo puede desactivar y reactivar postulantes de su sede (si intenta con otra sede o con otro rol recibe 403). Mapeo de `ErrorNoEncontrado` a 404. Documentado en OpenAPI.
 
 ## Tarea en curso / pendiente a medias
-(ninguna — tarea 14 completada)
+(ninguna — tarea 15 completada)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 15 de `specs/usuarios/tasks.md`: Caso de uso desactivar y reactivar usuario sin borrarlo (RF24, RC16, CA-U11); el administrador de sede solo puede hacerlo con postulantes de su sede; no se permite desactivarse a sí mismo ni al administrador general. Incluye sus endpoints y su documentación OpenAPI.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 16 de `specs/usuarios/tasks.md`: Caso de uso: crear cuentas de administrador de sede, con nombre, correo, contraseña inicial y sede definidos por el administrador general; excepción a la regla del DNI de RC09 (RF25, HU19, CA-U12). No se puede crear otro administrador general. Incluye su endpoint y su documentación OpenAPI.
 
 ## Notas para el siguiente editor
+- Tarea 15 completada: Casos de uso `DesactivarUsuarioUseCase` y `ReactivarUsuarioUseCase`. Los endpoints `PATCH /api/usuarios/:id/desactivar` y `PATCH /api/usuarios/:id/reactivar` actualizan el campo `activo` a través de `UsuarioRepository.actualizar`. Como el `MiddlewareAutenticacion` consulta la BD en cada petición, cualquier usuario desactivado pierde el acceso de inmediato (401).
 - Tarea 14 completada: Caso de uso `ListarUsuariosUseCase` y endpoint `GET /api/usuarios` paginado (`pagina`, `limite`, `total`). Consultas SQL parametrizadas con LIMIT y OFFSET sobre `PostgresUsuarioRepository.listar`. Si un administrador de sede intenta listar usuarios de otra sede o un rol distinto a Postulante, responde 403 (`ErrorAccesoDenegado`). No expone hashes ni contraseñas. Documentado en OpenAPI con esquema de respuesta paginado.
 - Decisiones confirmadas: el administrador de sede puede desactivar y reactivar postulantes de su sede, y el administrador general puede crear sedes nuevas sin cambiar código.
 - Tarea 11 completada: Controlador `UsuarioController` en `src/modules/usuarios/presentacion/usuario.controller.ts` y rutas `crearRutasUsuario` en `src/modules/usuarios/presentacion/usuario.routes.ts`. Se documentaron los esquemas y endpoints en `src/compartido/infraestructura/especificacion-openapi.ts` con seguridad `bearerAuth`. El endpoint `/login` responde 401 genérico ante cualquier error y nunca revela credenciales ni hashes (AC04, CA-U05). Se conectó `UsuariosModule` en `src/index.ts` y `src/compartido/infraestructura/servidor.ts`.

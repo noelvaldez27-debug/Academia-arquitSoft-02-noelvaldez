@@ -9,6 +9,8 @@ import { IniciarSesionUseCase } from '../aplicacion/iniciar-sesion.use-case';
 import { CambiarPasswordUseCase } from '../aplicacion/cambiar-password.use-case';
 import { CambiarCorreoUseCase } from '../aplicacion/cambiar-correo.use-case';
 import { ListarUsuariosUseCase } from '../aplicacion/listar-usuarios.use-case';
+import { DesactivarUsuarioUseCase } from '../aplicacion/desactivar-usuario.use-case';
+import { ReactivarUsuarioUseCase } from '../aplicacion/reactivar-usuario.use-case';
 import { ServicioToken, PayloadToken } from '../aplicacion/servicio-token.port';
 import {
   Usuario,
@@ -19,6 +21,7 @@ import {
   ErrorConflicto,
   ErrorAccesoDenegado,
   ErrorAutenticacion,
+  ErrorNoEncontrado,
 } from '../dominio';
 
 describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
@@ -29,6 +32,8 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
   let mockCambiarPasswordUseCase: Partial<CambiarPasswordUseCase>;
   let mockCambiarCorreoUseCase: Partial<CambiarCorreoUseCase>;
   let mockListarUsuariosUseCase: Partial<ListarUsuariosUseCase>;
+  let mockDesactivarUsuarioUseCase: Partial<DesactivarUsuarioUseCase>;
+  let mockReactivarUsuarioUseCase: Partial<ReactivarUsuarioUseCase>;
   let mockServicioToken: Partial<ServicioToken>;
   let mockUsuarioRepo: Partial<UsuarioRepository>;
 
@@ -51,6 +56,12 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
     mockListarUsuariosUseCase = {
       ejecutar: jest.fn(),
     };
+    mockDesactivarUsuarioUseCase = {
+      ejecutar: jest.fn(),
+    };
+    mockReactivarUsuarioUseCase = {
+      ejecutar: jest.fn(),
+    };
     mockServicioToken = {
       verificarToken: jest.fn(),
     };
@@ -64,7 +75,9 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       mockLoginUseCase as IniciarSesionUseCase,
       mockCambiarPasswordUseCase as CambiarPasswordUseCase,
       mockCambiarCorreoUseCase as CambiarCorreoUseCase,
-      mockListarUsuariosUseCase as ListarUsuariosUseCase
+      mockListarUsuariosUseCase as ListarUsuariosUseCase,
+      mockDesactivarUsuarioUseCase as DesactivarUsuarioUseCase,
+      mockReactivarUsuarioUseCase as ReactivarUsuarioUseCase
     );
 
     const middleware = new MiddlewareAutenticacion(
@@ -651,6 +664,234 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('otra sede');
+    });
+  });
+
+  describe('PATCH /api/usuarios/:id/desactivar (RF24, RC16, CA-U11)', () => {
+    const mockAdminPayload = {
+      id: 'admin-1',
+      rol: RolUsuario.Administrador,
+      sedeId: null,
+      alcanceAdministrador: AlcanceAdministrador.General,
+    };
+    const mockAdmin = Usuario.crearAdministradorGeneral({
+      id: 'admin-1',
+      nombre: 'Admin General',
+      correo: 'admin@sofia.edu',
+      passwordHash: 'hash',
+      activo: true,
+    });
+
+    it('(CA-U11) debe responder 200 cuando el administrador desactiva un usuario correctamente', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdmin);
+      (mockDesactivarUsuarioUseCase.ejecutar as jest.Mock).mockResolvedValueOnce(undefined);
+
+      const res = await request(app)
+        .patch('/api/usuarios/post-1/desactivar')
+        .set('Authorization', 'Bearer token_admin');
+
+      expect(res.status).toBe(200);
+      expect(res.body.mensaje).toContain('desactivado con exito');
+    });
+
+    it('(CA-U11) debe responder 400 si se intenta desactivar a si mismo', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdmin);
+      (mockDesactivarUsuarioUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorValidacion('No se permite desactivarse a si mismo.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/admin-1/desactivar')
+        .set('Authorization', 'Bearer token_admin');
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('a si mismo');
+    });
+
+    it('(CA-U11) debe responder 400 si se intenta desactivar al administrador general', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdmin);
+      (mockDesactivarUsuarioUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorValidacion('No se permite desactivar al administrador general.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/admin-gen/desactivar')
+        .set('Authorization', 'Bearer token_admin');
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('administrador general');
+    });
+
+    it('(CA-U11) debe responder 403 si un postulante intenta desactivar a alguien', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'post-1',
+        rol: RolUsuario.Postulante,
+        sedeId: '1',
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearPostulante({
+          id: 'post-1',
+          nombre: 'Postulante',
+          dni: '12345678',
+          correo: '12345678@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: '1',
+          carrera: 'MEDICINA',
+          activo: true,
+        })
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/otro/desactivar')
+        .set('Authorization', 'Bearer token_postulante');
+
+      expect(res.status).toBe(403);
+    });
+
+    it('(CA-U11) debe responder 403 si admin de sede intenta desactivar postulante de otra sede', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'admin-sede',
+        rol: RolUsuario.Administrador,
+        sedeId: '1',
+        alcanceAdministrador: AlcanceAdministrador.Sede,
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearAdministradorSede({
+          id: 'admin-sede',
+          nombre: 'Admin Sede',
+          correo: 'admin.sede@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: '1',
+          activo: true,
+        })
+      );
+      (mockDesactivarUsuarioUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorAccesoDenegado('Acceso denegado: el administrador de sede no puede desactivar usuarios de otra sede.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/post-otra-sede/desactivar')
+        .set('Authorization', 'Bearer token_admin_sede');
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain('otra sede');
+    });
+
+    it('(CA-U11) debe responder 404 si el usuario no existe', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdmin);
+      (mockDesactivarUsuarioUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorNoEncontrado('Usuario no encontrado.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/no-existe/desactivar')
+        .set('Authorization', 'Bearer token_admin');
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toContain('no encontrado');
+    });
+  });
+
+  describe('PATCH /api/usuarios/:id/reactivar (RF24, RC16, CA-U11)', () => {
+    const mockAdminPayload = {
+      id: 'admin-1',
+      rol: RolUsuario.Administrador,
+      sedeId: null,
+      alcanceAdministrador: AlcanceAdministrador.General,
+    };
+    const mockAdmin = Usuario.crearAdministradorGeneral({
+      id: 'admin-1',
+      nombre: 'Admin General',
+      correo: 'admin@sofia.edu',
+      passwordHash: 'hash',
+      activo: true,
+    });
+
+    it('(CA-U11) debe responder 200 cuando el administrador reactiva un usuario', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdmin);
+      (mockReactivarUsuarioUseCase.ejecutar as jest.Mock).mockResolvedValueOnce(undefined);
+
+      const res = await request(app)
+        .patch('/api/usuarios/post-1/reactivar')
+        .set('Authorization', 'Bearer token_admin');
+
+      expect(res.status).toBe(200);
+      expect(res.body.mensaje).toContain('reactivado con exito');
+    });
+
+    it('(CA-U11) debe responder 403 si un postulante intenta reactivar a alguien', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'post-1',
+        rol: RolUsuario.Postulante,
+        sedeId: '1',
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearPostulante({
+          id: 'post-1',
+          nombre: 'Postulante',
+          dni: '12345678',
+          correo: '12345678@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: '1',
+          carrera: 'MEDICINA',
+          activo: true,
+        })
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/post-1/reactivar')
+        .set('Authorization', 'Bearer token_postulante');
+
+      expect(res.status).toBe(403);
+    });
+
+    it('(CA-U11) debe responder 403 si admin de sede intenta reactivar postulante de otra sede', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'admin-sede',
+        rol: RolUsuario.Administrador,
+        sedeId: '1',
+        alcanceAdministrador: AlcanceAdministrador.Sede,
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearAdministradorSede({
+          id: 'admin-sede',
+          nombre: 'Admin Sede',
+          correo: 'admin.sede@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: '1',
+          activo: true,
+        })
+      );
+      (mockReactivarUsuarioUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorAccesoDenegado('Acceso denegado: el administrador de sede no puede reactivar usuarios de otra sede.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/post-otra-sede/reactivar')
+        .set('Authorization', 'Bearer token_admin_sede');
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain('otra sede');
+    });
+
+    it('(CA-U11) debe responder 404 si el usuario a reactivar no existe', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdmin);
+      (mockReactivarUsuarioUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorNoEncontrado('Usuario no encontrado.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/no-existe/reactivar')
+        .set('Authorization', 'Bearer token_admin');
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toContain('no encontrado');
     });
   });
 });

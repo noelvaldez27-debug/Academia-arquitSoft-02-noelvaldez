@@ -55,5 +55,21 @@ export function crearRutasUsuario(
     controller.listarUsuarios
   );
 
+  // PATCH /:id/desactivar - Desactivar usuario sin borrarlo (Administrador general o de sede)
+  router.patch(
+    '/:id/desactivar',
+    middleware.autenticar,
+    middleware.requerirRol(RolUsuario.Administrador),
+    controller.desactivarUsuario
+  );
+
+  // PATCH /:id/reactivar - Reactivar usuario inactivo (Administrador general o de sede)
+  router.patch(
+    '/:id/reactivar',
+    middleware.autenticar,
+    middleware.requerirRol(RolUsuario.Administrador),
+    controller.reactivarUsuario
+  );
+
   return router;
 }

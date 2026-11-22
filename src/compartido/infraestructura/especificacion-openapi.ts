@@ -389,5 +389,84 @@ export const especificacionOpenApi = {
         },
       },
     },
+    '/api/usuarios/{id}/desactivar': {
+      patch: {
+        summary: 'Desactivar usuario sin borrarlo',
+        description:
+          'Desactiva la cuenta de un usuario. Un usuario inactivo pierde el acceso inmediatamente. Nadie puede desactivarse a sí mismo ni desactivar al administrador general. El administrador de sede solo puede desactivar postulantes de su sede.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Identificador del usuario a desactivar',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Usuario desactivado exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    mensaje: { type: 'string', example: 'Usuario desactivado con exito.' },
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Solicitud inválida (intento de desactivarse a sí mismo o al administrador general)',
+          },
+          '401': { description: 'Acceso no autorizado' },
+          '403': {
+            description:
+              'Acceso denegado (no administrador, o administrador de sede intentando modificar a un usuario de otra sede o rol distinto a postulante)',
+          },
+          '404': { description: 'Usuario no encontrado' },
+        },
+      },
+    },
+    '/api/usuarios/{id}/reactivar': {
+      patch: {
+        summary: 'Reactivar usuario inactivo',
+        description:
+          'Reactiva la cuenta de un usuario inactivo. El administrador general puede reactivar cualquier usuario; el administrador de sede solo puede reactivar postulantes de su sede.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Identificador del usuario a reactivar',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Usuario reactivado exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    mensaje: { type: 'string', example: 'Usuario reactivado con exito.' },
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Acceso no autorizado' },
+          '403': {
+            description:
+              'Acceso denegado (no administrador, o administrador de sede intentando modificar a un usuario de otra sede o rol distinto a postulante)',
+          },
+          '404': { description: 'Usuario no encontrado' },
+        },
+      },
+    },
   },
 };

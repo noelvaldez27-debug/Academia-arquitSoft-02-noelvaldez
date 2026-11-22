@@ -5,12 +5,15 @@ import { IniciarSesionUseCase } from '../aplicacion/iniciar-sesion.use-case';
 import { CambiarPasswordUseCase } from '../aplicacion/cambiar-password.use-case';
 import { CambiarCorreoUseCase } from '../aplicacion/cambiar-correo.use-case';
 import { ListarUsuariosUseCase } from '../aplicacion/listar-usuarios.use-case';
+import { DesactivarUsuarioUseCase } from '../aplicacion/desactivar-usuario.use-case';
+import { ReactivarUsuarioUseCase } from '../aplicacion/reactivar-usuario.use-case';
 import {
   ErrorValidacion,
   ErrorConflicto,
   ErrorAccesoDenegado,
   ErrorNoAutenticado,
   ErrorAutenticacion,
+  ErrorNoEncontrado,
 } from '../dominio';
 
 /**
@@ -25,7 +28,9 @@ export class UsuarioController {
     private readonly iniciarSesionUseCase: IniciarSesionUseCase,
     private readonly cambiarPasswordUseCase: CambiarPasswordUseCase,
     private readonly cambiarCorreoUseCase: CambiarCorreoUseCase,
-    private readonly listarUsuariosUseCase: ListarUsuariosUseCase
+    private readonly listarUsuariosUseCase: ListarUsuariosUseCase,
+    private readonly desactivarUsuarioUseCase: DesactivarUsuarioUseCase,
+    private readonly reactivarUsuarioUseCase: ReactivarUsuarioUseCase
   ) {}
 
   public registrarEstudiante = async (req: Request, res: Response): Promise<void> => {
@@ -169,9 +174,55 @@ export class UsuarioController {
     }
   };
 
+  public desactivarUsuario = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const usuarioId = req.params.id as string;
+      await this.desactivarUsuarioUseCase.ejecutar({
+        usuarioId,
+        ejecutor: req.usuario
+          ? {
+              id: req.usuario.id,
+              rol: req.usuario.rol,
+              sedeId: req.usuario.sedeId,
+              alcanceAdministrador: req.usuario.alcanceAdministrador,
+            }
+          : undefined,
+      });
+
+      res.status(200).json({ mensaje: 'Usuario desactivado con exito.' });
+    } catch (error) {
+      this.manejarError(error, res);
+    }
+  };
+
+  public reactivarUsuario = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const usuarioId = req.params.id as string;
+      await this.reactivarUsuarioUseCase.ejecutar({
+        usuarioId,
+        ejecutor: req.usuario
+          ? {
+              id: req.usuario.id,
+              rol: req.usuario.rol,
+              sedeId: req.usuario.sedeId,
+              alcanceAdministrador: req.usuario.alcanceAdministrador,
+            }
+          : undefined,
+      });
+
+      res.status(200).json({ mensaje: 'Usuario reactivado con exito.' });
+    } catch (error) {
+      this.manejarError(error, res);
+    }
+  };
+
   private manejarError(error: unknown, res: Response): void {
     if (error instanceof ErrorValidacion) {
       res.status(400).json({ error: error.message });
+      return;
+    }
+    if (error instanceof ErrorNoEncontrado) {
+      res.status(404).json({ error: error.message });
       return;
     }
     if (error instanceof ErrorConflicto) {

@@ -11,6 +11,8 @@ import { IniciarSesionUseCase } from './aplicacion/iniciar-sesion.use-case';
 import { CambiarPasswordUseCase } from './aplicacion/cambiar-password.use-case';
 import { CambiarCorreoUseCase } from './aplicacion/cambiar-correo.use-case';
 import { ListarUsuariosUseCase } from './aplicacion/listar-usuarios.use-case';
+import { DesactivarUsuarioUseCase } from './aplicacion/desactivar-usuario.use-case';
+import { ReactivarUsuarioUseCase } from './aplicacion/reactivar-usuario.use-case';
 import { UsuarioController } from './presentacion/usuario.controller';
 import { MiddlewareAutenticacion } from './presentacion/autenticacion.middleware';
 import { crearRutasUsuario } from './presentacion/usuario.routes';
@@ -34,6 +36,8 @@ export class UsuariosModule {
   public readonly cambiarPasswordUseCase: CambiarPasswordUseCase;
   public readonly cambiarCorreoUseCase: CambiarCorreoUseCase;
   public readonly listarUsuariosUseCase: ListarUsuariosUseCase;
+  public readonly desactivarUsuarioUseCase: DesactivarUsuarioUseCase;
+  public readonly reactivarUsuarioUseCase: ReactivarUsuarioUseCase;
   public readonly controller: UsuarioController;
 
   constructor(config: ConfigModuloUsuarios) {
@@ -69,6 +73,8 @@ export class UsuariosModule {
       hashAdapter
     );
     this.listarUsuariosUseCase = new ListarUsuariosUseCase(usuarioRepo);
+    this.desactivarUsuarioUseCase = new DesactivarUsuarioUseCase(usuarioRepo);
+    this.reactivarUsuarioUseCase = new ReactivarUsuarioUseCase(usuarioRepo);
 
     this.middlewareAutenticacion = new MiddlewareAutenticacion(tokenAdapter, usuarioRepo);
     this.controller = new UsuarioController(
@@ -77,7 +83,9 @@ export class UsuariosModule {
       this.iniciarSesionUseCase,
       this.cambiarPasswordUseCase,
       this.cambiarCorreoUseCase,
-      this.listarUsuariosUseCase
+      this.listarUsuariosUseCase,
+      this.desactivarUsuarioUseCase,
+      this.reactivarUsuarioUseCase
     );
 
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);
