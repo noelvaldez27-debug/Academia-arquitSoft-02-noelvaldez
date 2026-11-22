@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 4 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 5 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -53,15 +53,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 4 de `specs/usuarios/tasks.md`: Infraestructura con migraciones SQL (`001_crear_tabla_sedes.sql` sembrando Hana, Urin y Central; `002_crear_tabla_usuarios.sql` con DNI único para postulantes y docentes, correo único, restricciones de sede y carrera, e índice único parcial para un solo Administrador General) e implementación de `PostgresSedeRepository` y `PostgresUsuarioRepository` en `src/modules/usuarios/infraestructura/`. 94 pruebas unitarias Jest pasando y TypeScript sin errores.
+Tarea 5 de `specs/usuarios/tasks.md`: Generación automática de credenciales para postulantes y docentes (RF02, RF19, HU02, CA-U02) con formato `dni@sofia.edu` y contraseña inicial igual al DNI, guardada exclusivamente con hash (AC04). Se implementó el puerto `ServicioHash`, el servicio de aplicación `GeneradorCredenciales` en `src/modules/usuarios/aplicacion/` y el adaptador `BcryptjsHashAdapter` en `src/modules/usuarios/infraestructura/` usando la librería `bcryptjs`. 100 pruebas unitarias Jest pasando y TypeScript sin errores.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 5 de `specs/usuarios/tasks.md`: Generación automática de credenciales para postulantes y docentes (RF02, RF19, HU02, CA-U02): usuario dni@sofia.edu y contraseña inicial igual al DNI, guardada con hash (AC04). Proponer y justificar librería de hash con npm view y npm audit cumpliendo restricciones de node:20-alpine sin compiladores en imagen final.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 6 de `specs/usuarios/tasks.md`: Caso de uso: registrar estudiante con nombre, DNI, sede y carrera (RF01, RF22, HU01, CA-U01), ejecutable por administrador general (cualquier sede) o administrador de sede (solo su sede), validando y normalizando carrera y reutilizando la generación de credenciales de la tarea 5.
 
 ## Notas para el siguiente editor
+- Tarea 5 completada: Generación automática de credenciales. Librería elegida: `bcryptjs` (^3.0.3) y `@types/bcryptjs` (^3.0.0). Motivo de elección: implementación en JavaScript puro sin dependencias nativas C++ ni binarios dependientes de glibc/musl, garantizando ejecución sin compiladores adicionales en la imagen `node:20-alpine`; cuenta con cero dependencias en producción y cero vulnerabilidades altas o críticas en `npm audit`. Se desacopló mediante el puerto `ServicioHash` en `src/modules/usuarios/aplicacion/servicio-hash.port.ts` y se implementó `BcryptjsHashAdapter` en `src/modules/usuarios/infraestructura/bcryptjs-hash.adapter.ts`.
 - Tarea 4 completada: Migraciones `001_crear_tabla_sedes.sql` (siembra de sedes 'Hana', 'Urin' y 'Central') y `002_crear_tabla_usuarios.sql` (restricciones de check para reglas de roles, índice único en DNI no nulo e índice único parcial para garantizar un único administrador general). Implementados `PostgresSedeRepository` y `PostgresUsuarioRepository` con pool simulado sin Docker.
 - Tarea 3 completada: Entidades `Usuario` y `Sede`, roles `RolUsuario` (`Postulante`, `Docente`, `Administrador`) y `AlcanceAdministrador` (`General`, `Sede`), y puertos `UsuarioRepository` y `SedeRepository`. Se definieron validaciones de dominio: DNI de 8 dígitos para postulantes y docentes, carrera en mayúsculas normalizada para postulantes, sede obligatoria para postulantes y administradores de sede, docente y administrador general sin sede, cambio de correo exclusivo para administradores, y métodos `desactivar()` y `reactivar()`.
 - Tarea 2 completada: Mecanismo de migraciones SQL sin dependencias adicionales (utiliza el cliente `pg` existente). Archivos `.sql` se ubican en `migraciones/`. El runner ejecuta cada migración pendiente dentro de una transacción `BEGIN ... COMMIT` con rollback automático ante errores y registro en `migraciones_control`. Se documentó en `docs/despliegue.md` y se añadió el script `npm run migrar` en `package.json`.

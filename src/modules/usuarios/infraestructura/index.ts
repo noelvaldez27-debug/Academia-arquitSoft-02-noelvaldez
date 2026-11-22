@@ -4,3 +4,4 @@
  */
 export * from './postgres-sede-repository';
 export * from './postgres-usuario-repository';
+export * from './bcryptjs-hash.adapter';
