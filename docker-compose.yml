@@ -97,6 +97,11 @@ services:
 
       # Almacenamiento de archivos (separatas — ADR-012)
       ALMACEN_LOCAL_PATH: /app/uploads
+
+      # Administrador General inicial (RF25, CA-U04: sin valores de respaldo)
+      ADMIN_GENERAL_NOMBRE:   ${ADMIN_GENERAL_NOMBRE}
+      ADMIN_GENERAL_CORREO:   ${ADMIN_GENERAL_CORREO}
+      ADMIN_GENERAL_PASSWORD: ${ADMIN_GENERAL_PASSWORD}
     volumes:
       - almacen_data:/app/uploads
     depends_on:

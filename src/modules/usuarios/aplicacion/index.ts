@@ -8,3 +8,4 @@ export * from './registrar-estudiante.command';
 export * from './registrar-estudiante.use-case';
 export * from './registrar-docente.command';
 export * from './registrar-docente.use-case';
+export * from './sembrar-administrador-general';
