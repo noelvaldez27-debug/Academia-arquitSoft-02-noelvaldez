@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (especificación y tareas listas, sin código) |
+| 1 | Gestión de Usuarios | en curso (tarea 1 completada) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -53,15 +53,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 11 de `specs/base/tasks.md`: verificar que `docker compose up` levanta todo sin configuración manual y que `/health` responde. Se ejecutó `docker compose up -d --build`, levantando los 4 servicios (`postgres`, `redis` y `rabbitmq` en estado healthy, y `backend` en Up). Se verificó respuesta HTTP 200 en `/health` y `/api-docs/`, ejecución como usuario `node` y permisos de escritura en el volumen montado `/app/uploads`. El Módulo 0 (Base del proyecto) queda formalmente completado.
+Tarea 1 de `specs/usuarios/tasks.md`: crear la estructura del módulo usuarios (`src/modules/usuarios/`) con sus 4 capas de Clean Architecture (`dominio/`, `aplicacion/`, `infraestructura/`, `presentacion/`), `usuarios.module.ts` como raíz de composición e `index.ts` como API pública del módulo. Se agregaron pruebas unitarias en `usuarios.module.test.ts` con 54 pruebas totales pasando y verificación de TypeScript sin errores.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 1 de `specs/usuarios/tasks.md` (estructura del módulo). Una tarea por sesión y en el orden de la lista. Las tareas 19 a 22 (carga masiva) pueden dejarse para el final del módulo. No iniciar nada del Sprint 3.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 2 de `specs/usuarios/tasks.md`: mecanismo simple de migraciones SQL sin ORM, compartido con los demás módulos (ADR-015), con archivos .sql numerados, tabla de control de migraciones y script de ejecución ejecutable en Node.js dentro de Docker.
 
 ## Notas para el siguiente editor
+- Tarea 1 completada: Estructura base de `src/modules/usuarios/` con sus cuatro capas (`dominio`, `aplicacion`, `infraestructura`, `presentacion`), la raíz de composición `usuarios.module.ts` y la API pública `index.ts`.
 - Pendiente para Banco de Preguntas (ADR-011): el puerto `ServicioIA` solo tiene `proponer` y `recomendar`, sin archivos adjuntos. El ADR-011 dice que las imágenes y los PDF escaneados pasan por `ServicioIA`. Se decide en el módulo Banco de Preguntas si `proponer` recibe un adjunto opcional o si se agrega otro método. No resolverlo ahora.
 - Comportamiento de PORT en Docker Compose: Si se cambia PORT en .env a un valor distinto de 3000, el contenedor backend deja de responder peticiones desde el host, ya que docker-compose.yml publica `${PORT}:3000` mientras que Express escucha internamente en `PORT` (`${PORT}`). Mantener `PORT=3000` para el entorno local con Docker Compose. No corregir esto sin consultar al usuario.
 - Alcance de `/health`: El endpoint `/health` solo confirma que el servidor HTTP Express levantó y responde; no consulta activamente PostgreSQL, Redis ni RabbitMQ. La salud de la infraestructura la garantizan los healthchecks de Docker Compose definidos en docker-compose.yml. La primera conexión real del backend a PostgreSQL es la tarea 23 de `specs/usuarios/tasks.md`.
