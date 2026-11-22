@@ -1,16 +1,16 @@
 # PROGRESO.md
 
 ## Estado actual
-- Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3
-- Fase 2 (desarrollo): especificaciones del módulo 0 y de Usuarios listas; falta escribir el código
+- Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3 y con el alcance por sede del módulo 1
+- Fase 2 (desarrollo): módulo 0 terminado; módulo 1 (Gestión de Usuarios) en curso, con especificación y tareas listas y sin código todavía
 - Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
-- Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`)
+- Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
 
 ## Módulos
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | sin empezar |
+| 1 | Gestión de Usuarios | en curso (especificación y tareas listas, sin código) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -20,8 +20,16 @@
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
 
 ## Decisiones ya tomadas (no reabrir sin avisar al usuario)
-- Los docentes los registra el Administrador, con el mismo formato de credenciales que los postulantes (usuario dni@sofia.edu, contraseña inicial igual al DNI), sin autoregistro (HU14, RF19, RC09)
-- El primer Administrador se crea con un script de arranque (seed), usando variables de entorno
+- Nadie se registra solo: las cuentas las crea siempre un administrador (RC09)
+- Hay tres roles: postulante, docente y administrador. El administrador tiene dos niveles: el Administrador general (uno solo, con todas las sedes) y los Administradores de sede (varios por sede, que trabajan solo con su sede)
+- Las sedes son Hana, Urin y Central. Cada sede tiene sus propios estudiantes y administradores. Las sedes se guardan en una tabla, no en el código (AC05)
+- Cada estudiante se registra con nombre, DNI, sede y carrera (RF10 pide rankings por carrera y por sede)
+- Postulantes y docentes usan el usuario dni@sofia.edu y su DNI como contraseña inicial, guardada con hash (RF02, RF19, RC09). Los administradores tienen correo y contraseña inicial definidos por quien crea la cuenta (excepción a la regla del DNI)
+- Los docentes los registra solo el Administrador general (HU14, RF19, RC09)
+- El Administrador general (único) se crea con un script de arranque (seed), usando variables de entorno sin valores de respaldo
+- Los usuarios no se borran: se desactivan y se pueden reactivar
+- El cambio de contraseña es opcional para todos; los administradores pueden cambiar su correo
+- El registro de estudiantes puede ser de uno en uno o con una carga masiva desde Excel (.xlsx), que se procesa en segundo plano (ADR-016). Las tablas se crean con migraciones SQL, sin ORM (ADR-015)
 - IA: capa gratuita de Gemini detrás de la interfaz `ServicioIA`; las imágenes se leen con el mismo modelo, sin OCR aparte (ADR-010, ADR-011)
 - Archivos: interfaz `AlmacenArchivos`; disco local en el Sprint 2 y Amazon S3 en el despliegue (ADR-012)
 - Despliegue en AWS con una instancia EC2 y docker-compose; Kubernetes y los servicios administrados quedan como objetivo de producción (ADR-013)
@@ -31,6 +39,19 @@
 - IA y adjuntos: `ServicioIA` se definió con entrada de texto (`proponer(texto, curso)`); el soporte de adjuntos binarios para imágenes y PDF escaneados (ADR-011) queda pendiente para la especificación del módulo Banco de Preguntas.
 - Por ahora solo se trabaja el Sprint 2. El Sprint 3 (aplicación web, despliegue en AWS, adaptador de S3, actualización de C4) queda en pausa hasta que el usuario lo confirme. No iniciar nada de eso por iniciativa propia.
 
+## Pendiente de confirmar (módulo 1)
+Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que el usuario aún no confirmó. Si una tarea depende de alguno, preguntar antes de implementarla.
+- Los docentes los registra solo el Administrador general y no pertenecen a una sede (tarea 7)
+- El Administrador de sede puede desactivar y reactivar postulantes de su sede (tarea 15)
+- El Administrador general puede crear sedes nuevas (tarea 17)
+- La carrera es texto normalizado, no una lista cerrada (tareas 4 y 6)
+- No hay tope de alumnos por sede (tareas 6 y 21)
+- El nombre se guarda en un solo campo (tareas 3 y 4)
+- El JWT dura 8 horas, configurable, y la contraseña tiene mínimo 8 caracteres (tareas 9 y 12)
+- La carga masiva usa la cola de mensajes (tarea 21 y ADR-016)
+- Un DNI existente con nombre distinto en el Excel no se cambia y se informa (tarea 21)
+- No hay restablecer contraseña olvidada
+
 ## Última tarea completada
 Tarea 11 de `specs/base/tasks.md`: verificar que `docker compose up` levanta todo sin configuración manual y que `/health` responde. Se ejecutó `docker compose up -d --build`, levantando los 4 servicios (`postgres`, `redis` y `rabbitmq` en estado healthy, y `backend` en Up). Se verificó respuesta HTTP 200 en `/health` y `/api-docs/`, ejecución como usuario `node` y permisos de escritura en el volumen montado `/app/uploads`. El Módulo 0 (Base del proyecto) queda formalmente completado.
 
@@ -38,12 +59,14 @@ Tarea 11 de `specs/base/tasks.md`: verificar que `docker compose up` levanta tod
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Resolver con el usuario los puntos de "Pendiente de confirmar" en `specs/usuarios/spec.md` antes de iniciar la implementación (no empezar tareas ni escribir código del módulo 1 sin confirmación previa).
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 1 de `specs/usuarios/tasks.md` (estructura del módulo). Una tarea por sesión y en el orden de la lista. Las tareas 19 a 22 (carga masiva) pueden dejarse para el final del módulo. No iniciar nada del Sprint 3.
 
 ## Notas para el siguiente editor
 - Pendiente para Banco de Preguntas (ADR-011): el puerto `ServicioIA` solo tiene `proponer` y `recomendar`, sin archivos adjuntos. El ADR-011 dice que las imágenes y los PDF escaneados pasan por `ServicioIA`. Se decide en el módulo Banco de Preguntas si `proponer` recibe un adjunto opcional o si se agrega otro método. No resolverlo ahora.
 - Comportamiento de PORT en Docker Compose: Si se cambia PORT en .env a un valor distinto de 3000, el contenedor backend deja de responder peticiones desde el host, ya que docker-compose.yml publica `${PORT}:3000` mientras que Express escucha internamente en `PORT` (`${PORT}`). Mantener `PORT=3000` para el entorno local con Docker Compose. No corregir esto sin consultar al usuario.
-- Alcance de `/health`: El endpoint `/health` solo confirma que el servidor HTTP Express levantó y responde; no consulta activamente PostgreSQL, Redis ni RabbitMQ. La salud de la infraestructura la garantizan los healthchecks de Docker Compose definidos en docker-compose.yml.
+- Alcance de `/health`: El endpoint `/health` solo confirma que el servidor HTTP Express levantó y responde; no consulta activamente PostgreSQL, Redis ni RabbitMQ. La salud de la infraestructura la garantizan los healthchecks de Docker Compose definidos en docker-compose.yml. La primera conexión real del backend a PostgreSQL es la tarea 23 de `specs/usuarios/tasks.md`.
+- Imagen de Docker: solo contiene `dist/` y las dependencias de producción. `tsc` no copia archivos `.sql` y `ts-node` no está en la imagen, así que las migraciones y el script de arranque se ejecutan con `node` sobre `dist/`.
+- Si una tarea contradice `specs/usuarios/spec.md`, detenerse y preguntar al usuario; no modificar la especificación por cuenta propia.
 - Workflow de CI (`.github/workflows/ci.yml`):
   - Utiliza Node.js 20 (alineado con la imagen `node:20-alpine` del Dockerfile y `"node": ">=20"` de `package.json`).
   - Utiliza versiones fijas de acciones (`actions/checkout@v4`, `actions/setup-node@v4`).
@@ -61,3 +84,4 @@ Módulo 1: Gestión de Usuarios. Resolver con el usuario los puntos de "Pendient
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit`, `npm test` y `npm run test:cov` pasan sin errores.
 - TypeScript se mantiene en la serie 5 (`^5.9.3`). No actualizar a TypeScript 7+ ya que `ts-jest@29` no lo soporta.
 - Nunca crear ni comitear `.env` en el repositorio; cada desarrollador debe crearlo localmente copiando `.env.example`.
+
