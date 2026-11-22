@@ -1,63 +1,71 @@
 # Especificación — Módulo Gestión de Usuarios
 
-> Historias: HU01, HU02, HU14 | Requisitos: RF01, RF02, RF19 | Restricciones: RC09 | Atributos: AC04 | Decisiones: ADR-007, ADR-008
+> Historias: HU01, HU02, HU14 a HU22 | Requisitos: RF01, RF02, RF19 a RF26 | Restricciones: RC09, RC15, RC16 | Atributos: AC04, AC05 | Decisiones: ADR-007, ADR-008, ADR-015, ADR-016
 > Las tareas técnicas de este módulo están en `specs/usuarios/tasks.md`.
-> Los criterios CA-U08 a CA-U13, el rol Encargado y la excepción de credenciales de las cuentas de Administrador y Encargado son decisiones del equipo: no figuran en RF02, RF19 ni RC09, que fijan solo la regla `dni@sofia.edu` con contraseña inicial igual al DNI.
+> Cuando este documento fija un valor que `docs/` no define (duraciones, largos, límites), es una propuesta del equipo y figura en «Pendiente de confirmar».
 
 ## Alcance
-El módulo registra usuarios (postulantes, docentes, encargados y administradores), genera sus credenciales, autentica con JWT y controla el acceso por rol. No hay autoregistro de ningún usuario (RC09). Los postulantes se registran de a uno o con una carga masiva desde un archivo Excel; los docentes los registra el Administrador.
+El módulo registra usuarios (postulantes, docentes y administradores), genera sus credenciales, autentica con JWT y controla el acceso por rol y por sede. No hay autoregistro de ningún usuario (RC09). Los postulantes se registran de uno en uno o con una carga masiva desde Excel; los docentes los registra el administrador general. Cada postulante pertenece a una sede y a una carrera, y cada sede tiene sus propios estudiantes.
 
 ## Roles
 - **Postulante.**
 - **Docente.**
-- **Administrador:** registra docentes y postulantes, crea cuentas de Administrador y de Encargado, lista, desactiva y reactiva usuarios, y puede cambiar su propio correo y contraseña. Es el "personal encargado" de RC09 junto con el Encargado.
-- **Encargado** (rol propuesto, por confirmar): registra postulantes, de a uno o con carga masiva, y consulta la lista de postulantes. No registra docentes ni crea cuentas.
+- **Administrador general:** uno solo, con alcance sobre todas las sedes. Registra docentes, crea las cuentas de administrador de sede, registra estudiantes de cualquier sede (de uno en uno o con Excel), lista usuarios, desactiva y reactiva usuarios, crea sedes, y cambia su propio correo y contraseña.
+- **Administrador de sede:** varios por sede, con alcance solo sobre su sede. Registra estudiantes de su sede (de uno en uno o con Excel), lista los estudiantes de su sede, desactiva y reactiva estudiantes de su sede, y cambia su propio correo y contraseña. No ve ni modifica a nadie de otra sede, ni registra docentes, ni crea cuentas de administrador.
 
 ## Datos del usuario
-- Estudiantes y docentes: nombre y DNI (8 dígitos numéricos). El correo y la contraseña inicial se generan a partir del DNI.
-- Administradores y Encargados: nombre, correo y contraseña inicial definidos por quien crea la cuenta.
-- Sede y carrera del postulante: por confirmar (ver «Pendiente de confirmar»).
+- Postulantes: nombre, DNI (8 dígitos numéricos), sede y carrera. El correo y la contraseña inicial se generan a partir del DNI.
+- Docentes: nombre y DNI. El correo y la contraseña inicial se generan a partir del DNI. No pertenecen a una sede.
+- Administradores: nombre, correo y contraseña inicial definidos por quien crea la cuenta. El administrador de sede tiene además una sede; el administrador general no tiene sede.
+- Carrera: texto que el sistema normaliza (sin espacios sobrantes y en mayúsculas), para que «Medicina» y «medicina» sean la misma carrera.
+- Sede: Hana, Urin y Central, guardadas en una tabla y no escritas en el código.
 
 ## Criterios de aceptación
 Formato: Dado / Cuando / Entonces.
 
-### CA-U01 Registrar estudiante (HU01, RF01)
-- Dado un Administrador o Encargado autenticado, cuando registra un estudiante con nombre y DNI válidos, entonces se crea un usuario con rol Postulante.
-- Dado un DNI que ya existe, cuando se intenta registrar de nuevo, entonces el sistema rechaza el registro con un error de conflicto.
-- Dado un DNI que no tiene 8 dígitos numéricos o un nombre vacío, cuando se intenta registrar, entonces el sistema rechaza la solicitud con un error de validación.
-- Dado un usuario con rol Postulante o Docente, cuando intenta registrar un estudiante, entonces el sistema responde con acceso denegado.
+### CA-U01 Registrar estudiante (HU01, RF01, RF22)
+- Dado un administrador general autenticado, cuando registra un estudiante con nombre, DNI, sede y carrera válidos, entonces se crea un usuario con rol Postulante en esa sede.
+- Dado un administrador de sede autenticado, cuando registra un estudiante de su sede, entonces se crea el usuario; y si indica otra sede, entonces el sistema responde con acceso denegado.
+- Dado un DNI que ya existe, cuando se intenta registrar de nuevo, entonces el sistema rechaza el registro con un error de conflicto, sin revelar a qué sede pertenece.
+- Dado un DNI que no tiene 8 dígitos numéricos, un nombre vacío, una carrera vacía o una sede que no existe, cuando se intenta registrar, entonces el sistema rechaza la solicitud con un error de validación.
+- Dado un Postulante o un Docente, cuando intenta registrar un estudiante, entonces el sistema responde con acceso denegado.
 - Dado un usuario sin sesión, cuando intenta registrar un estudiante, entonces el sistema responde con acceso no autorizado.
 
 ### CA-U02 Generación automática de credenciales (HU02, RF02)
-- Dado un estudiante recién registrado, cuando se crea su cuenta, entonces su usuario es `dni@sofia.edu` y su contraseña inicial es su DNI.
+- Dado un estudiante o docente recién registrado, cuando se crea su cuenta, entonces su usuario es `dni@sofia.edu` y su contraseña inicial es su DNI.
 - Dada una cuenta creada, cuando se consulta la base de datos, entonces la contraseña está guardada con hash y nunca en texto plano (AC04).
 - Dada cualquier respuesta de la API o registro de logs, entonces no contiene la contraseña ni su hash.
 
 ### CA-U03 Registrar docente (HU14, RF19)
-- Dado un Administrador autenticado, cuando registra un docente con nombre y DNI válidos, entonces se crea un usuario con rol Docente y credenciales generadas con la misma regla que los postulantes.
-- Dado un usuario que no es Administrador, cuando intenta registrar un docente, entonces el sistema responde con acceso denegado.
+- Dado un administrador general autenticado, cuando registra un docente con nombre y DNI válidos, entonces se crea un usuario con rol Docente y credenciales generadas con la misma regla que los postulantes.
+- Dado un administrador de sede, un Docente o un Postulante, cuando intenta registrar un docente, entonces el sistema responde con acceso denegado.
 - Dado un DNI ya registrado, cuando se intenta registrar un docente con ese DNI, entonces el sistema rechaza el registro con un error de conflicto.
 
-### CA-U04 Primer Administrador
-- Dado un sistema recién desplegado sin usuarios, cuando se ejecuta el script de arranque, entonces se crea un Administrador con el nombre, el correo y la contraseña tomados de variables de entorno.
-- Dado un sistema que ya tiene al menos un usuario con rol Administrador, cuando se vuelve a ejecutar el script, entonces no crea otro Administrador, aunque el Administrador existente haya cambiado su correo.
-- Los datos del primer Administrador no deben estar escritos en el código ni en el repositorio.
+### CA-U04 Administrador general inicial (RF25)
+- Dado un sistema recién desplegado sin usuarios, cuando se ejecuta el script de arranque, entonces se crea el administrador general con el nombre, el correo y la contraseña tomados de variables de entorno, y sin sede.
+- Dado un sistema que ya tiene un administrador general, cuando se vuelve a ejecutar el script, entonces no crea otro, aunque el existente haya cambiado su correo.
+- Si falta alguna de las variables, el script falla con un mensaje claro y no usa valores de respaldo.
+- Los datos del administrador general no deben estar escritos en el código ni en el repositorio.
 - Esta cuenta es una excepción a la regla del DNI de RC09.
+- Ningún endpoint permite crear un segundo administrador general.
 
-### CA-U05 Iniciar sesión (ADR-007)
-- Dadas credenciales correctas de un usuario activo, cuando inicia sesión, entonces recibe un JWT que incluye su identificador y su rol, con una duración configurable.
+### CA-U05 Iniciar sesión (HU20, RF20, ADR-007)
+- Dadas credenciales correctas de un usuario activo, cuando inicia sesión, entonces recibe un JWT que incluye su identificador, su rol y su sede, con una duración configurable.
 - Dadas credenciales incorrectas, o las de un usuario desactivado, cuando intenta iniciar sesión, entonces recibe un error de autenticación que no revela si falló el usuario o la contraseña, ni si la cuenta está desactivada.
 - Dado un JWT vencido o alterado, cuando se usa en una petición protegida, entonces el sistema responde con acceso no autorizado.
 
-### CA-U06 Control de acceso por rol (AC04)
+### CA-U06 Control de acceso por rol y por sede (AC04, RC15)
 - Dado un endpoint restringido a un rol, cuando lo invoca un usuario con otro rol, entonces el sistema responde con acceso denegado.
 - Dado un endpoint protegido, cuando se invoca sin JWT, entonces el sistema responde con acceso no autorizado.
+- Dado un administrador de sede, cuando intenta ver, registrar, cargar o desactivar a un estudiante de otra sede, entonces el sistema responde con acceso denegado.
+- El rol y la sede que cuentan son los que figuran en la base de datos en ese momento, no los que traía el JWT.
 
 ### CA-U07 API pública del módulo
 - Los otros módulos solo acceden a datos de usuarios mediante los puertos expuestos en `index.ts`, nunca a la tabla ni al repositorio directamente.
+- Esos puertos permiten autenticar y autorizar por rol y sede, y consultar un usuario por su identificador con su sede y su carrera, sin contraseñas ni hashes.
 - Todos los endpoints del módulo están documentados en OpenAPI/Swagger (ADR-008).
 
-### CA-U08 Cambiar la propia contraseña (decisión del equipo)
+### CA-U08 Cambiar la propia contraseña (HU21, RF26)
 - Dado un usuario autenticado de cualquier rol, cuando envía su contraseña actual correcta y una contraseña nueva válida, entonces la contraseña se actualiza y se guarda con hash.
 - Dada una contraseña actual incorrecta, cuando se intenta el cambio, entonces el sistema rechaza la solicitud con un error de autenticación.
 - Dada una contraseña nueva que no cumple el largo mínimo, cuando se intenta el cambio, entonces el sistema rechaza la solicitud con un error de validación.
@@ -65,58 +73,69 @@ Formato: Dado / Cuando / Entonces.
 - El cambio de contraseña es opcional: ningún usuario está obligado a hacerlo.
 - La contraseña nunca aparece en respuestas ni en registros (AC04).
 
-### CA-U09 Cambiar el correo del Administrador (decisión del equipo)
-- Dado un Administrador autenticado, cuando envía un correo válido que no está en uso y su contraseña actual, entonces su correo se actualiza y se usa para iniciar sesión.
+### CA-U09 Cambiar el correo del administrador (HU22, RF26)
+- Dado un administrador autenticado, general o de sede, cuando envía un correo válido que no está en uso y su contraseña actual, entonces su correo se actualiza y se usa para iniciar sesión.
 - Dado un correo que ya existe, cuando se intenta el cambio, entonces el sistema rechaza la solicitud con un error de conflicto.
-- Dado un Postulante, Docente o Encargado, cuando intenta cambiar su correo, entonces el sistema responde con acceso denegado.
+- Dado un Postulante o un Docente, cuando intenta cambiar su correo, entonces el sistema responde con acceso denegado.
 
-### CA-U10 Listar usuarios (decisión del equipo)
-- Dado un Administrador autenticado, cuando consulta la lista de usuarios (con filtro por rol), entonces ve nombre, DNI, correo, rol y estado, y nunca la contraseña ni su hash.
-- Dado un Encargado autenticado, cuando consulta la lista, entonces solo ve usuarios con rol Postulante.
-- Dado un Postulante o Docente, cuando intenta consultar la lista, entonces el sistema responde con acceso denegado.
+### CA-U10 Listar usuarios (HU17, RF23)
+- Dado un administrador general autenticado, cuando consulta la lista de usuarios con filtro por rol o por sede, entonces ve nombre, DNI, correo, rol, sede, carrera y estado, y nunca la contraseña ni su hash.
+- Dado un administrador de sede autenticado, cuando consulta la lista, entonces solo ve los postulantes de su sede.
+- Dado un Postulante o un Docente, cuando intenta consultar la lista, entonces el sistema responde con acceso denegado.
 
-### CA-U11 Desactivar y reactivar usuario (decisión del equipo)
-- Dado un Administrador autenticado, cuando desactiva a un estudiante o docente, entonces el usuario queda inactivo, conserva sus datos y no puede iniciar sesión.
+### CA-U11 Desactivar y reactivar usuario (HU18, HU16, RF24, RC16)
+- Dado un administrador general autenticado, cuando desactiva a un usuario, entonces el usuario queda inactivo, conserva sus datos y no puede iniciar sesión.
+- Dado un administrador de sede autenticado, cuando desactiva o reactiva a un postulante de su sede, entonces se aplica el cambio; y si el postulante es de otra sede o es otro tipo de usuario, entonces el sistema responde con acceso denegado.
 - Dado un usuario inactivo con un JWT aún vigente, cuando lo usa en una petición protegida, entonces el sistema responde con acceso no autorizado, porque comprueba que el usuario siga activo en cada petición.
-- Dado un Administrador que intenta desactivarse a sí mismo o desactivar al último Administrador, cuando lo intenta, entonces el sistema rechaza la solicitud.
-- Dado un usuario que no es Administrador, cuando intenta desactivar a alguien, entonces el sistema responde con acceso denegado.
-- Dado un Administrador autenticado, cuando reactiva a un usuario inactivo, entonces el usuario vuelve a estar activo y puede iniciar sesión con sus credenciales actuales.
-- Dado un usuario que no es Administrador, cuando intenta reactivar a alguien, entonces el sistema responde con acceso denegado.
+- Dado un administrador que intenta desactivarse a sí mismo, o desactivar al administrador general, cuando lo intenta, entonces el sistema rechaza la solicitud.
+- Dado un administrador autorizado, cuando reactiva a un usuario inactivo, entonces vuelve a estar activo y puede iniciar sesión con sus credenciales actuales.
+- Dado un Postulante o un Docente, cuando intenta desactivar o reactivar a alguien, entonces el sistema responde con acceso denegado.
 - Los usuarios no se borran: se conservan para mantener el historial de exámenes y resultados.
 
-### CA-U12 Crear cuentas de Administrador y Encargado (decisión del equipo)
-- Dado un Administrador autenticado, cuando crea una cuenta de Administrador o de Encargado con nombre, correo y contraseña inicial, entonces se crea el usuario con ese rol y la contraseña se guarda con hash.
+### CA-U12 Crear administradores de sede (HU19, RF25)
+- Dado un administrador general autenticado, cuando crea una cuenta de administrador de sede con nombre, correo, contraseña inicial y una sede existente, entonces se crea el usuario con ese rol y esa sede, y la contraseña se guarda con hash.
 - Dado un correo que ya existe, cuando se intenta crear la cuenta, entonces el sistema rechaza la solicitud con un error de conflicto.
-- Dado un Encargado, un Docente o un Postulante, cuando intenta crear una cuenta de Administrador o de Encargado, entonces el sistema responde con acceso denegado.
+- Dado un administrador de sede, un Docente o un Postulante, cuando intenta crear una cuenta de administrador, entonces el sistema responde con acceso denegado.
 - Estas cuentas no usan la regla del DNI: quien las crea define el correo y una contraseña inicial segura.
+- No se puede crear una cuenta de administrador general.
 
-### CA-U13 Registro masivo desde Excel (decisión del equipo)
-- Dado un Administrador o Encargado autenticado, cuando sube un archivo .xlsx con las columnas Nombre y DNI, entonces el sistema lo acepta, responde de inmediato con un identificador de carga y procesa las filas en segundo plano.
-- Dada una carga en proceso o terminada, cuando se consulta con su identificador, entonces muestra el estado, el total de filas, cuántas se crearon, cuántas ya existían y cuántas se rechazaron, con el número de fila y el motivo de cada rechazo.
-- Dado un DNI que ya existe, cuando aparece en el archivo, entonces la fila se omite y se cuenta como ya existente, sin error y sin cambios en esa cuenta. Si la cuenta está desactivada, tampoco se reactiva.
-- Dada una fila con DNI inválido, nombre vacío o DNI repetido dentro del archivo, cuando se procesa, entonces esa fila se rechaza con su número y motivo, sin impedir que se creen las demás.
+### CA-U13 Registro masivo desde Excel (HU15, RF21, ADR-016)
+- Dado un administrador autenticado, cuando sube un archivo .xlsx con las columnas Nombre, DNI, Sede y Carrera, entonces el sistema lo acepta, responde de inmediato con un identificador de carga y procesa las filas en segundo plano.
+- Dada una carga en proceso o terminada, cuando se consulta con su identificador, entonces muestra el estado, el total de filas, cuántas se crearon, cuántas ya existían y cuántas se rechazaron, con el número de fila y el motivo de cada rechazo. Un administrador de sede solo ve las cargas de su sede.
+- Dado un DNI que ya existe, cuando aparece en el archivo, entonces la fila se omite y se cuenta como ya existente, sin error y sin cambios en esa cuenta, y sin revelar a qué sede pertenece. Si la cuenta está desactivada, tampoco se reactiva.
+- Dada una fila con DNI inválido, nombre o carrera vacíos, sede inexistente o DNI repetido dentro del archivo, cuando se procesa, entonces esa fila se rechaza con su número y motivo, sin impedir que se creen las demás.
+- Dado un administrador de sede, cuando su archivo trae una fila de otra sede, entonces esa fila se rechaza con su motivo.
 - Dado un archivo que no es .xlsx, que supera el tamaño o el número máximo de filas, o que no tiene las columnas esperadas, cuando se sube, entonces el sistema lo rechaza sin crear ningún usuario.
 - Dada una carga interrumpida, cuando se vuelve a subir el mismo archivo, entonces se crean solo las cuentas que faltan.
-- Dado un usuario que no es Administrador ni Encargado, cuando intenta subir el archivo, entonces el sistema responde con acceso denegado.
+- Dado un Postulante o un Docente, cuando intenta subir el archivo, entonces el sistema responde con acceso denegado.
 - El resultado de una carga nunca incluye contraseñas ni hashes (AC04).
 - Los límites de tamaño y de filas se configuran con variables de entorno (valores iniciales propuestos: 10 MB y 10,000 filas).
 
+### CA-U14 Sedes (RF22, AC05)
+- Dado cualquier administrador autenticado, cuando consulta las sedes, entonces ve la lista de sedes existentes.
+- Dado un administrador general autenticado, cuando crea una sede nueva con un nombre que no existe, entonces la sede queda disponible para registrar estudiantes, sin cambiar código.
+- Dado un nombre de sede que ya existe, cuando se intenta crear, entonces el sistema rechaza la solicitud con un error de conflicto.
+- Dado un administrador de sede, un Docente o un Postulante, cuando intenta crear una sede, entonces el sistema responde con acceso denegado.
+
 ## Base de datos y caché
-- PostgreSQL, tabla de usuarios: nombre, DNI (obligatorio y único para postulantes y docentes), correo único, hash de contraseña, rol y estado activo.
-- PostgreSQL, tabla de cargas masivas: identificador, usuario que la subió, estado, total de filas, creadas, ya existentes, rechazadas, errores por fila y fechas.
-- Las tablas se crean mediante migraciones SQL versionadas.
+- PostgreSQL, tabla de sedes: identificador y nombre único. Se siembra con Hana, Urin y Central.
+- PostgreSQL, tabla de usuarios: nombre, DNI (obligatorio y único para postulantes y docentes), correo único, hash de contraseña, rol, estado activo, sede (obligatoria para postulantes y administradores de sede) y carrera (para postulantes). Un índice único parcial garantiza un solo administrador general.
+- PostgreSQL, tabla de cargas masivas: identificador, usuario y sede que la subió, estado, total de filas, creadas, ya existentes, rechazadas, errores por fila y fechas.
+- Las tablas se crean mediante migraciones SQL versionadas (ADR-015).
 - Redis: no se usa en este módulo.
 
 ## Limitaciones conocidas
 - La contraseña inicial de postulantes y docentes es su DNI, que no es un dato secreto. Es consecuencia de RF02, RF19 y RC09, y de que el cambio de contraseña es opcional.
 - Cambiar la contraseña no cierra las sesiones ya abiertas: un JWT vigente sigue funcionando hasta que venza. Solo la desactivación del usuario se aplica de inmediato.
 - No hay recuperación de contraseña olvidada.
+- Comprobar en cada petición que el usuario siga activo implica una consulta a PostgreSQL por petición. Si afecta a las pruebas de carga, se puede guardar ese dato en Redis por un tiempo corto.
 
 ## Pendiente de confirmar
-- Si Encargado es un rol aparte, con los permisos descritos.
-- Sede y carrera del postulante: según lo que anota el equipo, RF10 pide rankings por carrera y por sede, y ningún documento revisado define dónde se guardan. Si se guardan en este módulo, se agregan al registro individual y al Excel (columnas Sede y Carrera) y hay que decidir si cada Encargado trabaja solo con su sede. Debe salir del modelo de datos de `docs/`.
-- Tiempo de vida del JWT (propuesta: 8 horas, configurable) y largo mínimo de la contraseña (propuesta: 8 caracteres).
+- Tope de alumnos por sede: no se asume ninguno.
+- Carrera como texto normalizado (lo asumido) o como lista cerrada de carreras mantenida por el administrador general.
+- Si los docentes pertenecen a una sede (hoy no).
+- Si el administrador de sede puede desactivar y reactivar postulantes de su sede (hoy sí).
 - Si el nombre se guarda como un solo campo o separado en nombres y apellidos.
-- Si el Administrador podrá restablecer la contraseña de un usuario que la olvidó (no incluido por ahora).
+- Tiempo de vida del JWT (propuesta: 8 horas, configurable) y largo mínimo de la contraseña (propuesta: 8 caracteres).
+- Si el administrador podrá restablecer la contraseña de un usuario que la olvidó (no incluido por ahora).
 - Qué ocurre si en una carga masiva un DNI existente trae un nombre distinto (propuesta: no se cambia y se informa en el resultado).
-- Reactivar usuarios (CA-U11) es una propuesta que falta confirmar.
