@@ -2,4 +2,5 @@
  * Capa de Infraestructura — Módulo Gestión de Usuarios
  * Contiene repositorios y adaptadores tecnológicos.
  */
-export {};
+export * from './postgres-sede-repository';
+export * from './postgres-usuario-repository';

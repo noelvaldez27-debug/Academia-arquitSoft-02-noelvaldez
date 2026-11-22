@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 3 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 4 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -53,15 +53,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 3 de `specs/usuarios/tasks.md`: Dominio del módulo usuarios: entidades `Usuario` (nombre, DNI, correo, rol, activo, sede, carrera) y `Sede`, roles (`Postulante`, `Docente`, `Administrador`), alcance del Administrador (`General`, `Sede`), y contratos de repositorio `UsuarioRepository` y `SedeRepository` en `src/modules/usuarios/dominio/`. 79 pruebas unitarias Jest pasando y TypeScript sin errores.
+Tarea 4 de `specs/usuarios/tasks.md`: Infraestructura con migraciones SQL (`001_crear_tabla_sedes.sql` sembrando Hana, Urin y Central; `002_crear_tabla_usuarios.sql` con DNI único para postulantes y docentes, correo único, restricciones de sede y carrera, e índice único parcial para un solo Administrador General) e implementación de `PostgresSedeRepository` y `PostgresUsuarioRepository` en `src/modules/usuarios/infraestructura/`. 94 pruebas unitarias Jest pasando y TypeScript sin errores.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 4 de `specs/usuarios/tasks.md`: infraestructura con migraciones SQL y repositorios de sedes y de usuarios en PostgreSQL (RC07, RC15), sembrando Hana, Urin y Central, exigiendo restricciones de integridad (DNI único para postulantes/docentes, correo único, índice único parcial para un solo administrador general) y pruebas de repositorio con pool simulado sin Docker.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 5 de `specs/usuarios/tasks.md`: Generación automática de credenciales para postulantes y docentes (RF02, RF19, HU02, CA-U02): usuario dni@sofia.edu y contraseña inicial igual al DNI, guardada con hash (AC04). Proponer y justificar librería de hash con npm view y npm audit cumpliendo restricciones de node:20-alpine sin compiladores en imagen final.
 
 ## Notas para el siguiente editor
+- Tarea 4 completada: Migraciones `001_crear_tabla_sedes.sql` (siembra de sedes 'Hana', 'Urin' y 'Central') y `002_crear_tabla_usuarios.sql` (restricciones de check para reglas de roles, índice único en DNI no nulo e índice único parcial para garantizar un único administrador general). Implementados `PostgresSedeRepository` y `PostgresUsuarioRepository` con pool simulado sin Docker.
 - Tarea 3 completada: Entidades `Usuario` y `Sede`, roles `RolUsuario` (`Postulante`, `Docente`, `Administrador`) y `AlcanceAdministrador` (`General`, `Sede`), y puertos `UsuarioRepository` y `SedeRepository`. Se definieron validaciones de dominio: DNI de 8 dígitos para postulantes y docentes, carrera en mayúsculas normalizada para postulantes, sede obligatoria para postulantes y administradores de sede, docente y administrador general sin sede, cambio de correo exclusivo para administradores, y métodos `desactivar()` y `reactivar()`.
 - Tarea 2 completada: Mecanismo de migraciones SQL sin dependencias adicionales (utiliza el cliente `pg` existente). Archivos `.sql` se ubican en `migraciones/`. El runner ejecuta cada migración pendiente dentro de una transacción `BEGIN ... COMMIT` con rollback automático ante errores y registro en `migraciones_control`. Se documentó en `docs/despliegue.md` y se añadió el script `npm run migrar` en `package.json`.
 - Tarea 1 completada: Estructura base de `src/modules/usuarios/` con sus cuatro capas (`dominio`, `aplicacion`, `infraestructura`, `presentacion`), la raíz de composición `usuarios.module.ts` y la API pública `index.ts`.
