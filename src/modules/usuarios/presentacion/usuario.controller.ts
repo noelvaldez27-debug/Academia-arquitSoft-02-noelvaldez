@@ -4,6 +4,7 @@ import { RegistrarDocenteUseCase } from '../aplicacion/registrar-docente.use-cas
 import { IniciarSesionUseCase } from '../aplicacion/iniciar-sesion.use-case';
 import { CambiarPasswordUseCase } from '../aplicacion/cambiar-password.use-case';
 import { CambiarCorreoUseCase } from '../aplicacion/cambiar-correo.use-case';
+import { ListarUsuariosUseCase } from '../aplicacion/listar-usuarios.use-case';
 import {
   ErrorValidacion,
   ErrorConflicto,
@@ -23,7 +24,8 @@ export class UsuarioController {
     private readonly registrarDocenteUseCase: RegistrarDocenteUseCase,
     private readonly iniciarSesionUseCase: IniciarSesionUseCase,
     private readonly cambiarPasswordUseCase: CambiarPasswordUseCase,
-    private readonly cambiarCorreoUseCase: CambiarCorreoUseCase
+    private readonly cambiarCorreoUseCase: CambiarCorreoUseCase,
+    private readonly listarUsuariosUseCase: ListarUsuariosUseCase
   ) {}
 
   public registrarEstudiante = async (req: Request, res: Response): Promise<void> => {
@@ -138,6 +140,30 @@ export class UsuarioController {
       });
 
       res.status(200).json({ mensaje: 'Correo actualizado con exito.' });
+    } catch (error) {
+      this.manejarError(error, res);
+    }
+  };
+
+  public listarUsuarios = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { rol, sedeId, pagina, limite } = req.query;
+      const resultado = await this.listarUsuariosUseCase.ejecutar({
+        rol: rol as any,
+        sedeId: sedeId ? String(sedeId) : undefined,
+        pagina: pagina ? parseInt(String(pagina), 10) : undefined,
+        limite: limite ? parseInt(String(limite), 10) : undefined,
+        ejecutor: req.usuario
+          ? {
+              id: req.usuario.id,
+              rol: req.usuario.rol,
+              sedeId: req.usuario.sedeId,
+              alcanceAdministrador: req.usuario.alcanceAdministrador,
+            }
+          : undefined,
+      });
+
+      res.status(200).json(resultado);
     } catch (error) {
       this.manejarError(error, res);
     }

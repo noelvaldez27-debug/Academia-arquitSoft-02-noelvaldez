@@ -47,5 +47,13 @@ export function crearRutasUsuario(
     controller.cambiarCorreo
   );
 
+  // GET / - Listar usuarios paginados con filtros (Administrador general o de sede)
+  router.get(
+    '/',
+    middleware.autenticar,
+    middleware.requerirRol(RolUsuario.Administrador),
+    controller.listarUsuarios
+  );
+
   return router;
 }

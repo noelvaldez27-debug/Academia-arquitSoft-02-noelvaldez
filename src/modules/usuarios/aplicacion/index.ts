@@ -16,4 +16,5 @@ export * from './cambiar-password.command';
 export * from './cambiar-password.use-case';
 export * from './cambiar-correo.command';
 export * from './cambiar-correo.use-case';
+export * from './listar-usuarios.use-case';
 

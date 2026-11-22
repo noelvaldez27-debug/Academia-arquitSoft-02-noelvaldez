@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 13 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 14 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -52,15 +52,17 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 13 de `specs/usuarios/tasks.md`: Caso de uso `CambiarCorreoUseCase` en `src/modules/usuarios/aplicacion/cambiar-correo.use-case.ts`. Solo administradores. Exige contraseña actual (mensaje genérico si falla, AC04), formato de correo válido, y el correo no puede estar en uso (409). Endpoint `PATCH /api/usuarios/correo` protegido con `requerirRol(Administrador)`. Documentado en OpenAPI. 180 pruebas Jest pasando, tsc limpio.
+Tarea 14 de `specs/usuarios/tasks.md`: Caso de uso `ListarUsuariosUseCase` en `src/modules/usuarios/aplicacion/listar-usuarios.use-case.ts`. Endpoint `GET /api/usuarios` paginado (default 20, max 100) con filtros opcionales por rol y sede. El Administrador General puede filtrar o ver todos; el Administrador de Sede solo puede listar postulantes de su sede (si intenta ver otra sede u otro rol recibe 403). Nunca expone contraseñas ni hashes (AC04). Documentado en OpenAPI.
 
 ## Tarea en curso / pendiente a medias
-(ninguna — lote de tareas 6 a 11 finalizado según solicitud del usuario)
+(ninguna — tarea 14 completada)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 14 de `specs/usuarios/tasks.md`: Caso de uso listar usuarios con filtro por rol y por sede, paginado (CA-U10).
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 15 de `specs/usuarios/tasks.md`: Caso de uso desactivar y reactivar usuario sin borrarlo (RF24, RC16, CA-U11); el administrador de sede solo puede hacerlo con postulantes de su sede; no se permite desactivarse a sí mismo ni al administrador general. Incluye sus endpoints y su documentación OpenAPI.
 
 ## Notas para el siguiente editor
+- Tarea 14 completada: Caso de uso `ListarUsuariosUseCase` y endpoint `GET /api/usuarios` paginado (`pagina`, `limite`, `total`). Consultas SQL parametrizadas con LIMIT y OFFSET sobre `PostgresUsuarioRepository.listar`. Si un administrador de sede intenta listar usuarios de otra sede o un rol distinto a Postulante, responde 403 (`ErrorAccesoDenegado`). No expone hashes ni contraseñas. Documentado en OpenAPI con esquema de respuesta paginado.
+- Decisiones confirmadas: el administrador de sede puede desactivar y reactivar postulantes de su sede, y el administrador general puede crear sedes nuevas sin cambiar código.
 - Tarea 11 completada: Controlador `UsuarioController` en `src/modules/usuarios/presentacion/usuario.controller.ts` y rutas `crearRutasUsuario` en `src/modules/usuarios/presentacion/usuario.routes.ts`. Se documentaron los esquemas y endpoints en `src/compartido/infraestructura/especificacion-openapi.ts` con seguridad `bearerAuth`. El endpoint `/login` responde 401 genérico ante cualquier error y nunca revela credenciales ni hashes (AC04, CA-U05). Se conectó `UsuariosModule` en `src/index.ts` y `src/compartido/infraestructura/servidor.ts`.
 - Tarea 10 completada: Clase `MiddlewareAutenticacion` en `src/modules/usuarios/presentacion/autenticacion.middleware.ts` con métodos `autenticar`, `requerirRol` y `requerirAlcanceSede`. Extiende `Express.Request` con `req.usuario` tipado con datos de BD. Si el usuario fue desactivado, responde 401 aunque el JWT no haya expirado; si es administrador de sede, impide gestionar estudiantes de otra sede con 403.
 - Tarea 9 completada: Librería JWT elegida: `jsonwebtoken` (^9.0.3) con `@types/jsonwebtoken` (^9.0.10). Motivo de elección: estándar consolidado para APIs Express en Node.js, implementación nativa en JavaScript sin dependencias compiladas C++ (plena compatibilidad con `node:20-alpine`), sin vulnerabilidades altas ni críticas en `npm audit`. Se desacopló mediante el puerto `ServicioToken` en `src/modules/usuarios/aplicacion/servicio-token.port.ts` y se implementó `JsonWebTokenAdapter` en `src/modules/usuarios/infraestructura/jsonwebtoken-token.adapter.ts`. Nueva variable no secreta agregada con valor documentado por defecto: `JWT_DURACION=8h`. Se implementó validación de seguridad para rechazar `JWT_SECRET` faltante o iniciado con `cambiar_` cuando `NODE_ENV=production`.

@@ -8,6 +8,7 @@ import { RegistrarDocenteUseCase } from '../aplicacion/registrar-docente.use-cas
 import { IniciarSesionUseCase } from '../aplicacion/iniciar-sesion.use-case';
 import { CambiarPasswordUseCase } from '../aplicacion/cambiar-password.use-case';
 import { CambiarCorreoUseCase } from '../aplicacion/cambiar-correo.use-case';
+import { ListarUsuariosUseCase } from '../aplicacion/listar-usuarios.use-case';
 import { ServicioToken, PayloadToken } from '../aplicacion/servicio-token.port';
 import {
   Usuario,
@@ -27,6 +28,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
   let mockLoginUseCase: Partial<IniciarSesionUseCase>;
   let mockCambiarPasswordUseCase: Partial<CambiarPasswordUseCase>;
   let mockCambiarCorreoUseCase: Partial<CambiarCorreoUseCase>;
+  let mockListarUsuariosUseCase: Partial<ListarUsuariosUseCase>;
   let mockServicioToken: Partial<ServicioToken>;
   let mockUsuarioRepo: Partial<UsuarioRepository>;
 
@@ -46,6 +48,9 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
     mockCambiarCorreoUseCase = {
       ejecutar: jest.fn(),
     };
+    mockListarUsuariosUseCase = {
+      ejecutar: jest.fn(),
+    };
     mockServicioToken = {
       verificarToken: jest.fn(),
     };
@@ -58,7 +63,8 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       mockDocenteUseCase as RegistrarDocenteUseCase,
       mockLoginUseCase as IniciarSesionUseCase,
       mockCambiarPasswordUseCase as CambiarPasswordUseCase,
-      mockCambiarCorreoUseCase as CambiarCorreoUseCase
+      mockCambiarCorreoUseCase as CambiarCorreoUseCase,
+      mockListarUsuariosUseCase as ListarUsuariosUseCase
     );
 
     const middleware = new MiddlewareAutenticacion(
@@ -508,6 +514,143 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
         .send({ nuevoCorreo: 'ocupado@sofia.edu', passwordActual: 'clave' });
 
       expect(res.status).toBe(409);
+    });
+  });
+
+  describe('GET /api/usuarios (RF23, CA-U10)', () => {
+    const mockAdminGeneralPayload = {
+      id: 'admin-gen',
+      rol: RolUsuario.Administrador,
+      sedeId: null,
+      alcanceAdministrador: AlcanceAdministrador.General,
+    };
+    const mockAdminGeneral = Usuario.crearAdministradorGeneral({
+      id: 'admin-gen',
+      nombre: 'Admin General',
+      correo: 'admin@sofia.edu',
+      passwordHash: 'hash',
+      activo: true,
+    });
+
+    const mockAdminSedePayload = {
+      id: 'admin-sede-1',
+      rol: RolUsuario.Administrador,
+      sedeId: '1',
+      alcanceAdministrador: AlcanceAdministrador.Sede,
+    };
+    const mockAdminSede = Usuario.crearAdministradorSede({
+      id: 'admin-sede-1',
+      nombre: 'Admin Sede Hana',
+      correo: 'admin.hana@sofia.edu',
+      passwordHash: 'hash',
+      sedeId: '1',
+      activo: true,
+    });
+
+    it('(CA-U10) debe responder 200 con listado paginado para el administrador general', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminGeneralPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminGeneral);
+      (mockListarUsuariosUseCase.ejecutar as jest.Mock).mockResolvedValueOnce({
+        usuarios: [
+          {
+            id: '1',
+            nombre: 'Alumno Test',
+            dni: '12345678',
+            correo: '12345678@sofia.edu',
+            rol: RolUsuario.Postulante,
+            activo: true,
+            sedeId: '1',
+            carrera: 'MEDICINA',
+          },
+        ],
+        total: 1,
+        pagina: 1,
+        limite: 20,
+      });
+
+      const res = await request(app)
+        .get('/api/usuarios?pagina=1&limite=20')
+        .set('Authorization', 'Bearer token_admin_general');
+
+      expect(res.status).toBe(200);
+      expect(res.body.total).toBe(1);
+      expect(res.body.usuarios).toHaveLength(1);
+      expect(res.body.usuarios[0].nombre).toBe('Alumno Test');
+    });
+
+    it('(CA-U10) debe responder 200 con postulantes para el administrador de sede', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminSedePayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminSede);
+      (mockListarUsuariosUseCase.ejecutar as jest.Mock).mockResolvedValueOnce({
+        usuarios: [
+          {
+            id: '1',
+            nombre: 'Alumno Hana',
+            dni: '12345678',
+            correo: '12345678@sofia.edu',
+            rol: RolUsuario.Postulante,
+            activo: true,
+            sedeId: '1',
+            carrera: 'MEDICINA',
+          },
+        ],
+        total: 1,
+        pagina: 1,
+        limite: 20,
+      });
+
+      const res = await request(app)
+        .get('/api/usuarios')
+        .set('Authorization', 'Bearer token_admin_sede');
+
+      expect(res.status).toBe(200);
+      expect(res.body.usuarios[0].sedeId).toBe('1');
+    });
+
+    it('(CA-U10) debe responder 401 si no se envía token', async () => {
+      const res = await request(app).get('/api/usuarios');
+      expect(res.status).toBe(401);
+    });
+
+    it('(CA-U10) debe responder 403 si un postulante intenta listar usuarios', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'post-1',
+        rol: RolUsuario.Postulante,
+        sedeId: '1',
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearPostulante({
+          id: 'post-1',
+          nombre: 'Postulante',
+          dni: '12345678',
+          correo: '12345678@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: '1',
+          carrera: 'MEDICINA',
+          activo: true,
+        })
+      );
+
+      const res = await request(app)
+        .get('/api/usuarios')
+        .set('Authorization', 'Bearer token_postulante');
+
+      expect(res.status).toBe(403);
+    });
+
+    it('(CA-U10) debe responder 403 si admin de sede intenta consultar otra sede', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminSedePayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminSede);
+      (mockListarUsuariosUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorAccesoDenegado('Acceso denegado: el administrador de sede no puede consultar usuarios de otra sede.')
+      );
+
+      const res = await request(app)
+        .get('/api/usuarios?sedeId=2')
+        .set('Authorization', 'Bearer token_admin_sede');
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain('otra sede');
     });
   });
 });

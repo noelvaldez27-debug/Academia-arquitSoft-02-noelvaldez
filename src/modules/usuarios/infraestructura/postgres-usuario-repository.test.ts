@@ -257,7 +257,10 @@ describe('PostgresUsuarioRepository (Pool simulado)', () => {
     expect(noExiste).toBe(false);
   });
 
-  it('debe listar usuarios con y sin filtros de rol y sede', async () => {
+  it('debe listar usuarios paginados con y sin filtros de rol y sede', async () => {
+    mockQuery.mockResolvedValueOnce({
+      rows: [{ total: '1' }],
+    });
     mockQuery.mockResolvedValueOnce({
       rows: [
         {
@@ -276,16 +279,27 @@ describe('PostgresUsuarioRepository (Pool simulado)', () => {
     });
 
     const repo = new PostgresUsuarioRepository(mockPool as Pool);
-    const usuariosFiltrados = await repo.listar({
+    const resultado = await repo.listar({
       rol: RolUsuario.Postulante,
       sedeId: '1',
+      pagina: 1,
+      limite: 10,
     });
 
-    expect(mockQuery).toHaveBeenCalledWith(
-      expect.stringContaining('WHERE 1=1 AND rol = $1 AND sede_id = $2 ORDER BY id ASC;'),
+    expect(mockQuery).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('SELECT COUNT(*) AS total FROM usuarios WHERE 1=1 AND rol = $1 AND sede_id = $2;'),
       [RolUsuario.Postulante, 1]
     );
-    expect(usuariosFiltrados).toHaveLength(1);
-    expect(usuariosFiltrados[0].sedeId).toBe('1');
+    expect(mockQuery).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('LIMIT $3 OFFSET $4;'),
+      [RolUsuario.Postulante, 1, 10, 0]
+    );
+    expect(resultado.total).toBe(1);
+    expect(resultado.pagina).toBe(1);
+    expect(resultado.limite).toBe(10);
+    expect(resultado.usuarios).toHaveLength(1);
+    expect(resultado.usuarios[0].sedeId).toBe('1');
   });
 });

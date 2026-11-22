@@ -3,6 +3,7 @@ import {
   Usuario,
   UsuarioRepository,
   FiltrosListadoUsuarios,
+  ResultadoPaginadoUsuarios,
   RolUsuario,
   AlcanceAdministrador,
 } from '../dominio';
@@ -153,28 +154,48 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     return (res.rowCount ?? 0) > 0;
   }
 
-  public async listar(filtros?: FiltrosListadoUsuarios): Promise<Usuario[]> {
-    let sql = `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador
-               FROM usuarios
-               WHERE 1=1`;
+  public async listar(filtros?: FiltrosListadoUsuarios): Promise<ResultadoPaginadoUsuarios> {
+    const pagina = Math.max(1, filtros?.pagina || 1);
+    const limite = Math.min(100, Math.max(1, filtros?.limite || 20));
+    const offset = (pagina - 1) * limite;
+
+    let whereSql = ' WHERE 1=1';
     const params: any[] = [];
 
     if (filtros?.rol) {
       params.push(filtros.rol);
-      sql += ` AND rol = $${params.length}`;
+      whereSql += ` AND rol = $${params.length}`;
     }
 
     if (filtros?.sedeId) {
       const sedeIdNumerico = parseInt(filtros.sedeId, 10);
       if (!isNaN(sedeIdNumerico)) {
         params.push(sedeIdNumerico);
-        sql += ` AND sede_id = $${params.length}`;
+        whereSql += ` AND sede_id = $${params.length}`;
       }
     }
 
-    sql += ` ORDER BY id ASC;`;
+    const countSql = `SELECT COUNT(*) AS total FROM usuarios${whereSql};`;
+    const countRes = await this.pool.query<{ total: string }>(countSql, params);
+    const total = parseInt(countRes.rows[0]?.total || '0', 10);
 
-    const res = await this.pool.query<FilaUsuario>(sql, params);
-    return res.rows.map((fila) => this.mapearFilaAUsuario(fila));
+    const queryParams = [...params];
+    queryParams.push(limite);
+    const limitIdx = queryParams.length;
+    queryParams.push(offset);
+    const offsetIdx = queryParams.length;
+
+    const selectSql = `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador
+               FROM usuarios${whereSql}
+               ORDER BY id ASC
+               LIMIT $${limitIdx} OFFSET $${offsetIdx};`;
+
+    const res = await this.pool.query<FilaUsuario>(selectSql, queryParams);
+    return {
+      usuarios: res.rows.map((fila) => this.mapearFilaAUsuario(fila)),
+      total,
+      pagina,
+      limite,
+    };
   }
 }

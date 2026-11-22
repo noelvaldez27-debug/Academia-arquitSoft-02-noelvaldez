@@ -313,5 +313,81 @@ export const especificacionOpenApi = {
         },
       },
     },
+    '/api/usuarios': {
+      get: {
+        summary: 'Listar usuarios paginados con filtros',
+        description:
+          'Permite consultar el listado de usuarios paginado. El administrador general puede consultar todos los usuarios de cualquier rol o sede. El administrador de sede solo puede consultar postulantes de su sede. Postulantes y docentes tienen acceso denegado. Nunca expone contraseñas ni hashes.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'rol',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['POSTULANTE', 'DOCENTE', 'ADMINISTRADOR'] },
+            description: 'Filtrar por rol de usuario',
+          },
+          {
+            name: 'sedeId',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Filtrar por identificador de sede',
+          },
+          {
+            name: 'pagina',
+            in: 'query',
+            required: false,
+            schema: { type: 'integer', default: 1, minimum: 1 },
+            description: 'Número de página',
+          },
+          {
+            name: 'limite',
+            in: 'query',
+            required: false,
+            schema: { type: 'integer', default: 20, minimum: 1, maximum: 100 },
+            description: 'Cantidad de elementos por página (máximo 100)',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Listado de usuarios obtenido exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    usuarios: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string' },
+                          nombre: { type: 'string' },
+                          dni: { type: 'string', nullable: true },
+                          correo: { type: 'string' },
+                          rol: { type: 'string' },
+                          activo: { type: 'boolean' },
+                          sedeId: { type: 'string', nullable: true },
+                          carrera: { type: 'string', nullable: true },
+                        },
+                      },
+                    },
+                    total: { type: 'integer' },
+                    pagina: { type: 'integer' },
+                    limite: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Acceso no autorizado' },
+          '403': {
+            description:
+              'Acceso denegado (solo administradores, o admin de sede intentando ver otra sede o rol distinto de postulante)',
+          },
+        },
+      },
+    },
   },
 };
