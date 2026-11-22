@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tarea 1 completada) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 y 2 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -53,15 +53,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 1 de `specs/usuarios/tasks.md`: crear la estructura del módulo usuarios (`src/modules/usuarios/`) con sus 4 capas de Clean Architecture (`dominio/`, `aplicacion/`, `infraestructura/`, `presentacion/`), `usuarios.module.ts` como raíz de composición e `index.ts` como API pública del módulo. Se agregaron pruebas unitarias en `usuarios.module.test.ts` con 54 pruebas totales pasando y verificación de TypeScript sin errores.
+Tarea 2 de `specs/usuarios/tasks.md`: mecanismo simple de migraciones SQL versionadas (ADR-015), compartido entre módulos, con archivos .sql numerados en `migraciones/`, tabla de control `migraciones_control` y ejecutor en `src/compartido/infraestructura/migrador.ts` y `src/scripts/migrar.ts`. Se actualizó `Dockerfile` para copiar `migraciones/` a la imagen final y `docs/despliegue.md` documentando la ejecución con `docker compose exec backend node dist/scripts/migrar.js` y `npm run migrar`. 64 pruebas unitarias Jest pasando y verificación de TypeScript sin errores.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 2 de `specs/usuarios/tasks.md`: mecanismo simple de migraciones SQL sin ORM, compartido con los demás módulos (ADR-015), con archivos .sql numerados, tabla de control de migraciones y script de ejecución ejecutable en Node.js dentro de Docker.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 3 de `specs/usuarios/tasks.md`: crear en `src/modules/usuarios/dominio/` las entidades Usuario (nombre, DNI, correo, rol, activo, sede, carrera) y Sede, los roles (Postulante, Docente, Administrador), el alcance del Administrador (general o de sede) y los contratos de repositorio `usuario-repository.ts` y `sede-repository.ts`.
 
 ## Notas para el siguiente editor
+- Tarea 2 completada: Mecanismo de migraciones SQL sin dependencias adicionales (utiliza el cliente `pg` existente). Archivos `.sql` se ubican en `migraciones/`. El runner ejecuta cada migración pendiente dentro de una transacción `BEGIN ... COMMIT` con rollback automático ante errores y registro en `migraciones_control`. Se documentó en `docs/despliegue.md` y se añadió el script `npm run migrar` en `package.json`.
 - Tarea 1 completada: Estructura base de `src/modules/usuarios/` con sus cuatro capas (`dominio`, `aplicacion`, `infraestructura`, `presentacion`), la raíz de composición `usuarios.module.ts` y la API pública `index.ts`.
 - Pendiente para Banco de Preguntas (ADR-011): el puerto `ServicioIA` solo tiene `proponer` y `recomendar`, sin archivos adjuntos. El ADR-011 dice que las imágenes y los PDF escaneados pasan por `ServicioIA`. Se decide en el módulo Banco de Preguntas si `proponer` recibe un adjunto opcional o si se agrega otro método. No resolverlo ahora.
 - Comportamiento de PORT en Docker Compose: Si se cambia PORT en .env a un valor distinto de 3000, el contenedor backend deja de responder peticiones desde el host, ya que docker-compose.yml publica `${PORT}:3000` mientras que Express escucha internamente en `PORT` (`${PORT}`). Mantener `PORT=3000` para el entorno local con Docker Compose. No corregir esto sin consultar al usuario.

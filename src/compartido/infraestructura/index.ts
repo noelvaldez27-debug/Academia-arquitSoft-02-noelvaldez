@@ -25,4 +25,5 @@ export {
 } from './almacen-archivos-local';
 
 export { ServicioIASimulado } from './servicio-ia-simulado';
+export { MigradorSql, OpcionesMigrador, ResultadoMigracion } from './migrador';
 

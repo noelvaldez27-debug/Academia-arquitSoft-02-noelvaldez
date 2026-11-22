@@ -120,6 +120,27 @@ Para observar la salida de texto y posibles mensajes de error en tiempo real:
   docker compose logs -f rabbitmq
   ```
 
+---
+
+## 7. Ejecución de migraciones de base de datos
+
+Las migraciones de PostgreSQL se gestionan mediante scripts SQL versionados en la carpeta `migraciones/` (ADR-015), sin ORM ni librerías adicionales.
+
+### Ejecutar migraciones dentro de Docker Compose
+Una vez levantado el backend con `docker compose up -d`, ejecuta el script de migración con Node.js en el contenedor:
+
+```bash
+docker compose exec backend node dist/scripts/migrar.js
+```
+
+### Ejecutar migraciones localmente (desarrollo fuera de Docker)
+Configura las variables de conexión a PostgreSQL (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`) en tu entorno o archivo `.env` y ejecuta:
+
+```bash
+npm run migrar
+```
+
+
 Para salir de la vista de registros presiona `Ctrl + C`.
 
 ---
