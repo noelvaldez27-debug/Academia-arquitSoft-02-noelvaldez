@@ -14,4 +14,6 @@ export * from './iniciar-sesion.command';
 export * from './iniciar-sesion.use-case';
 export * from './cambiar-password.command';
 export * from './cambiar-password.use-case';
+export * from './cambiar-correo.command';
+export * from './cambiar-correo.use-case';
 

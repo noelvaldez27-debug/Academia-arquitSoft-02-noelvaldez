@@ -39,5 +39,13 @@ export function crearRutasUsuario(
     controller.cambiarPassword
   );
 
+  // PATCH /correo - Cambiar el propio correo (Solo Administrador general o de sede)
+  router.patch(
+    '/correo',
+    middleware.autenticar,
+    middleware.requerirRol(RolUsuario.Administrador),
+    controller.cambiarCorreo
+  );
+
   return router;
 }

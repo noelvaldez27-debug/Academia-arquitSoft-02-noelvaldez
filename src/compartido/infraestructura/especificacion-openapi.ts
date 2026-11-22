@@ -271,5 +271,47 @@ export const especificacionOpenApi = {
         },
       },
     },
+    '/api/usuarios/correo': {
+      patch: {
+        summary: 'Cambiar el propio correo del administrador',
+        description:
+          'Permite a un administrador (general o de sede) actualizar su correo proporcionando el nuevo correo y su contraseña actual. El correo no puede estar en uso por otro usuario.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['nuevoCorreo', 'passwordActual'],
+                properties: {
+                  nuevoCorreo: { type: 'string', format: 'email', example: 'nuevo.admin@sofia.edu' },
+                  passwordActual: { type: 'string', example: 'mi_clave_actual' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Correo actualizado exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    mensaje: { type: 'string', example: 'Correo actualizado con exito.' },
+                  },
+                },
+              },
+            },
+          },
+          '400': { description: 'Error de validación (correo inválido o contraseña vacía)' },
+          '401': { description: 'Acceso no autorizado o contraseña actual incorrecta' },
+          '403': { description: 'Acceso denegado (solo administradores)' },
+          '409': { description: 'El correo ya está en uso por otro usuario' },
+        },
+      },
+    },
   },
 };

@@ -7,6 +7,7 @@ import { RegistrarEstudianteUseCase } from '../aplicacion/registrar-estudiante.u
 import { RegistrarDocenteUseCase } from '../aplicacion/registrar-docente.use-case';
 import { IniciarSesionUseCase } from '../aplicacion/iniciar-sesion.use-case';
 import { CambiarPasswordUseCase } from '../aplicacion/cambiar-password.use-case';
+import { CambiarCorreoUseCase } from '../aplicacion/cambiar-correo.use-case';
 import { ServicioToken, PayloadToken } from '../aplicacion/servicio-token.port';
 import {
   Usuario,
@@ -25,6 +26,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
   let mockDocenteUseCase: Partial<RegistrarDocenteUseCase>;
   let mockLoginUseCase: Partial<IniciarSesionUseCase>;
   let mockCambiarPasswordUseCase: Partial<CambiarPasswordUseCase>;
+  let mockCambiarCorreoUseCase: Partial<CambiarCorreoUseCase>;
   let mockServicioToken: Partial<ServicioToken>;
   let mockUsuarioRepo: Partial<UsuarioRepository>;
 
@@ -41,6 +43,9 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
     mockCambiarPasswordUseCase = {
       ejecutar: jest.fn(),
     };
+    mockCambiarCorreoUseCase = {
+      ejecutar: jest.fn(),
+    };
     mockServicioToken = {
       verificarToken: jest.fn(),
     };
@@ -52,7 +57,8 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       mockEstudianteUseCase as RegistrarEstudianteUseCase,
       mockDocenteUseCase as RegistrarDocenteUseCase,
       mockLoginUseCase as IniciarSesionUseCase,
-      mockCambiarPasswordUseCase as CambiarPasswordUseCase
+      mockCambiarPasswordUseCase as CambiarPasswordUseCase,
+      mockCambiarCorreoUseCase as CambiarCorreoUseCase
     );
 
     const middleware = new MiddlewareAutenticacion(
@@ -424,6 +430,84 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
 
       expect(res.status).toBe(401);
       expect(res.body.error).toContain('Credenciales invalidas.');
+    });
+  });
+
+  describe('PATCH /api/usuarios/correo (RF26, CA-U09)', () => {
+    const mockAdminPayload = {
+      id: 'admin-1',
+      rol: RolUsuario.Administrador,
+      sedeId: null,
+    };
+    const mockAdmin = Usuario.crearAdministradorGeneral({
+      id: 'admin-1',
+      nombre: 'Admin General',
+      correo: 'admin@sofia.edu',
+      passwordHash: 'hash',
+      activo: true,
+    });
+
+    it('(CA-U09) debe responder 200 cuando admin cambia su correo correctamente', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdmin);
+      (mockCambiarCorreoUseCase.ejecutar as jest.Mock).mockResolvedValueOnce(undefined);
+
+      const res = await request(app)
+        .patch('/api/usuarios/correo')
+        .set('Authorization', 'Bearer token_admin')
+        .send({ nuevoCorreo: 'nuevo@sofia.edu', passwordActual: 'clave' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.mensaje).toContain('Correo actualizado con exito.');
+    });
+
+    it('(CA-U09) debe responder 401 sin token', async () => {
+      const res = await request(app)
+        .patch('/api/usuarios/correo')
+        .send({ nuevoCorreo: 'nuevo@sofia.edu', passwordActual: 'clave' });
+      expect(res.status).toBe(401);
+    });
+
+    it('(CA-U09) debe responder 403 si postulante intenta cambiar correo', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'post-1',
+        rol: RolUsuario.Postulante,
+        sedeId: 'Hana',
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearPostulante({
+          id: 'post-1',
+          nombre: 'Postulante Test',
+          dni: '12345678',
+          correo: '12345678@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: 'Hana',
+          carrera: 'MEDICINA',
+          activo: true,
+        })
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/correo')
+        .set('Authorization', 'Bearer token_postulante')
+        .send({ nuevoCorreo: 'nuevo@sofia.edu', passwordActual: 'clave' });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('(CA-U09) debe responder 409 si el correo ya existe', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdmin);
+      (mockCambiarCorreoUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorConflicto('El correo ya esta en uso por otro usuario.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/correo')
+        .set('Authorization', 'Bearer token_admin')
+        .send({ nuevoCorreo: 'ocupado@sofia.edu', passwordActual: 'clave' });
+
+      expect(res.status).toBe(409);
     });
   });
 });

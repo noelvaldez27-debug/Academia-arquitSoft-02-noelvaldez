@@ -3,6 +3,7 @@ import { RegistrarEstudianteUseCase } from '../aplicacion/registrar-estudiante.u
 import { RegistrarDocenteUseCase } from '../aplicacion/registrar-docente.use-case';
 import { IniciarSesionUseCase } from '../aplicacion/iniciar-sesion.use-case';
 import { CambiarPasswordUseCase } from '../aplicacion/cambiar-password.use-case';
+import { CambiarCorreoUseCase } from '../aplicacion/cambiar-correo.use-case';
 import {
   ErrorValidacion,
   ErrorConflicto,
@@ -21,7 +22,8 @@ export class UsuarioController {
     private readonly registrarEstudianteUseCase: RegistrarEstudianteUseCase,
     private readonly registrarDocenteUseCase: RegistrarDocenteUseCase,
     private readonly iniciarSesionUseCase: IniciarSesionUseCase,
-    private readonly cambiarPasswordUseCase: CambiarPasswordUseCase
+    private readonly cambiarPasswordUseCase: CambiarPasswordUseCase,
+    private readonly cambiarCorreoUseCase: CambiarCorreoUseCase
   ) {}
 
   public registrarEstudiante = async (req: Request, res: Response): Promise<void> => {
@@ -116,6 +118,26 @@ export class UsuarioController {
       });
 
       res.status(200).json({ mensaje: 'Contrasena actualizada con exito.' });
+    } catch (error) {
+      this.manejarError(error, res);
+    }
+  };
+
+  public cambiarCorreo = async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (!req.usuario) {
+        res.status(401).json({ error: 'Acceso no autorizado: debe iniciar sesion.' });
+        return;
+      }
+
+      const { nuevoCorreo, passwordActual } = req.body ?? {};
+      await this.cambiarCorreoUseCase.ejecutar({
+        usuarioId: req.usuario.id,
+        nuevoCorreo,
+        passwordActual,
+      });
+
+      res.status(200).json({ mensaje: 'Correo actualizado con exito.' });
     } catch (error) {
       this.manejarError(error, res);
     }

@@ -1,4 +1,4 @@
-﻿# Tareas — Módulo Gestión de Usuarios
+# Tareas — Módulo Gestión de Usuarios
 
 > Basado en: HU01, HU02, HU14 a HU22 | RF01, RF02, RF19 a RF26 | RC09, RC15, RC16 | AC04, AC05 | ADR-007, ADR-008, ADR-015, ADR-016 | Criterios CA-U01 a CA-U14 de `specs/usuarios/spec.md`. Ruta del módulo: `src/modules/usuarios/`
 > Requiere: `specs/base/tasks.md` completo (proyecto Node.js + TypeScript, Docker, PostgreSQL y CI ya funcionando).
@@ -23,7 +23,7 @@
 - [x] 10. Middleware de autenticación y autorización por rol y por sede, que además comprueba en cada petición que el usuario siga activo y toma su rol y su sede actuales de la base de datos (AC04, ADR-007, RC15, CA-U06)
 - [x] 11. Presentación: usuario.controller.ts y usuario.routes.ts con los endpoints de registrar estudiante, registrar docente e iniciar sesión, documentados en OpenAPI/Swagger (ADR-008)
 - [x] 12. Caso de uso: cambiar la propia contraseña, con contraseña actual y largo mínimo; es opcional para todos los roles (RF26, CA-U08). Incluye su endpoint y su documentación OpenAPI
-- [ ] 13. Caso de uso: cambiar el propio correo del administrador, con su contraseña actual (RF26, CA-U09). Incluye su endpoint y su documentación OpenAPI
+- [x] 13. Caso de uso: cambiar el propio correo del administrador, con su contraseña actual (RF26, CA-U09). Incluye su endpoint y su documentación OpenAPI
 - [ ] 14. Caso de uso: listar usuarios con filtro por rol y por sede; el administrador general ve todos y el administrador de sede solo los postulantes de su sede; nunca contraseñas ni hashes (RF23, CA-U10). Incluye su endpoint y su documentación OpenAPI
 - [ ] 15. Caso de uso: desactivar y reactivar usuario sin borrarlo (RF24, RC16, CA-U11); el administrador de sede solo puede hacerlo con postulantes de su sede; no se permite desactivarse a sí mismo ni al administrador general. Incluye sus endpoints y su documentación OpenAPI
 - [ ] 16. Caso de uso: crear cuentas de administrador de sede, con nombre, correo, contraseña inicial y sede definidos por el administrador general; excepción a la regla del DNI de RC09 (RF25, HU19, CA-U12). No se puede crear otro administrador general. Incluye su endpoint y su documentación OpenAPI
