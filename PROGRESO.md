@@ -52,13 +52,13 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 18 de `specs/usuarios/tasks.md`: Exposición de la API pública del módulo en `src/modules/usuarios/index.ts` exclusivamente mediante puertos, contratos y tipos de autorización y consulta (CA-U07). Se expone `MiddlewareAutenticacion` y tipos asociados (`RolUsuario`, `AlcanceAdministrador`, `UsuarioAutenticadoRequest`) para protección de rutas de otros módulos; puerto `ServicioConsultaUsuarios`, caso de uso `ConsultarUsuarioUseCase` y DTO `UsuarioPublicoDTO` para consultar usuarios por ID con sede y carrera sin contraseñas ni hashes (AC04); y la raíz de composición `UsuariosModule`.
+Tarea 19 de `specs/usuarios/tasks.md`: Infraestructura: migración 003 que crea las tablas `cargas_masivas` y `filas_carga_masiva` con índices. Entidad de dominio `CargaMasiva` con estados y métodos de incremento; puerto `CargaMasivaRepository`; repositorio `PostgresCargaMasivaRepository` con todas las operaciones (guardar, buscarPorId, actualizar, guardarFilas en bloques de 200, obtenerFilasPorLote, contarLotes, marcarFilaProcesada). Pruebas: `carga-masiva.test.ts` (6 casos) y `postgres-carga-masiva-repository.test.ts` (9 casos), pool simulado sin Docker. La consulta SQL `whereSql` en postgres-usuario-repository.ts ya era segura: solo fragmentos fijos con marcadores $N, sin concatenación de valores de usuario.
 
 ## Tarea en curso / pendiente a medias
-(ninguna — lote de tareas 14 a 18 finalizado según solicitud del usuario)
+(ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 19 de `specs/usuarios/tasks.md`: Infraestructura: migración de la tabla de cargas masivas (estado, sede, totales, errores por fila) y su repositorio (CA-U13).
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 20 de `specs/usuarios/tasks.md`: Lectura y validación del archivo .xlsx.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

@@ -4,5 +4,6 @@
  */
 export * from './postgres-sede-repository';
 export * from './postgres-usuario-repository';
+export * from './postgres-carga-masiva-repository';
 export * from './bcryptjs-hash.adapter';
 export * from './jsonwebtoken-token.adapter';

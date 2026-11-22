@@ -8,3 +8,5 @@ export * from './sede';
 export * from './sede-repository';
 export * from './usuario';
 export * from './usuario-repository';
+export * from './carga-masiva';
+export * from './carga-masiva-repository';
