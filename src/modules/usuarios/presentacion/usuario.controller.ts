@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RegistrarEstudianteUseCase } from '../aplicacion/registrar-estudiante.use-case';
 import { RegistrarDocenteUseCase } from '../aplicacion/registrar-docente.use-case';
 import { IniciarSesionUseCase } from '../aplicacion/iniciar-sesion.use-case';
+import { CambiarPasswordUseCase } from '../aplicacion/cambiar-password.use-case';
 import {
   ErrorValidacion,
   ErrorConflicto,
@@ -19,7 +20,8 @@ export class UsuarioController {
   constructor(
     private readonly registrarEstudianteUseCase: RegistrarEstudianteUseCase,
     private readonly registrarDocenteUseCase: RegistrarDocenteUseCase,
-    private readonly iniciarSesionUseCase: IniciarSesionUseCase
+    private readonly iniciarSesionUseCase: IniciarSesionUseCase,
+    private readonly cambiarPasswordUseCase: CambiarPasswordUseCase
   ) {}
 
   public registrarEstudiante = async (req: Request, res: Response): Promise<void> => {
@@ -96,6 +98,26 @@ export class UsuarioController {
     } catch {
       // Seguridad AC04 y CA-U05: ante cualquier error en login, responder el mismo mensaje genérico
       res.status(401).json({ error: 'Credenciales invalidas.' });
+    }
+  };
+
+  public cambiarPassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (!req.usuario) {
+        res.status(401).json({ error: 'Acceso no autorizado: debe iniciar sesion.' });
+        return;
+      }
+
+      const { passwordActual, passwordNueva } = req.body ?? {};
+      await this.cambiarPasswordUseCase.ejecutar({
+        usuarioId: req.usuario.id,
+        passwordActual,
+        passwordNueva,
+      });
+
+      res.status(200).json({ mensaje: 'Contrasena actualizada con exito.' });
+    } catch (error) {
+      this.manejarError(error, res);
     }
   };
 

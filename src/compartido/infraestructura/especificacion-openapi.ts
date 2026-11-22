@@ -227,5 +227,49 @@ export const especificacionOpenApi = {
         },
       },
     },
+    '/api/usuarios/password': {
+      patch: {
+        summary: 'Cambiar la propia contraseña',
+        description:
+          'Permite a cualquier usuario autenticado actualizar su contraseña proporcionando su contraseña actual y una nueva contraseña de mínimo 8 caracteres. Ninguna contraseña ni hash es retornado.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['passwordActual', 'passwordNueva'],
+                properties: {
+                  passwordActual: { type: 'string', example: 'mi_clave_actual' },
+                  passwordNueva: { type: 'string', example: 'nueva_clave_segura_123' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Contraseña actualizada exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    mensaje: { type: 'string', example: 'Contrasena actualizada con exito.' },
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Error de validación (contraseña actual vacía o nueva menor a 8 caracteres)',
+          },
+          '401': {
+            description: 'Acceso no autorizado o credenciales inválidas (contraseña actual incorrecta)',
+          },
+        },
+      },
+    },
   },
 };

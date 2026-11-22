@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 11 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 12 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -38,28 +38,27 @@
 - Versiones fijadas de servicios de infraestructura en Docker Compose: PostgreSQL 16 (`postgres:16-alpine`), Redis 7 (`redis:7-alpine`), RabbitMQ 3.13 con interfaz de gestión (`rabbitmq:3.13-management-alpine`).
 - IA y adjuntos: `ServicioIA` se definió con entrada de texto (`proponer(texto, curso)`); el soporte de adjuntos binarios para imágenes y PDF escaneados (ADR-011) queda pendiente para la especificación del módulo Banco de Preguntas.
 - Por ahora solo se trabaja el Sprint 2. El Sprint 3 (aplicación web, despliegue en AWS, adaptador de S3, actualización de C4) queda en pausa hasta que el usuario lo confirme. No iniciar nada de eso por iniciativa propia.
+- El administrador de sede puede desactivar y reactivar postulantes de su sede (CA-U11, confirmado por el usuario).
+- El administrador general puede crear sedes nuevas sin cambiar código (CA-U14, AC05, confirmado por el usuario).
 
 ## Pendiente de confirmar (módulo 1)
 Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que el usuario aún no confirmó. Si una tarea depende de alguno, preguntar antes de implementarla.
 - Los docentes los registra solo el Administrador general y no pertenecen a una sede (tarea 7)
-- El Administrador de sede puede desactivar y reactivar postulantes de su sede (tarea 15)
-- El Administrador general puede crear sedes nuevas (tarea 17)
 - La carrera es texto normalizado, no una lista cerrada (tareas 4 y 6)
 - No hay tope de alumnos por sede (tareas 6 y 21)
 - El nombre se guarda en un solo campo (tareas 3 y 4)
-- El JWT dura 8 horas, configurable, y la contraseña tiene mínimo 8 caracteres (tareas 9 y 12)
 - La carga masiva usa la cola de mensajes (tarea 21 y ADR-016)
 - Un DNI existente con nombre distinto en el Excel no se cambia y se informa (tarea 21)
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 11 de `specs/usuarios/tasks.md`: Presentación: `usuario.controller.ts` y `usuario.routes.ts` con los endpoints `POST /api/usuarios/login`, `POST /api/usuarios/estudiantes` y `POST /api/usuarios/docentes`, documentados en OpenAPI/Swagger (ADR-008). Se integraron las rutas en la raíz de composición `UsuariosModule` y se montaron en el servidor base `crearApp` y `src/index.ts`. 157 pruebas unitarias Jest pasando y compilación TypeScript limpia.
+Tarea 12 de `specs/usuarios/tasks.md`: Caso de uso `CambiarPasswordUseCase` en `src/modules/usuarios/aplicacion/cambiar-password.use-case.ts`. Exige contraseña actual correcta (mensaje genérico si no coincide, AC04) y nueva contraseña de mínimo 8 caracteres (constante de dominio `LONGITUD_MINIMA_PASSWORD` en `usuario.ts`). Endpoint `PATCH /api/usuarios/password` protegido con `autenticar` (cualquier rol). Documentado en OpenAPI. 167 pruebas Jest pasando, tsc limpio. También se movieron a "Decisiones ya tomadas" las dos decisiones confirmadas por el usuario: administrador de sede puede desactivar/reactivar postulantes de su sede, y administrador general puede crear sedes nuevas.
 
 ## Tarea en curso / pendiente a medias
 (ninguna — lote de tareas 6 a 11 finalizado según solicitud del usuario)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 12 de `specs/usuarios/tasks.md`: Caso de uso: cambiar la propia contraseña, con contraseña actual y largo mínimo (mínimo 8 caracteres); es opcional para todos los roles (RF26, CA-U08). Incluye su endpoint y su documentación OpenAPI.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 13 de `specs/usuarios/tasks.md`: Caso de uso cambiar el propio correo del administrador, con contraseña actual (RF26, CA-U09). Incluye endpoint y documentación OpenAPI.
 
 ## Notas para el siguiente editor
 - Tarea 11 completada: Controlador `UsuarioController` en `src/modules/usuarios/presentacion/usuario.controller.ts` y rutas `crearRutasUsuario` en `src/modules/usuarios/presentacion/usuario.routes.ts`. Se documentaron los esquemas y endpoints en `src/compartido/infraestructura/especificacion-openapi.ts` con seguridad `bearerAuth`. El endpoint `/login` responde 401 genérico ante cualquier error y nunca revela credenciales ni hashes (AC04, CA-U05). Se conectó `UsuariosModule` en `src/index.ts` y `src/compartido/infraestructura/servidor.ts`.

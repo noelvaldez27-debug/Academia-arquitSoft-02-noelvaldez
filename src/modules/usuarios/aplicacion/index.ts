@@ -12,3 +12,6 @@ export * from './registrar-docente.use-case';
 export * from './sembrar-administrador-general';
 export * from './iniciar-sesion.command';
 export * from './iniciar-sesion.use-case';
+export * from './cambiar-password.command';
+export * from './cambiar-password.use-case';
+

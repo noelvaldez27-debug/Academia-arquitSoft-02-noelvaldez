@@ -6,6 +6,7 @@ import { MiddlewareAutenticacion } from './autenticacion.middleware';
 import { RegistrarEstudianteUseCase } from '../aplicacion/registrar-estudiante.use-case';
 import { RegistrarDocenteUseCase } from '../aplicacion/registrar-docente.use-case';
 import { IniciarSesionUseCase } from '../aplicacion/iniciar-sesion.use-case';
+import { CambiarPasswordUseCase } from '../aplicacion/cambiar-password.use-case';
 import { ServicioToken, PayloadToken } from '../aplicacion/servicio-token.port';
 import {
   Usuario,
@@ -15,6 +16,7 @@ import {
   ErrorValidacion,
   ErrorConflicto,
   ErrorAccesoDenegado,
+  ErrorAutenticacion,
 } from '../dominio';
 
 describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
@@ -22,6 +24,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
   let mockEstudianteUseCase: Partial<RegistrarEstudianteUseCase>;
   let mockDocenteUseCase: Partial<RegistrarDocenteUseCase>;
   let mockLoginUseCase: Partial<IniciarSesionUseCase>;
+  let mockCambiarPasswordUseCase: Partial<CambiarPasswordUseCase>;
   let mockServicioToken: Partial<ServicioToken>;
   let mockUsuarioRepo: Partial<UsuarioRepository>;
 
@@ -35,6 +38,9 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
     mockLoginUseCase = {
       ejecutar: jest.fn(),
     };
+    mockCambiarPasswordUseCase = {
+      ejecutar: jest.fn(),
+    };
     mockServicioToken = {
       verificarToken: jest.fn(),
     };
@@ -45,7 +51,8 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
     const controller = new UsuarioController(
       mockEstudianteUseCase as RegistrarEstudianteUseCase,
       mockDocenteUseCase as RegistrarDocenteUseCase,
-      mockLoginUseCase as IniciarSesionUseCase
+      mockLoginUseCase as IniciarSesionUseCase,
+      mockCambiarPasswordUseCase as CambiarPasswordUseCase
     );
 
     const middleware = new MiddlewareAutenticacion(
@@ -299,6 +306,124 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('solo el administrador general puede registrar docentes');
+    });
+  });
+
+  describe('PATCH /api/usuarios/password (RF26, CA-U08)', () => {
+    it('(CA-U08) debe responder 200 y mensaje de exito al cambiar la contrasena correctamente', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'user-1',
+        rol: RolUsuario.Postulante,
+        sedeId: 'Hana',
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearPostulante({
+          id: 'user-1',
+          nombre: 'Alumno Test',
+          dni: '12345678',
+          correo: '12345678@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: 'Hana',
+          carrera: 'MEDICINA',
+          activo: true,
+        })
+      );
+      (mockCambiarPasswordUseCase.ejecutar as jest.Mock).mockResolvedValueOnce(undefined);
+
+      const res = await request(app)
+        .patch('/api/usuarios/password')
+        .set('Authorization', 'Bearer token_valido')
+        .send({
+          passwordActual: '12345678',
+          passwordNueva: 'nueva_clave_segura_123',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.mensaje).toContain('Contrasena actualizada con exito.');
+      expect(mockCambiarPasswordUseCase.ejecutar).toHaveBeenCalledWith({
+        usuarioId: 'user-1',
+        passwordActual: '12345678',
+        passwordNueva: 'nueva_clave_segura_123',
+      });
+    });
+
+    it('(CA-U08) debe responder 401 si no se envia token de autenticacion', async () => {
+      const res = await request(app)
+        .patch('/api/usuarios/password')
+        .send({
+          passwordActual: '12345678',
+          passwordNueva: 'nueva_clave_segura_123',
+        });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('(CA-U08) debe responder 400 si la contrasena nueva es menor a 8 caracteres', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'user-1',
+        rol: RolUsuario.Postulante,
+        sedeId: 'Hana',
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearPostulante({
+          id: 'user-1',
+          nombre: 'Alumno Test',
+          dni: '12345678',
+          correo: '12345678@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: 'Hana',
+          carrera: 'MEDICINA',
+          activo: true,
+        })
+      );
+      (mockCambiarPasswordUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorValidacion('La nueva contrasena debe tener al menos 8 caracteres.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/password')
+        .set('Authorization', 'Bearer token_valido')
+        .send({
+          passwordActual: '12345678',
+          passwordNueva: 'corta',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('al menos 8 caracteres');
+    });
+
+    it('(CA-U08) debe responder 401 si la contrasena actual es incorrecta', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'user-1',
+        rol: RolUsuario.Postulante,
+        sedeId: 'Hana',
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearPostulante({
+          id: 'user-1',
+          nombre: 'Alumno Test',
+          dni: '12345678',
+          correo: '12345678@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: 'Hana',
+          carrera: 'MEDICINA',
+          activo: true,
+        })
+      );
+      (mockCambiarPasswordUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorAutenticacion('Credenciales invalidas.')
+      );
+
+      const res = await request(app)
+        .patch('/api/usuarios/password')
+        .set('Authorization', 'Bearer token_valido')
+        .send({
+          passwordActual: 'clave_incorrecta',
+          passwordNueva: 'nueva_clave_segura_123',
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toContain('Credenciales invalidas.');
     });
   });
 });

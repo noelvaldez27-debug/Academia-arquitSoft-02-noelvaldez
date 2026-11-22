@@ -32,5 +32,12 @@ export function crearRutasUsuario(
     controller.registrarDocente
   );
 
+  // PATCH /password - Cambiar la propia contraseña (Cualquier rol autenticado)
+  router.patch(
+    '/password',
+    middleware.autenticar,
+    controller.cambiarPassword
+  );
+
   return router;
 }

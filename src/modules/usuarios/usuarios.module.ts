@@ -8,6 +8,7 @@ import { GeneradorCredenciales } from './aplicacion/generar-credenciales';
 import { RegistrarEstudianteUseCase } from './aplicacion/registrar-estudiante.use-case';
 import { RegistrarDocenteUseCase } from './aplicacion/registrar-docente.use-case';
 import { IniciarSesionUseCase } from './aplicacion/iniciar-sesion.use-case';
+import { CambiarPasswordUseCase } from './aplicacion/cambiar-password.use-case';
 import { UsuarioController } from './presentacion/usuario.controller';
 import { MiddlewareAutenticacion } from './presentacion/autenticacion.middleware';
 import { crearRutasUsuario } from './presentacion/usuario.routes';
@@ -28,6 +29,7 @@ export class UsuariosModule {
   public readonly registrarEstudianteUseCase: RegistrarEstudianteUseCase;
   public readonly registrarDocenteUseCase: RegistrarDocenteUseCase;
   public readonly iniciarSesionUseCase: IniciarSesionUseCase;
+  public readonly cambiarPasswordUseCase: CambiarPasswordUseCase;
   public readonly controller: UsuarioController;
 
   constructor(config: ConfigModuloUsuarios) {
@@ -54,12 +56,17 @@ export class UsuariosModule {
       hashAdapter,
       tokenAdapter
     );
+    this.cambiarPasswordUseCase = new CambiarPasswordUseCase(
+      usuarioRepo,
+      hashAdapter
+    );
 
     this.middlewareAutenticacion = new MiddlewareAutenticacion(tokenAdapter, usuarioRepo);
     this.controller = new UsuarioController(
       this.registrarEstudianteUseCase,
       this.registrarDocenteUseCase,
-      this.iniciarSesionUseCase
+      this.iniciarSesionUseCase,
+      this.cambiarPasswordUseCase
     );
 
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);

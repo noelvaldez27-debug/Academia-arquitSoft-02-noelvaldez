@@ -1,5 +1,7 @@
 import { RolUsuario, AlcanceAdministrador } from './rol-usuario';
 
+export const LONGITUD_MINIMA_PASSWORD = 8;
+
 export interface PropiedadesUsuario {
   id?: string;
   nombre: string;
