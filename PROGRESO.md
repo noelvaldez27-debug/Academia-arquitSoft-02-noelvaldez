@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 9 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 10 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -53,15 +53,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 9 de `specs/usuarios/tasks.md`: Caso de uso: iniciar sesión y emitir JWT con identificador, rol y sede, y duración configurable por variable de entorno (`JWT_DURACION`, por defecto `8h`) (ADR-007, CA-U05, HU20, RF20). Se implementó el puerto `ServicioToken`, el caso de uso `IniciarSesionUseCase` en `src/modules/usuarios/aplicacion/` y el adaptador `JsonWebTokenAdapter` en `src/modules/usuarios/infraestructura/` usando `jsonwebtoken` (^9.0.3). Maneja credenciales inválidas y usuarios inactivos con el mismo error genérico `ErrorAutenticacion('Credenciales invalidas.')` sin revelar causas internas ni hashes. Valida que `JWT_SECRET` exista y que en producción no empiece por `cambiar_`. 135 pruebas unitarias Jest pasando y compilación TypeScript limpia.
+Tarea 10 de `specs/usuarios/tasks.md`: Middleware de autenticación y autorización por rol y por sede (`MiddlewareAutenticacion` en `src/modules/usuarios/presentacion/autenticacion.middleware.ts`) (AC04, ADR-007, RC15, CA-U06). En cada petición extrae el token Bearer, lo verifica con `ServicioToken`, valida que la cuenta siga activa en la base de datos y toma de allí el rol y sede vigentes (invalidando de inmediato sesiones de cuentas desactivadas). Provee middlewares `requerirRol` y `requerirAlcanceSede` que rechazan con 401 si falta sesión o 403 si faltan permisos de rol o sede. 148 pruebas unitarias Jest pasando y compilación TypeScript limpia.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 10 de `specs/usuarios/tasks.md`: Middleware de autenticación y autorización por rol y por sede, que además comprueba en cada petición que el usuario siga activo y toma su rol y su sede actuales de la base de datos (AC04, ADR-007, RC15, CA-U06).
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 11 de `specs/usuarios/tasks.md`: Presentación: usuario.controller.ts y usuario.routes.ts con los endpoints de registrar estudiante, registrar docente e iniciar sesión, documentados en OpenAPI/Swagger (ADR-008).
 
 ## Notas para el siguiente editor
+- Tarea 10 completada: Clase `MiddlewareAutenticacion` en `src/modules/usuarios/presentacion/autenticacion.middleware.ts` con métodos `autenticar`, `requerirRol` y `requerirAlcanceSede`. Extiende `Express.Request` con `req.usuario` tipado con datos de BD. Si el usuario fue desactivado, responde 401 aunque el JWT no haya expirado; si es administrador de sede, impide gestionar estudiantes de otra sede con 403.
 - Tarea 9 completada: Librería JWT elegida: `jsonwebtoken` (^9.0.3) con `@types/jsonwebtoken` (^9.0.10). Motivo de elección: estándar consolidado para APIs Express en Node.js, implementación nativa en JavaScript sin dependencias compiladas C++ (plena compatibilidad con `node:20-alpine`), sin vulnerabilidades altas ni críticas en `npm audit`. Se desacopló mediante el puerto `ServicioToken` en `src/modules/usuarios/aplicacion/servicio-token.port.ts` y se implementó `JsonWebTokenAdapter` en `src/modules/usuarios/infraestructura/jsonwebtoken-token.adapter.ts`. Nueva variable no secreta agregada con valor documentado por defecto: `JWT_DURACION=8h`. Se implementó validación de seguridad para rechazar `JWT_SECRET` faltante o iniciado con `cambiar_` cuando `NODE_ENV=production`.
 - Tarea 8 completada: Servicio `SembradorAdministradorGeneral` en `src/modules/usuarios/aplicacion/sembrar-administrador-general.ts` y script de entrada `src/scripts/seed-admin.ts`. Se configuraron las variables de entorno sin respaldo `ADMIN_GENERAL_NOMBRE`, `ADMIN_GENERAL_CORREO` y `ADMIN_GENERAL_PASSWORD` en `.env.example` y en `docker-compose.yml`. Se agregó el comando `npm run seed:admin` en `package.json`. Si alguna variable falta, arroja error explicativo; si ya existe un administrador general, no realiza duplicaciones ni modificaciones (CA-U04).
 - Tarea 7 completada: Caso de uso `RegistrarDocenteUseCase` en `src/modules/usuarios/aplicacion/registrar-docente.use-case.ts`. Se valida que el ejecutor sea Administrador General (`AlcanceAdministrador.General`). Si es Administrador de Sede, Docente o Postulante, lanza `ErrorAccesoDenegado`. Los docentes no poseen sede ni carrera según el modelo de dominio. Reutiliza `GeneradorCredenciales` para crear credenciales con hash.

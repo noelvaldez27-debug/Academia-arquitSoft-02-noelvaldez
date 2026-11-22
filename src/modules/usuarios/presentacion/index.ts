@@ -1,5 +1,5 @@
 /**
  * Capa de Presentación — Módulo Gestión de Usuarios
- * Contiene controladores y rutas REST.
+ * Contiene controladores, rutas REST y middlewares de autenticación/autorización.
  */
-export {};
+export * from './autenticacion.middleware';
