@@ -13,6 +13,7 @@ import { CambiarCorreoUseCase } from './aplicacion/cambiar-correo.use-case';
 import { ListarUsuariosUseCase } from './aplicacion/listar-usuarios.use-case';
 import { DesactivarUsuarioUseCase } from './aplicacion/desactivar-usuario.use-case';
 import { ReactivarUsuarioUseCase } from './aplicacion/reactivar-usuario.use-case';
+import { RegistrarAdministradorSedeUseCase } from './aplicacion/registrar-administrador-sede.use-case';
 import { UsuarioController } from './presentacion/usuario.controller';
 import { MiddlewareAutenticacion } from './presentacion/autenticacion.middleware';
 import { crearRutasUsuario } from './presentacion/usuario.routes';
@@ -38,6 +39,7 @@ export class UsuariosModule {
   public readonly listarUsuariosUseCase: ListarUsuariosUseCase;
   public readonly desactivarUsuarioUseCase: DesactivarUsuarioUseCase;
   public readonly reactivarUsuarioUseCase: ReactivarUsuarioUseCase;
+  public readonly registrarAdministradorSedeUseCase: RegistrarAdministradorSedeUseCase;
   public readonly controller: UsuarioController;
 
   constructor(config: ConfigModuloUsuarios) {
@@ -75,6 +77,11 @@ export class UsuariosModule {
     this.listarUsuariosUseCase = new ListarUsuariosUseCase(usuarioRepo);
     this.desactivarUsuarioUseCase = new DesactivarUsuarioUseCase(usuarioRepo);
     this.reactivarUsuarioUseCase = new ReactivarUsuarioUseCase(usuarioRepo);
+    this.registrarAdministradorSedeUseCase = new RegistrarAdministradorSedeUseCase(
+      usuarioRepo,
+      sedeRepo,
+      hashAdapter
+    );
 
     this.middlewareAutenticacion = new MiddlewareAutenticacion(tokenAdapter, usuarioRepo);
     this.controller = new UsuarioController(
@@ -85,7 +92,8 @@ export class UsuariosModule {
       this.cambiarCorreoUseCase,
       this.listarUsuariosUseCase,
       this.desactivarUsuarioUseCase,
-      this.reactivarUsuarioUseCase
+      this.reactivarUsuarioUseCase,
+      this.registrarAdministradorSedeUseCase
     );
 
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);

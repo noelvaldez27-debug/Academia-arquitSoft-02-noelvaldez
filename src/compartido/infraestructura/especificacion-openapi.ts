@@ -468,5 +468,55 @@ export const especificacionOpenApi = {
         },
       },
     },
+    '/api/usuarios/administradores-sede': {
+      post: {
+        summary: 'Crear cuenta de administrador de sede',
+        description:
+          'Permite al administrador general registrar una cuenta de administrador de sede con nombre, correo, contraseña inicial y sede especificada. No utiliza la regla del DNI. No se puede crear otro administrador general.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['nombre', 'correo', 'passwordInicial', 'sedeId'],
+                properties: {
+                  nombre: { type: 'string', example: 'Admin Hana' },
+                  correo: { type: 'string', format: 'email', example: 'admin.hana@sofia.edu' },
+                  passwordInicial: { type: 'string', minLength: 8, example: 'clave_admin_123' },
+                  sedeId: { type: 'string', example: '1' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Administrador de sede creado exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    nombre: { type: 'string' },
+                    correo: { type: 'string' },
+                    rol: { type: 'string', example: 'ADMINISTRADOR' },
+                    alcanceAdministrador: { type: 'string', example: 'SEDE' },
+                    sedeId: { type: 'string' },
+                    activo: { type: 'boolean' },
+                  },
+                },
+              },
+            },
+          },
+          '400': { description: 'Error de validación (datos incompletos, formato de correo inválido o contraseña < 8 caracteres)' },
+          '401': { description: 'Acceso no autorizado' },
+          '403': { description: 'Acceso denegado (solo el administrador general puede crear administradores de sede)' },
+          '409': { description: 'El correo ya está en uso por otro usuario' },
+        },
+      },
+    },
   },
 };

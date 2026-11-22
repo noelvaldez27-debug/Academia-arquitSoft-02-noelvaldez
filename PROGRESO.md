@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 15 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 16 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -52,15 +52,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 15 de `specs/usuarios/tasks.md`: Casos de uso `DesactivarUsuarioUseCase` y `ReactivarUsuarioUseCase` en `src/modules/usuarios/aplicacion/`. Endpoints `PATCH /api/usuarios/:id/desactivar` y `PATCH /api/usuarios/:id/reactivar`. Nadie puede desactivarse a sí mismo ni al Administrador General (400). Administrador de sede solo puede desactivar y reactivar postulantes de su sede (si intenta con otra sede o con otro rol recibe 403). Mapeo de `ErrorNoEncontrado` a 404. Documentado en OpenAPI.
+Tarea 16 de `specs/usuarios/tasks.md`: Caso de uso `RegistrarAdministradorSedeUseCase` en `src/modules/usuarios/aplicacion/registrar-administrador-sede.use-case.ts`. Endpoint `POST /api/usuarios/administradores-sede`. Solo el Administrador General puede ejecutarlo (403 si es admin de sede, docente o postulante). Valida correo único (409), existencia de sede y contraseña inicial >= 8 caracteres. Guarda contraseña con hash y nunca la expone en respuestas (AC04). Documentado en OpenAPI.
 
 ## Tarea en curso / pendiente a medias
-(ninguna — tarea 15 completada)
+(ninguna — tarea 16 completada)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 16 de `specs/usuarios/tasks.md`: Caso de uso: crear cuentas de administrador de sede, con nombre, correo, contraseña inicial y sede definidos por el administrador general; excepción a la regla del DNI de RC09 (RF25, HU19, CA-U12). No se puede crear otro administrador general. Incluye su endpoint y su documentación OpenAPI.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 17 de `specs/usuarios/tasks.md`: Caso de uso: listar sedes y crear una sede nueva, esta última solo para el administrador general, sin cambiar código (RF22, AC05, CA-U14). Incluye sus endpoints y su documentación OpenAPI.
 
 ## Notas para el siguiente editor
+- Tarea 16 completada: Caso de uso `RegistrarAdministradorSedeUseCase` y endpoint `POST /api/usuarios/administradores-sede`. Crea cuentas con rol `Administrador` y alcance `Sede`. Excepción a la regla del DNI de RC09. Se valida que el correo no esté duplicado y que la sede exista previamente en la tabla de sedes. Solo el administrador general puede invocarlo.
 - Tarea 15 completada: Casos de uso `DesactivarUsuarioUseCase` y `ReactivarUsuarioUseCase`. Los endpoints `PATCH /api/usuarios/:id/desactivar` y `PATCH /api/usuarios/:id/reactivar` actualizan el campo `activo` a través de `UsuarioRepository.actualizar`. Como el `MiddlewareAutenticacion` consulta la BD en cada petición, cualquier usuario desactivado pierde el acceso de inmediato (401).
 - Tarea 14 completada: Caso de uso `ListarUsuariosUseCase` y endpoint `GET /api/usuarios` paginado (`pagina`, `limite`, `total`). Consultas SQL parametrizadas con LIMIT y OFFSET sobre `PostgresUsuarioRepository.listar`. Si un administrador de sede intenta listar usuarios de otra sede o un rol distinto a Postulante, responde 403 (`ErrorAccesoDenegado`). No expone hashes ni contraseñas. Documentado en OpenAPI con esquema de respuesta paginado.
 - Decisiones confirmadas: el administrador de sede puede desactivar y reactivar postulantes de su sede, y el administrador general puede crear sedes nuevas sin cambiar código.

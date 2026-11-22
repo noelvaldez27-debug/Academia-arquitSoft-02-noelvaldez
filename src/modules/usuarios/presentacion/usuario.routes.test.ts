@@ -11,6 +11,7 @@ import { CambiarCorreoUseCase } from '../aplicacion/cambiar-correo.use-case';
 import { ListarUsuariosUseCase } from '../aplicacion/listar-usuarios.use-case';
 import { DesactivarUsuarioUseCase } from '../aplicacion/desactivar-usuario.use-case';
 import { ReactivarUsuarioUseCase } from '../aplicacion/reactivar-usuario.use-case';
+import { RegistrarAdministradorSedeUseCase } from '../aplicacion/registrar-administrador-sede.use-case';
 import { ServicioToken, PayloadToken } from '../aplicacion/servicio-token.port';
 import {
   Usuario,
@@ -34,6 +35,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
   let mockListarUsuariosUseCase: Partial<ListarUsuariosUseCase>;
   let mockDesactivarUsuarioUseCase: Partial<DesactivarUsuarioUseCase>;
   let mockReactivarUsuarioUseCase: Partial<ReactivarUsuarioUseCase>;
+  let mockRegistrarAdministradorSedeUseCase: Partial<RegistrarAdministradorSedeUseCase>;
   let mockServicioToken: Partial<ServicioToken>;
   let mockUsuarioRepo: Partial<UsuarioRepository>;
 
@@ -62,6 +64,9 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
     mockReactivarUsuarioUseCase = {
       ejecutar: jest.fn(),
     };
+    mockRegistrarAdministradorSedeUseCase = {
+      ejecutar: jest.fn(),
+    };
     mockServicioToken = {
       verificarToken: jest.fn(),
     };
@@ -77,7 +82,8 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       mockCambiarCorreoUseCase as CambiarCorreoUseCase,
       mockListarUsuariosUseCase as ListarUsuariosUseCase,
       mockDesactivarUsuarioUseCase as DesactivarUsuarioUseCase,
-      mockReactivarUsuarioUseCase as ReactivarUsuarioUseCase
+      mockReactivarUsuarioUseCase as ReactivarUsuarioUseCase,
+      mockRegistrarAdministradorSedeUseCase as RegistrarAdministradorSedeUseCase
     );
 
     const middleware = new MiddlewareAutenticacion(
@@ -892,6 +898,143 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.error).toContain('no encontrado');
+    });
+  });
+
+  describe('POST /api/usuarios/administradores-sede (RF25, HU19, CA-U12)', () => {
+    const mockAdminGeneralPayload = {
+      id: 'admin-gen',
+      rol: RolUsuario.Administrador,
+      sedeId: null,
+      alcanceAdministrador: AlcanceAdministrador.General,
+    };
+    const mockAdminGeneral = Usuario.crearAdministradorGeneral({
+      id: 'admin-gen',
+      nombre: 'Admin General',
+      correo: 'admin@sofia.edu',
+      passwordHash: 'hash',
+      activo: true,
+    });
+
+    it('(CA-U12) debe responder 201 cuando el administrador general crea un administrador de sede', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminGeneralPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminGeneral);
+      (mockRegistrarAdministradorSedeUseCase.ejecutar as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearAdministradorSede({
+          id: 'admin-sede-1',
+          nombre: 'Admin Hana',
+          correo: 'admin.hana@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: '1',
+          activo: true,
+        })
+      );
+
+      const res = await request(app)
+        .post('/api/usuarios/administradores-sede')
+        .set('Authorization', 'Bearer token_admin_gen')
+        .send({
+          nombre: 'Admin Hana',
+          correo: 'admin.hana@sofia.edu',
+          passwordInicial: 'clave_segura_123',
+          sedeId: '1',
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.id).toBe('admin-sede-1');
+      expect(res.body.nombre).toBe('Admin Hana');
+      expect(res.body.rol).toBe(RolUsuario.Administrador);
+      expect(res.body.alcanceAdministrador).toBe(AlcanceAdministrador.Sede);
+      expect(res.body.sedeId).toBe('1');
+    });
+
+    it('(CA-U12) debe responder 400 si faltan datos o la contrasena es invalida', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminGeneralPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminGeneral);
+      (mockRegistrarAdministradorSedeUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorValidacion('La contrasena inicial debe tener al menos 8 caracteres.')
+      );
+
+      const res = await request(app)
+        .post('/api/usuarios/administradores-sede')
+        .set('Authorization', 'Bearer token_admin_gen')
+        .send({
+          nombre: 'Admin Hana',
+          correo: 'admin.hana@sofia.edu',
+          passwordInicial: '123',
+          sedeId: '1',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('al menos 8 caracteres');
+    });
+
+    it('(CA-U12) debe responder 409 si el correo ya existe', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminGeneralPayload);
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminGeneral);
+      (mockRegistrarAdministradorSedeUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorConflicto('El correo ya esta en uso por otro usuario.')
+      );
+
+      const res = await request(app)
+        .post('/api/usuarios/administradores-sede')
+        .set('Authorization', 'Bearer token_admin_gen')
+        .send({
+          nombre: 'Admin Repetido',
+          correo: 'repetido@sofia.edu',
+          passwordInicial: 'clave_segura_123',
+          sedeId: '1',
+        });
+
+      expect(res.status).toBe(409);
+      expect(res.body.error).toContain('ya esta en uso');
+    });
+
+    it('(CA-U12) debe responder 403 si un administrador de sede intenta crear un administrador', async () => {
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+        id: 'admin-sede',
+        rol: RolUsuario.Administrador,
+        sedeId: '1',
+        alcanceAdministrador: AlcanceAdministrador.Sede,
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+        Usuario.crearAdministradorSede({
+          id: 'admin-sede',
+          nombre: 'Admin Sede',
+          correo: 'admin.sede@sofia.edu',
+          passwordHash: 'hash',
+          sedeId: '1',
+          activo: true,
+        })
+      );
+      (mockRegistrarAdministradorSedeUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+        new ErrorAccesoDenegado('Acceso denegado: solo el administrador general puede crear administradores de sede.')
+      );
+
+      const res = await request(app)
+        .post('/api/usuarios/administradores-sede')
+        .set('Authorization', 'Bearer token_admin_sede')
+        .send({
+          nombre: 'Admin 2',
+          correo: 'admin2@sofia.edu',
+          passwordInicial: 'clave_segura_123',
+          sedeId: '1',
+        });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('(CA-U12) debe responder 401 sin token', async () => {
+      const res = await request(app)
+        .post('/api/usuarios/administradores-sede')
+        .send({
+          nombre: 'Admin 2',
+          correo: 'admin2@sofia.edu',
+          passwordInicial: 'clave_segura_123',
+          sedeId: '1',
+        });
+
+      expect(res.status).toBe(401);
     });
   });
 });

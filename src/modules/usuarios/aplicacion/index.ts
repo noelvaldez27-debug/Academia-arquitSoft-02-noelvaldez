@@ -19,4 +19,6 @@ export * from './cambiar-correo.use-case';
 export * from './listar-usuarios.use-case';
 export * from './desactivar-usuario.use-case';
 export * from './reactivar-usuario.use-case';
+export * from './registrar-administrador-sede.command';
+export * from './registrar-administrador-sede.use-case';
 

@@ -32,6 +32,14 @@ export function crearRutasUsuario(
     controller.registrarDocente
   );
 
+  // POST /administradores-sede - Crear cuenta de administrador de sede (Solo Administrador general)
+  router.post(
+    '/administradores-sede',
+    middleware.autenticar,
+    middleware.requerirRol(RolUsuario.Administrador),
+    controller.registrarAdministradorSede
+  );
+
   // PATCH /password - Cambiar la propia contraseña (Cualquier rol autenticado)
   router.patch(
     '/password',

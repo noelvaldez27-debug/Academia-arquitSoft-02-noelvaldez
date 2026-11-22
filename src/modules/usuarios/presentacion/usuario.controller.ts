@@ -7,6 +7,7 @@ import { CambiarCorreoUseCase } from '../aplicacion/cambiar-correo.use-case';
 import { ListarUsuariosUseCase } from '../aplicacion/listar-usuarios.use-case';
 import { DesactivarUsuarioUseCase } from '../aplicacion/desactivar-usuario.use-case';
 import { ReactivarUsuarioUseCase } from '../aplicacion/reactivar-usuario.use-case';
+import { RegistrarAdministradorSedeUseCase } from '../aplicacion/registrar-administrador-sede.use-case';
 import {
   ErrorValidacion,
   ErrorConflicto,
@@ -30,7 +31,8 @@ export class UsuarioController {
     private readonly cambiarCorreoUseCase: CambiarCorreoUseCase,
     private readonly listarUsuariosUseCase: ListarUsuariosUseCase,
     private readonly desactivarUsuarioUseCase: DesactivarUsuarioUseCase,
-    private readonly reactivarUsuarioUseCase: ReactivarUsuarioUseCase
+    private readonly reactivarUsuarioUseCase: ReactivarUsuarioUseCase,
+    private readonly registrarAdministradorSedeUseCase: RegistrarAdministradorSedeUseCase
   ) {}
 
   public registrarEstudiante = async (req: Request, res: Response): Promise<void> => {
@@ -211,6 +213,38 @@ export class UsuarioController {
       });
 
       res.status(200).json({ mensaje: 'Usuario reactivado con exito.' });
+    } catch (error) {
+      this.manejarError(error, res);
+    }
+  };
+
+  public registrarAdministradorSede = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { nombre, correo, passwordInicial, sedeId } = req.body ?? {};
+      const adminSede = await this.registrarAdministradorSedeUseCase.ejecutar({
+        nombre,
+        correo,
+        passwordInicial,
+        sedeId,
+        ejecutor: req.usuario
+          ? {
+              id: req.usuario.id,
+              rol: req.usuario.rol,
+              sedeId: req.usuario.sedeId,
+              alcanceAdministrador: req.usuario.alcanceAdministrador,
+            }
+          : undefined,
+      });
+
+      res.status(201).json({
+        id: adminSede.id,
+        nombre: adminSede.nombre,
+        correo: adminSede.correo,
+        rol: adminSede.rol,
+        alcanceAdministrador: adminSede.alcanceAdministrador,
+        sedeId: adminSede.sedeId,
+        activo: adminSede.activo,
+      });
     } catch (error) {
       this.manejarError(error, res);
     }
