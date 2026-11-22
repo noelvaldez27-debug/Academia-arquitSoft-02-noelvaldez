@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 16 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 17 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -52,15 +52,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 16 de `specs/usuarios/tasks.md`: Caso de uso `RegistrarAdministradorSedeUseCase` en `src/modules/usuarios/aplicacion/registrar-administrador-sede.use-case.ts`. Endpoint `POST /api/usuarios/administradores-sede`. Solo el Administrador General puede ejecutarlo (403 si es admin de sede, docente o postulante). Valida correo único (409), existencia de sede y contraseña inicial >= 8 caracteres. Guarda contraseña con hash y nunca la expone en respuestas (AC04). Documentado en OpenAPI.
+Tarea 17 de `specs/usuarios/tasks.md`: Casos de uso `ListarSedesUseCase` y `CrearSedeUseCase` en `src/modules/usuarios/aplicacion/`. Endpoints `GET /api/usuarios/sedes` y `POST /api/usuarios/sedes`. Cualquier administrador puede listar las sedes existentes; solo el Administrador General puede crear sedes nuevas sin cambiar código (AC05). Si el nombre ya existe responde 409 (`ErrorConflicto`); si un admin de sede, docente o postulante intenta crear responde 403 (`ErrorAccesoDenegado`). Documentado en OpenAPI.
 
 ## Tarea en curso / pendiente a medias
-(ninguna — tarea 16 completada)
+(ninguna — tarea 17 completada)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 17 de `specs/usuarios/tasks.md`: Caso de uso: listar sedes y crear una sede nueva, esta última solo para el administrador general, sin cambiar código (RF22, AC05, CA-U14). Incluye sus endpoints y su documentación OpenAPI.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 18 de `specs/usuarios/tasks.md`: Exponer la API pública del módulo en index.ts, solo mediante puertos: autenticar y autorizar por rol y sede (para que los otros módulos protejan sus rutas) y consultar un usuario por su identificador, con su sede y su carrera y sin contraseñas ni hashes (CA-U07).
 
 ## Notas para el siguiente editor
+- Tarea 17 completada: Casos de uso `ListarSedesUseCase` y `CrearSedeUseCase` con endpoints `GET /api/usuarios/sedes` y `POST /api/usuarios/sedes`. La creación de sedes valida unicidad de nombre en la tabla `sedes` y está restringida exclusivamente al Administrador General (`AlcanceAdministrador.General`).
 - Tarea 16 completada: Caso de uso `RegistrarAdministradorSedeUseCase` y endpoint `POST /api/usuarios/administradores-sede`. Crea cuentas con rol `Administrador` y alcance `Sede`. Excepción a la regla del DNI de RC09. Se valida que el correo no esté duplicado y que la sede exista previamente en la tabla de sedes. Solo el administrador general puede invocarlo.
 - Tarea 15 completada: Casos de uso `DesactivarUsuarioUseCase` y `ReactivarUsuarioUseCase`. Los endpoints `PATCH /api/usuarios/:id/desactivar` y `PATCH /api/usuarios/:id/reactivar` actualizan el campo `activo` a través de `UsuarioRepository.actualizar`. Como el `MiddlewareAutenticacion` consulta la BD en cada petición, cualquier usuario desactivado pierde el acceso de inmediato (401).
 - Tarea 14 completada: Caso de uso `ListarUsuariosUseCase` y endpoint `GET /api/usuarios` paginado (`pagina`, `limite`, `total`). Consultas SQL parametrizadas con LIMIT y OFFSET sobre `PostgresUsuarioRepository.listar`. Si un administrador de sede intenta listar usuarios de otra sede o un rol distinto a Postulante, responde 403 (`ErrorAccesoDenegado`). No expone hashes ni contraseñas. Documentado en OpenAPI con esquema de respuesta paginado.

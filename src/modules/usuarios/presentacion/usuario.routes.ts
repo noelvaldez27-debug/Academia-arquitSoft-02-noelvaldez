@@ -79,5 +79,21 @@ export function crearRutasUsuario(
     controller.reactivarUsuario
   );
 
+  // GET /sedes - Listar sedes existentes (Cualquier administrador)
+  router.get(
+    '/sedes',
+    middleware.autenticar,
+    middleware.requerirRol(RolUsuario.Administrador),
+    controller.listarSedes
+  );
+
+  // POST /sedes - Crear una nueva sede (Solo Administrador general)
+  router.post(
+    '/sedes',
+    middleware.autenticar,
+    middleware.requerirRol(RolUsuario.Administrador),
+    controller.crearSede
+  );
+
   return router;
 }

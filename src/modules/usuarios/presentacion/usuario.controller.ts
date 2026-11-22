@@ -8,6 +8,8 @@ import { ListarUsuariosUseCase } from '../aplicacion/listar-usuarios.use-case';
 import { DesactivarUsuarioUseCase } from '../aplicacion/desactivar-usuario.use-case';
 import { ReactivarUsuarioUseCase } from '../aplicacion/reactivar-usuario.use-case';
 import { RegistrarAdministradorSedeUseCase } from '../aplicacion/registrar-administrador-sede.use-case';
+import { ListarSedesUseCase } from '../aplicacion/listar-sedes.use-case';
+import { CrearSedeUseCase } from '../aplicacion/crear-sede.use-case';
 import {
   ErrorValidacion,
   ErrorConflicto,
@@ -32,7 +34,9 @@ export class UsuarioController {
     private readonly listarUsuariosUseCase: ListarUsuariosUseCase,
     private readonly desactivarUsuarioUseCase: DesactivarUsuarioUseCase,
     private readonly reactivarUsuarioUseCase: ReactivarUsuarioUseCase,
-    private readonly registrarAdministradorSedeUseCase: RegistrarAdministradorSedeUseCase
+    private readonly registrarAdministradorSedeUseCase: RegistrarAdministradorSedeUseCase,
+    private readonly listarSedesUseCase: ListarSedesUseCase,
+    private readonly crearSedeUseCase: CrearSedeUseCase
   ) {}
 
   public registrarEstudiante = async (req: Request, res: Response): Promise<void> => {
@@ -244,6 +248,54 @@ export class UsuarioController {
         alcanceAdministrador: adminSede.alcanceAdministrador,
         sedeId: adminSede.sedeId,
         activo: adminSede.activo,
+      });
+    } catch (error) {
+      this.manejarError(error, res);
+    }
+  };
+
+  public listarSedes = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const sedes = await this.listarSedesUseCase.ejecutar({
+        ejecutor: req.usuario
+          ? {
+              id: req.usuario.id,
+              rol: req.usuario.rol,
+              sedeId: req.usuario.sedeId,
+              alcanceAdministrador: req.usuario.alcanceAdministrador,
+            }
+          : undefined,
+      });
+
+      res.status(200).json(
+        sedes.map((s) => ({
+          id: s.id,
+          nombre: s.nombre,
+        }))
+      );
+    } catch (error) {
+      this.manejarError(error, res);
+    }
+  };
+
+  public crearSede = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { nombre } = req.body ?? {};
+      const sede = await this.crearSedeUseCase.ejecutar({
+        nombre,
+        ejecutor: req.usuario
+          ? {
+              id: req.usuario.id,
+              rol: req.usuario.rol,
+              sedeId: req.usuario.sedeId,
+              alcanceAdministrador: req.usuario.alcanceAdministrador,
+            }
+          : undefined,
+      });
+
+      res.status(201).json({
+        id: sede.id,
+        nombre: sede.nombre,
       });
     } catch (error) {
       this.manejarError(error, res);

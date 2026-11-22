@@ -21,4 +21,6 @@ export * from './desactivar-usuario.use-case';
 export * from './reactivar-usuario.use-case';
 export * from './registrar-administrador-sede.command';
 export * from './registrar-administrador-sede.use-case';
+export * from './listar-sedes.use-case';
+export * from './crear-sede.use-case';
 

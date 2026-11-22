@@ -518,5 +518,73 @@ export const especificacionOpenApi = {
         },
       },
     },
+    '/api/usuarios/sedes': {
+      get: {
+        summary: 'Listar sedes existentes',
+        description: 'Permite a cualquier administrador autenticado (general o de sede) consultar la lista de sedes existentes.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'Lista de sedes obtenida exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string', example: '1' },
+                      nombre: { type: 'string', example: 'Hana' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': { description: 'Acceso no autorizado' },
+          '403': { description: 'Acceso denegado (solo administradores)' },
+        },
+      },
+      post: {
+        summary: 'Crear una sede nueva',
+        description:
+          'Permite al administrador general registrar una nueva sede sin cambiar código. La nueva sede queda disponible para registrar estudiantes.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['nombre'],
+                properties: {
+                  nombre: { type: 'string', example: 'Norte' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Sede creada exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', example: '4' },
+                    nombre: { type: 'string', example: 'Norte' },
+                  },
+                },
+              },
+            },
+          },
+          '400': { description: 'Error de validación (nombre de sede vacío)' },
+          '401': { description: 'Acceso no autorizado' },
+          '403': { description: 'Acceso denegado (solo el administrador general puede crear sedes)' },
+          '409': { description: 'La sede especificada ya existe' },
+        },
+      },
+    },
   },
 };

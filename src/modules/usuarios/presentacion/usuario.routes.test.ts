@@ -12,6 +12,9 @@ import { ListarUsuariosUseCase } from '../aplicacion/listar-usuarios.use-case';
 import { DesactivarUsuarioUseCase } from '../aplicacion/desactivar-usuario.use-case';
 import { ReactivarUsuarioUseCase } from '../aplicacion/reactivar-usuario.use-case';
 import { RegistrarAdministradorSedeUseCase } from '../aplicacion/registrar-administrador-sede.use-case';
+import { ListarSedesUseCase } from '../aplicacion/listar-sedes.use-case';
+import { CrearSedeUseCase } from '../aplicacion/crear-sede.use-case';
+import { Sede } from '../dominio';
 import { ServicioToken, PayloadToken } from '../aplicacion/servicio-token.port';
 import {
   Usuario,
@@ -36,6 +39,8 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
   let mockDesactivarUsuarioUseCase: Partial<DesactivarUsuarioUseCase>;
   let mockReactivarUsuarioUseCase: Partial<ReactivarUsuarioUseCase>;
   let mockRegistrarAdministradorSedeUseCase: Partial<RegistrarAdministradorSedeUseCase>;
+  let mockListarSedesUseCase: Partial<ListarSedesUseCase>;
+  let mockCrearSedeUseCase: Partial<CrearSedeUseCase>;
   let mockServicioToken: Partial<ServicioToken>;
   let mockUsuarioRepo: Partial<UsuarioRepository>;
 
@@ -67,6 +72,12 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
     mockRegistrarAdministradorSedeUseCase = {
       ejecutar: jest.fn(),
     };
+    mockListarSedesUseCase = {
+      ejecutar: jest.fn(),
+    };
+    mockCrearSedeUseCase = {
+      ejecutar: jest.fn(),
+    };
     mockServicioToken = {
       verificarToken: jest.fn(),
     };
@@ -83,7 +94,9 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       mockListarUsuariosUseCase as ListarUsuariosUseCase,
       mockDesactivarUsuarioUseCase as DesactivarUsuarioUseCase,
       mockReactivarUsuarioUseCase as ReactivarUsuarioUseCase,
-      mockRegistrarAdministradorSedeUseCase as RegistrarAdministradorSedeUseCase
+      mockRegistrarAdministradorSedeUseCase as RegistrarAdministradorSedeUseCase,
+      mockListarSedesUseCase as ListarSedesUseCase,
+      mockCrearSedeUseCase as CrearSedeUseCase
     );
 
     const middleware = new MiddlewareAutenticacion(
@@ -1035,6 +1048,161 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
         });
 
       expect(res.status).toBe(401);
+    });
+  });
+
+  describe('Rutas de Sedes (RF22, AC05, CA-U14)', () => {
+    const mockAdminGeneralPayload = {
+      id: 'admin-gen',
+      rol: RolUsuario.Administrador,
+      sedeId: null,
+      alcanceAdministrador: AlcanceAdministrador.General,
+    };
+    const mockAdminGeneral = Usuario.crearAdministradorGeneral({
+      id: 'admin-gen',
+      nombre: 'Admin General',
+      correo: 'admin@sofia.edu',
+      passwordHash: 'hash',
+      activo: true,
+    });
+
+    const mockAdminSedePayload = {
+      id: 'admin-sede-1',
+      rol: RolUsuario.Administrador,
+      sedeId: '1',
+      alcanceAdministrador: AlcanceAdministrador.Sede,
+    };
+    const mockAdminSede = Usuario.crearAdministradorSede({
+      id: 'admin-sede-1',
+      nombre: 'Admin Sede Hana',
+      correo: 'admin.hana@sofia.edu',
+      passwordHash: 'hash',
+      sedeId: '1',
+      activo: true,
+    });
+
+    describe('GET /api/usuarios/sedes', () => {
+      it('(CA-U14) debe responder 200 con la lista de sedes para cualquier administrador', async () => {
+        (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminSedePayload);
+        (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminSede);
+        (mockListarSedesUseCase.ejecutar as jest.Mock).mockResolvedValueOnce([
+          new Sede({ id: '1', nombre: 'Hana' }),
+          new Sede({ id: '2', nombre: 'Urin' }),
+        ]);
+
+        const res = await request(app)
+          .get('/api/usuarios/sedes')
+          .set('Authorization', 'Bearer token_admin_sede');
+
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveLength(2);
+        expect(res.body[0].nombre).toBe('Hana');
+      });
+
+      it('(CA-U14) debe responder 401 si no hay token', async () => {
+        const res = await request(app).get('/api/usuarios/sedes');
+        expect(res.status).toBe(401);
+      });
+
+      it('(CA-U14) debe responder 403 si un postulante intenta listar sedes', async () => {
+        (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({
+          id: 'post-1',
+          rol: RolUsuario.Postulante,
+          sedeId: '1',
+        });
+        (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(
+          Usuario.crearPostulante({
+            id: 'post-1',
+            nombre: 'Postulante',
+            dni: '12345678',
+            correo: '12345678@sofia.edu',
+            passwordHash: 'hash',
+            sedeId: '1',
+            carrera: 'MEDICINA',
+            activo: true,
+          })
+        );
+
+        const res = await request(app)
+          .get('/api/usuarios/sedes')
+          .set('Authorization', 'Bearer token_postulante');
+
+        expect(res.status).toBe(403);
+      });
+    });
+
+    describe('POST /api/usuarios/sedes', () => {
+      it('(CA-U14) debe responder 201 cuando el administrador general crea una sede nueva', async () => {
+        (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminGeneralPayload);
+        (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminGeneral);
+        (mockCrearSedeUseCase.ejecutar as jest.Mock).mockResolvedValueOnce(
+          new Sede({ id: '4', nombre: 'Norte' })
+        );
+
+        const res = await request(app)
+          .post('/api/usuarios/sedes')
+          .set('Authorization', 'Bearer token_admin_gen')
+          .send({ nombre: 'Norte' });
+
+        expect(res.status).toBe(201);
+        expect(res.body.id).toBe('4');
+        expect(res.body.nombre).toBe('Norte');
+      });
+
+      it('(CA-U14) debe responder 400 si el nombre de la sede es vacio', async () => {
+        (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminGeneralPayload);
+        (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminGeneral);
+        (mockCrearSedeUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+          new ErrorValidacion('El nombre de la sede es obligatorio.')
+        );
+
+        const res = await request(app)
+          .post('/api/usuarios/sedes')
+          .set('Authorization', 'Bearer token_admin_gen')
+          .send({ nombre: '   ' });
+
+        expect(res.status).toBe(400);
+        expect(res.body.error).toContain('obligatorio');
+      });
+
+      it('(CA-U14) debe responder 409 si el nombre de la sede ya existe', async () => {
+        (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminGeneralPayload);
+        (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminGeneral);
+        (mockCrearSedeUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+          new ErrorConflicto('La sede especificada ya existe.')
+        );
+
+        const res = await request(app)
+          .post('/api/usuarios/sedes')
+          .set('Authorization', 'Bearer token_admin_gen')
+          .send({ nombre: 'Hana' });
+
+        expect(res.status).toBe(409);
+        expect(res.body.error).toContain('ya existe');
+      });
+
+      it('(CA-U14) debe responder 403 si un administrador de sede intenta crear una sede', async () => {
+        (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce(mockAdminSedePayload);
+        (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(mockAdminSede);
+        (mockCrearSedeUseCase.ejecutar as jest.Mock).mockRejectedValueOnce(
+          new ErrorAccesoDenegado('Acceso denegado: solo el administrador general puede crear sedes.')
+        );
+
+        const res = await request(app)
+          .post('/api/usuarios/sedes')
+          .set('Authorization', 'Bearer token_admin_sede')
+          .send({ nombre: 'Norte' });
+
+        expect(res.status).toBe(403);
+      });
+
+      it('(CA-U14) debe responder 401 sin token', async () => {
+        const res = await request(app)
+          .post('/api/usuarios/sedes')
+          .send({ nombre: 'Norte' });
+
+        expect(res.status).toBe(401);
+      });
     });
   });
 });

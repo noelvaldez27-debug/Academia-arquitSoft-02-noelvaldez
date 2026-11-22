@@ -31,6 +31,8 @@ describe('Módulo Gestión de Usuarios — Raíz de composición', () => {
     expect(modulo.desactivarUsuarioUseCase).toBeDefined();
     expect(modulo.reactivarUsuarioUseCase).toBeDefined();
     expect(modulo.registrarAdministradorSedeUseCase).toBeDefined();
+    expect(modulo.listarSedesUseCase).toBeDefined();
+    expect(modulo.crearSedeUseCase).toBeDefined();
   });
 
   it('debe exportar UsuariosModule y los componentes en la API pública del módulo', () => {
