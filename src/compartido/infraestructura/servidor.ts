@@ -1,8 +1,12 @@
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response, Router } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { especificacionOpenApi } from './especificacion-openapi';
 
-export function crearApp(): Application {
+export interface OpcionesServidor {
+  rutasUsuarios?: Router;
+}
+
+export function crearApp(opciones?: OpcionesServidor): Application {
   const app = express();
 
   app.use(express.json());
@@ -13,6 +17,10 @@ export function crearApp(): Application {
       timestamp: new Date().toISOString(),
     });
   });
+
+  if (opciones?.rutasUsuarios) {
+    app.use('/api/usuarios', opciones.rutasUsuarios);
+  }
 
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(especificacionOpenApi));
 

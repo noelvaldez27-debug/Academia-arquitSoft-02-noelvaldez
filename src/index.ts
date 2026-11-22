@@ -1,6 +1,10 @@
-import { crearApp } from './compartido/infraestructura';
+import { crearApp, crearPoolPostgres } from './compartido/infraestructura';
+import { UsuariosModule } from './modules/usuarios';
 
-const app = crearApp();
+const pool = crearPoolPostgres();
+const usuariosModule = new UsuariosModule({ pool });
+
+const app = crearApp({ rutasUsuarios: usuariosModule.router });
 const port = parseInt(process.env.PORT || '3000', 10);
 const host = '0.0.0.0';
 

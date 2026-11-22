@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 10 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 11 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -53,15 +53,16 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 10 de `specs/usuarios/tasks.md`: Middleware de autenticación y autorización por rol y por sede (`MiddlewareAutenticacion` en `src/modules/usuarios/presentacion/autenticacion.middleware.ts`) (AC04, ADR-007, RC15, CA-U06). En cada petición extrae el token Bearer, lo verifica con `ServicioToken`, valida que la cuenta siga activa en la base de datos y toma de allí el rol y sede vigentes (invalidando de inmediato sesiones de cuentas desactivadas). Provee middlewares `requerirRol` y `requerirAlcanceSede` que rechazan con 401 si falta sesión o 403 si faltan permisos de rol o sede. 148 pruebas unitarias Jest pasando y compilación TypeScript limpia.
+Tarea 11 de `specs/usuarios/tasks.md`: Presentación: `usuario.controller.ts` y `usuario.routes.ts` con los endpoints `POST /api/usuarios/login`, `POST /api/usuarios/estudiantes` y `POST /api/usuarios/docentes`, documentados en OpenAPI/Swagger (ADR-008). Se integraron las rutas en la raíz de composición `UsuariosModule` y se montaron en el servidor base `crearApp` y `src/index.ts`. 157 pruebas unitarias Jest pasando y compilación TypeScript limpia.
 
 ## Tarea en curso / pendiente a medias
-(ninguna)
+(ninguna — lote de tareas 6 a 11 finalizado según solicitud del usuario)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 11 de `specs/usuarios/tasks.md`: Presentación: usuario.controller.ts y usuario.routes.ts con los endpoints de registrar estudiante, registrar docente e iniciar sesión, documentados en OpenAPI/Swagger (ADR-008).
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 12 de `specs/usuarios/tasks.md`: Caso de uso: cambiar la propia contraseña, con contraseña actual y largo mínimo (mínimo 8 caracteres); es opcional para todos los roles (RF26, CA-U08). Incluye su endpoint y su documentación OpenAPI.
 
 ## Notas para el siguiente editor
+- Tarea 11 completada: Controlador `UsuarioController` en `src/modules/usuarios/presentacion/usuario.controller.ts` y rutas `crearRutasUsuario` en `src/modules/usuarios/presentacion/usuario.routes.ts`. Se documentaron los esquemas y endpoints en `src/compartido/infraestructura/especificacion-openapi.ts` con seguridad `bearerAuth`. El endpoint `/login` responde 401 genérico ante cualquier error y nunca revela credenciales ni hashes (AC04, CA-U05). Se conectó `UsuariosModule` en `src/index.ts` y `src/compartido/infraestructura/servidor.ts`.
 - Tarea 10 completada: Clase `MiddlewareAutenticacion` en `src/modules/usuarios/presentacion/autenticacion.middleware.ts` con métodos `autenticar`, `requerirRol` y `requerirAlcanceSede`. Extiende `Express.Request` con `req.usuario` tipado con datos de BD. Si el usuario fue desactivado, responde 401 aunque el JWT no haya expirado; si es administrador de sede, impide gestionar estudiantes de otra sede con 403.
 - Tarea 9 completada: Librería JWT elegida: `jsonwebtoken` (^9.0.3) con `@types/jsonwebtoken` (^9.0.10). Motivo de elección: estándar consolidado para APIs Express en Node.js, implementación nativa en JavaScript sin dependencias compiladas C++ (plena compatibilidad con `node:20-alpine`), sin vulnerabilidades altas ni críticas en `npm audit`. Se desacopló mediante el puerto `ServicioToken` en `src/modules/usuarios/aplicacion/servicio-token.port.ts` y se implementó `JsonWebTokenAdapter` en `src/modules/usuarios/infraestructura/jsonwebtoken-token.adapter.ts`. Nueva variable no secreta agregada con valor documentado por defecto: `JWT_DURACION=8h`. Se implementó validación de seguridad para rechazar `JWT_SECRET` faltante o iniciado con `cambiar_` cuando `NODE_ENV=production`.
 - Tarea 8 completada: Servicio `SembradorAdministradorGeneral` en `src/modules/usuarios/aplicacion/sembrar-administrador-general.ts` y script de entrada `src/scripts/seed-admin.ts`. Se configuraron las variables de entorno sin respaldo `ADMIN_GENERAL_NOMBRE`, `ADMIN_GENERAL_CORREO` y `ADMIN_GENERAL_PASSWORD` en `.env.example` y en `docker-compose.yml`. Se agregó el comando `npm run seed:admin` en `package.json`. Si alguna variable falta, arroja error explicativo; si ya existe un administrador general, no realiza duplicaciones ni modificaciones (CA-U04).

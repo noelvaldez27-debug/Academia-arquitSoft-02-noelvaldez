@@ -1,5 +1,9 @@
 /**
- * API pública del módulo Gestión de Usuarios.
- * Expone la raíz de composición y los contratos públicos accesibles para otros módulos.
+ * API pública — Módulo Gestión de Usuarios
+ * Punto de entrada oficial del módulo.
  */
+export * from './dominio';
+export * from './aplicacion';
+export * from './infraestructura';
+export * from './presentacion';
 export * from './usuarios.module';

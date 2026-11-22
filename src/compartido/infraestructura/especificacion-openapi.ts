@@ -6,6 +6,15 @@ export const especificacionOpenApi = {
     description:
       'API REST del sistema de simulacros de exámenes virtuales EVALUA-NET — Academia Preuniversitaria Sofía',
   },
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
+  },
   paths: {
     '/health': {
       get: {
@@ -33,6 +42,187 @@ export const especificacionOpenApi = {
                 },
               },
             },
+          },
+        },
+      },
+    },
+    '/api/usuarios/login': {
+      post: {
+        summary: 'Iniciar sesión de usuario',
+        description:
+          'Autentica las credenciales (correo y contraseña) de un usuario activo y retorna un token JWT que incluye su identificador, rol y sede.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['correo', 'password'],
+                properties: {
+                  correo: {
+                    type: 'string',
+                    format: 'email',
+                    example: 'admin.general@sofia.edu',
+                  },
+                  password: {
+                    type: 'string',
+                    example: 'clave_segura_123',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Inicio de sesión exitoso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    token: { type: 'string' },
+                    usuario: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        nombre: { type: 'string' },
+                        correo: { type: 'string' },
+                        rol: { type: 'string' },
+                        sedeId: { type: 'string', nullable: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Credenciales inválidas o cuenta no activa',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    error: { type: 'string', example: 'Credenciales invalidas.' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/usuarios/estudiantes': {
+      post: {
+        summary: 'Registrar estudiante (postulante)',
+        description:
+          'Registra un postulante con nombre, DNI, sede y carrera. Requiere rol Administrador (general o de sede propia). Genera credenciales automáticas con formato dni@sofia.edu y hash de contraseña.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['nombre', 'dni', 'sedeId', 'carrera'],
+                properties: {
+                  nombre: { type: 'string', example: 'Juan Alumno' },
+                  dni: { type: 'string', example: '71234567' },
+                  sedeId: { type: 'string', example: 'Hana' },
+                  carrera: { type: 'string', example: 'Medicina Humana' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Estudiante registrado exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    nombre: { type: 'string' },
+                    dni: { type: 'string' },
+                    correo: { type: 'string' },
+                    rol: { type: 'string', example: 'POSTULANTE' },
+                    sedeId: { type: 'string' },
+                    carrera: { type: 'string' },
+                    activo: { type: 'boolean' },
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Error de validación (campos requeridos, formato DNI o sede inexistente)',
+          },
+          '401': {
+            description: 'Acceso no autorizado (token no proporcionado o expirado)',
+          },
+          '403': {
+            description: 'Acceso denegado (rol sin permisos o administrador de otra sede)',
+          },
+          '409': {
+            description: 'Conflicto: el DNI ya se encuentra registrado',
+          },
+        },
+      },
+    },
+    '/api/usuarios/docentes': {
+      post: {
+        summary: 'Registrar docente',
+        description:
+          'Registra un docente con nombre y DNI. Requiere rol Administrador General. Genera credenciales automáticas con formato dni@sofia.edu y hash de contraseña.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['nombre', 'dni'],
+                properties: {
+                  nombre: { type: 'string', example: 'Profesor Ricardo Palma' },
+                  dni: { type: 'string', example: '10203040' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Docente registrado exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    nombre: { type: 'string' },
+                    dni: { type: 'string' },
+                    correo: { type: 'string' },
+                    rol: { type: 'string', example: 'DOCENTE' },
+                    activo: { type: 'boolean' },
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Error de validación (nombre vacío o DNI inválido)',
+          },
+          '401': {
+            description: 'Acceso no autorizado (token ausente o expirado)',
+          },
+          '403': {
+            description: 'Acceso denegado (requiere Administrador General)',
+          },
+          '409': {
+            description: 'Conflicto: el DNI ya se encuentra registrado',
           },
         },
       },
