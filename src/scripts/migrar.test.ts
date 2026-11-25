@@ -10,7 +10,14 @@ describe('Script migrar', () => {
   let mockPool: Partial<Pool>;
   let mockEjecutar: jest.Mock;
 
+  let codigoSalidaAnterior: typeof process.exitCode;
+
+  afterEach(() => {
+    process.exitCode = codigoSalidaAnterior;
+  });
+
   beforeEach(() => {
+    codigoSalidaAnterior = process.exitCode;
     jest.clearAllMocks();
     mockPool = {};
     (conexionPostgres.crearPoolPostgres as jest.Mock).mockReturnValue(mockPool);

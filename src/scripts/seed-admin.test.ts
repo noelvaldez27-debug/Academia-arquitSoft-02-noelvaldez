@@ -12,7 +12,14 @@ describe('Script seed-admin', () => {
   let mockPool: Partial<Pool>;
   let mockSembrar: jest.Mock;
 
+  let codigoSalidaAnterior: typeof process.exitCode;
+
+  afterEach(() => {
+    process.exitCode = codigoSalidaAnterior;
+  });
+
   beforeEach(() => {
+    codigoSalidaAnterior = process.exitCode;
     jest.clearAllMocks();
     mockPool = {};
     (conexionPostgres.crearPoolPostgres as jest.Mock).mockReturnValue(mockPool);

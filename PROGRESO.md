@@ -52,7 +52,7 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 Tarea 24: se verificó la coincidencia entre las 13 operaciones de Express y OpenAPI, incluida la respuesta de autenticación de cada una, y se añadieron pruebas de consulta, transacciones y publicación fallida. El recorrido con Docker de la tarea 23 está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Tarea 25: Jest reportó 314 pruebas aprobadas en 42 suites. Cobertura global: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Falta validar GitHub Actions en el commit actual, previa autorización de push.
+Tarea 25: Jest finalizó con código 0 y 314 pruebas aprobadas en 42 suites. Se restauró process.exitCode tras las pruebas de errores de migración y sembrado. El reporte local está en coverage/lcov-report/index.html. Cobertura global: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Falta validar GitHub Actions en el commit actual, previa autorización de push.
 
 ## Siguiente paso exacto
 Módulo 1: Gestión de Usuarios. Completar la tarea 25 de `specs/usuarios/tasks.md`: obtener autorización para publicar los commits locales, verificar que GitHub Actions finalice correctamente para el SHA publicado y registrar el resultado.
