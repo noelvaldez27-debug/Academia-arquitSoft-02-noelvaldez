@@ -64,7 +64,7 @@ El servicio independiente de IA no se incluye como módulo interno porque se eje
 | Aplicación web | API REST | Envía solicitudes para utilizar las funcionalidades del sistema. | HTTPS/JSON |
 | API REST | Módulos de negocio | Invoca los casos de uso de cada módulo: usuarios, preguntas y separatas, exámenes, resultados, rankings y analítica. | Llamada interna |
 | Rendición de Examen | Gestión de Usuarios | Verifica la identidad y autorización del postulante. | API pública del módulo |
-| Rendición de Examen | Banco de Preguntas | Obtiene la configuración y las preguntas del simulacro. | API pública del módulo |
+| Rendición de Examen | Banco de Preguntas | Obtiene el identificador, la duración y la lista ordenada de preguntas del simulacro. El administrador general configura la selección con preguntas aprobadas y habilitadas. | API pública del módulo |
 | Procesamiento de Resultados | Rendición de Examen | Obtiene los datos de los exámenes finalizados para su calificación. | API pública del módulo |
 | Ranking y Reportes | Procesamiento de Resultados | Consulta los puntajes para generar clasificaciones. | API pública del módulo |
 | Analítica del Estudiante | Procesamiento de Resultados | Consulta los resultados para analizar el rendimiento. | API pública del módulo |

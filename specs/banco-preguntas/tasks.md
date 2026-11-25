@@ -3,7 +3,7 @@
 > Especificación en spec.md. Implementar en orden, con pruebas Jest para cada tarea de código.
 
 - [x] 1. Elaborar la SDD a partir del análisis, ADR, C4 y diseño interno. Registrar las reglas pendientes de confirmación.
-- [ ] 2. Confirmar el alcance funcional y los criterios pendientes. Alinear los permisos de gestión con el análisis y C4. Resolver los requisitos de configuración que necesita Rendición.
+- [x] 2. Confirmar el alcance funcional y los criterios pendientes. Alinear los permisos de gestión con el análisis y C4. Resolver los requisitos de configuración que necesita Rendición.
 - [ ] 3. Crear las cuatro capas, la raíz de composición, las entidades y los puertos de repositorio. Probar reglas y transiciones.
 - [ ] 4. Crear migraciones SQL y repositorios PostgreSQL de preguntas, separatas y propuestas. Validar que aprobar e incorporar al banco sea una operación atómica.
 - [ ] 5. Implementar la gestión directa del banco por curso, con JWT, roles de Usuarios, endpoints y OpenAPI.

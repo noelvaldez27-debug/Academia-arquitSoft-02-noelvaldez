@@ -40,7 +40,7 @@ Los docentes también suben sus separatas al sistema; a partir de ellas, el serv
 |---|---|---|
 | **Postulante** | Estudiante que se prepara para un examen de admisión. | Ingresa con sus credenciales, desarrolla simulacros, registra respuestas, consulta resultados, rankings y recomendaciones académicas. |
 | **Administrador** | Responsable de gestionar y supervisar el funcionamiento del sistema. | Registra usuarios, asigna credenciales, administra permisos y supervisa las operaciones del sistema. |
-| **Docente / Encargado académico** | Personal responsable de la preparación y organización de las evaluaciones. | Administra preguntas, sube separatas, revisa y aprueba las preguntas propuestas, configura simulacros y consulta reportes del rendimiento académico. |
+| **Docente / Encargado académico** | Personal responsable de la preparación y organización de las evaluaciones. | Sube separatas, revisa y aprueba las propuestas de sus propias separatas y consulta reportes del rendimiento académico. El administrador general gestiona directamente las preguntas y configura simulacros (HU03, CA-BP01 y CA-BP05). |
 
 > Los postulantes no realizan su matrícula ni sus pagos dentro de EVALUA-NET. Estos procesos se gestionan externamente por la academia.
 
@@ -63,7 +63,7 @@ Los docentes también suben sus separatas al sistema; a partir de ellas, el serv
 |---|---|---|---|
 | Postulante | EVALUA-NET | Desarrolla simulacros, registra respuestas y consulta resultados, rankings y recomendaciones. | — |
 | Administrador | EVALUA-NET | Gestiona usuarios, credenciales, permisos y supervisa el sistema. | — |
-| Docente / Encargado académico | EVALUA-NET | Gestiona preguntas, sube separatas, aprueba las preguntas propuestas, configura simulacros y consulta reportes académicos. | — |
+| Docente / Encargado académico | EVALUA-NET | Sube separatas, revisa y aprueba sus propuestas y consulta reportes académicos. | — |
 | EVALUA-NET | Servicio de inteligencia artificial | Envía la información académica y el contenido de las separatas necesarios para generar análisis, recomendaciones y preguntas propuestas. | HTTPS/REST (propuesto) |
 | Servicio de inteligencia artificial | EVALUA-NET | Devuelve análisis del rendimiento, recomendaciones académicas, texto leído y preguntas propuestas. | Respuesta HTTPS/REST (propuesta) |
 
@@ -89,8 +89,8 @@ Los docentes también suben sus separatas al sistema; a partir de ellas, el serv
 |---|---|
 | Implementación del servicio de IA | Confirmar si será desarrollado por el equipo o si utilizará un proveedor externo. |
 | Integración con el servicio de IA | Definir los datos que se enviarán, el formato de las respuestas y las medidas de seguridad. |
-| Privacidad de las separatas | Confirmar con la academia y los docentes qué contenido de las separatas puede enviarse a un proveedor externo de IA, y a quién pertenece el material. |
+| Privacidad de las separatas | El administrador general comprueba los permisos de cada separata y registra la autorización y su alcance antes de transferir contenido académico. Se excluyen datos personales, credenciales e información confidencial. |
 | Notificaciones | Confirmar si el sistema enviará avisos mediante correo electrónico u otro canal. Si requiere un proveedor externo, se incorporará al diagrama de contexto. |
-| Roles académicos | Confirmar si el docente y el encargado académico tendrán los mismos permisos o roles separados. |
+| Roles académicos | El encargado académico usa el rol Docente existente. |
 
 ---
