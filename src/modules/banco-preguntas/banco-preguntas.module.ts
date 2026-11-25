@@ -1,3 +1,5 @@
+import { ConsultaClavesSimulacro, ConsultaSimulacros, GestionarSimulacrosUseCase } from './aplicacion/gestionar-simulacros.use-case';
+import { crearRutasSimulacros } from './presentacion/simulacro.routes';
 import { RevisarSeparataUseCase } from './aplicacion/revisar-separata.use-case';
 import { crearRutasRevision } from './presentacion/revision.routes';
 import { AlmacenArchivos } from '../../compartido/aplicacion/almacen-archivos';
@@ -14,6 +16,8 @@ import { crearRutasPreguntas } from './presentacion/pregunta.routes';
 
 export class BancoPreguntasModule {
   readonly rutas;
+  readonly simulacros: ConsultaSimulacros;
+  readonly clavesSimulacro: ConsultaClavesSimulacro;
   private readonly repositorios: RepositoriosBanco;
 
   constructor(pool: Pool, auth: MiddlewareAutenticacion, almacen: AlmacenArchivos, maxBytes: number) {
@@ -23,6 +27,10 @@ export class BancoPreguntasModule {
     };
     const { preguntas, separatas } = this.repositorios;
     this.rutas = crearRutasPreguntas(new GestionarPreguntasUseCase(preguntas, randomUUID), auth);
+    const gestionarSimulacros = new GestionarSimulacrosUseCase(preguntas, randomUUID);
+    this.simulacros = { consultar: id => gestionarSimulacros.consultar(id) };
+    this.clavesSimulacro = { clave: id => gestionarSimulacros.clave(id) };
+    this.rutas.use(crearRutasSimulacros(gestionarSimulacros));
     this.rutas.use(crearRutasRevision(new RevisarSeparataUseCase(separatas, () => new Date(), almacen)));
     this.rutas.use(crearRutasSeparata(new SubirSeparataUseCase(preguntas, separatas, almacen, randomUUID, maxBytes), maxBytes));
   }

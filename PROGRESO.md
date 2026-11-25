@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
 | 1 | Gestión de Usuarios | terminado (25 de 25 tareas) |
-| 2 | Banco de Preguntas | en curso (SDD confirmada, 9 de 12 tareas) |
+| 2 | Banco de Preguntas | en curso (SDD confirmada, 10 de 12 tareas) |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
 | 5 | Ranking y Reportes | sin empezar |
@@ -49,7 +49,7 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Módulo 2, tarea 9: Consulta y descarga autorizada, registro de autorización y revisión con validación exclusiva del docente responsable. TypeScript y 2 pruebas dirigidas aprobadas.
+Módulo 2, tarea 10: Configuración por administrador general, selección ordenada de preguntas habilitadas y puertos separados para Rendición y Resultados. TypeScript y 2 pruebas dirigidas aprobadas.
 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
@@ -57,7 +57,7 @@ Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el 
 Ninguna tarea de código en curso.
 
 ## Siguiente paso exacto
-Módulo 2, tarea 10: Publicar el contrato interno de simulacros y claves.
+Módulo 2, tarea 11: Validar con Docker Compose, PostgreSQL, RabbitMQ e IA simulada.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

@@ -11,7 +11,7 @@
 - [x] 7. Implementar extractores por formato y extender ServicioIA de forma compatible para lectura multimodal. Incorporar el adaptador Gemini y actualizar el simulado para las pruebas.
 - [x] 8. Implementar el worker RabbitMQ con reintentos y persistencia idempotente de propuestas. Verificar estados y errores de extracción.
 - [x] 9. Implementar consulta de estado, revisión, corrección, aprobación y descarte. Documentar endpoints y validar acceso.
-- [ ] 10. Exponer la API pública de Banco de Preguntas para Rendición y Resultados, con el alcance confirmado en la tarea 2.
+- [x] 10. Exponer la API pública de Banco de Preguntas para Rendición y Resultados, con el alcance confirmado en la tarea 2.
 - [ ] 11. Validar el flujo completo con Docker Compose, PostgreSQL y RabbitMQ reales e IA simulada. Contrastar las respuestas con OpenAPI.
 - [ ] 12. Ejecutar Jest con cobertura, registrar evidencias y verificar GitHub Actions tras la publicación autorizada.
 

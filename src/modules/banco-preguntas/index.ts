@@ -6,3 +6,8 @@ export async function iniciarWorkerSeparatas(
   const { crearWorkerSeparatas } = await import('./worker-separatas.module');
   return crearWorkerSeparatas(...argumentos).ejecutar();
 }
+export type {
+  ConsultaClavesSimulacro,
+  ConsultaSimulacros,
+  SimulacroParaRendicion,
+} from './aplicacion/gestionar-simulacros.use-case';

@@ -50,7 +50,20 @@ const autorizacion = {
     contenidoApto: { type: 'boolean', description: 'El administrador verificó permisos y ausencia de datos personales, credenciales y contenido confidencial.' },
   },
 };
+const configuracionSimulacro = {
+  type: 'object',
+  required: ['duracionMinutos', 'preguntas'],
+  properties: { duracionMinutos: { type: 'integer', minimum: 1 },
+    preguntas: { type: 'array', minItems: 1, uniqueItems: true, items: texto } },
+};
 export const rutasOpenApiBanco = {
+  '/api/banco-preguntas/simulacros': {
+    post: operacionBanco('Crear configuración de simulacro', 201, [], configuracionSimulacro),
+  },
+  '/api/banco-preguntas/simulacros/{id}': {
+    get: operacionBanco('Consultar simulacro sin clave de respuestas', 200, ['id']),
+    put: operacionBanco('Actualizar configuración de simulacro', 200, ['id'], configuracionSimulacro),
+  },
   '/api/banco-preguntas/separatas/{id}/archivo': {
     get: operacionBanco('Descargar el original para verificar permisos y contenido', 200, ['id']),
   },
