@@ -3,7 +3,7 @@ import { ResultadosModule, rutasOpenApiResultados } from './modules/resultados';
 import { BancoPreguntasModule, rutasOpenApiBanco } from './modules/banco-preguntas';
 import { AlmacenArchivosLocal, crearApp, crearPoolPostgres, crearClienteRedis, obtenerConfiguracionRedisDesdeEnv } from './compartido/infraestructura';
 import { UsuariosModule } from './modules/usuarios';
-import { RankingReportesModule } from './modules/ranking-reportes';
+import { RankingReportesModule, rutasOpenApiRanking } from './modules/ranking-reportes';
 
 const pool = crearPoolPostgres();
 const usuariosModule = new UsuariosModule({ pool });
@@ -25,7 +25,8 @@ const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModul
   usuariosModule.servicioConsultaUsuarios);
 const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion);
 rendicion.iniciarTrabajos(resultados.consultas.contarCalificados);
-const rankings = new RankingReportesModule(pool, rendicion.consultasReportes, resultados.consultas);
+const rankings = new RankingReportesModule(pool, rendicion.consultasReportes, resultados.consultas,
+  usuariosModule.middlewareAutenticacion);
 rankings.iniciarTrabajos();
 
 const app = crearApp({
@@ -33,7 +34,8 @@ const app = crearApp({
   rutasBancoPreguntas: bancoPreguntas.rutas,
   rutasRendicion: rendicion.rutas,
   rutasResultados: resultados.rutas,
-  rutasOpenApiAdicionales: { ...rutasOpenApiBanco, ...rutasOpenApiRendicion, ...rutasOpenApiResultados },
+  rutasRanking: rankings.rutas,
+  rutasOpenApiAdicionales: { ...rutasOpenApiBanco, ...rutasOpenApiRendicion, ...rutasOpenApiResultados, ...rutasOpenApiRanking },
 });
 const port = parseInt(process.env.PORT || '3000', 10);
 const host = '0.0.0.0';

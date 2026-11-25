@@ -6,14 +6,20 @@ import { PostgresRankingRepository } from './infraestructura/postgres-ranking-re
 import { detectarCambiosRanking } from './aplicacion/detectar-cambios-ranking';
 import { RankingWorker } from './infraestructura/ranking.worker';
 import { crearConexionRabbitMQ } from '../../compartido/infraestructura';
+import type { MiddlewareAutenticacion } from '../usuarios';
+import { ConsultarRankingUseCase } from './aplicacion/consultar-ranking.use-case';
+import { crearRutasRanking } from './presentacion/ranking.routes';
 
 export class RankingReportesModule {
+  readonly rutas;
   readonly repositorio;
   readonly actualizar;
   private readonly worker;
 
-  constructor(pool: Pool, rendicion: RendicionModule['consultasReportes'], resultados: ConsultaResultadosInterna) {
+  constructor(pool: Pool, rendicion: RendicionModule['consultasReportes'], resultados: ConsultaResultadosInterna,
+    auth: MiddlewareAutenticacion) {
     this.repositorio = new PostgresRankingRepository(pool);
+    this.rutas = crearRutasRanking(new ConsultarRankingUseCase(id => this.repositorio.consultar(id)), auth);
     this.actualizar = new ActualizarRankingUseCase({
       cerrado: async id => Boolean((await rendicion.consultarCierre(id))?.cerradoEn),
       intentos: async (id, despues) => (await rendicion.porSimulacro(id, despues)).map(fila => ({
