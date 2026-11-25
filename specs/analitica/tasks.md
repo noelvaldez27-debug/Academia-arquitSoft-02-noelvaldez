@@ -7,4 +7,4 @@
 - [x] 5. Implementar y probar la detección de debilidades y recomendaciones con ServicioIA (CA-AE03).
 - [x] 6. Implementar las rutas autorizadas y sus esquemas OpenAPI (CA-AE04).
 - [x] 7. Resolver RF12 en el módulo aprobado y verificar los alcances docentes (CA-AE05).
-- [ ] 8. Validar con Jest, cobertura, regresión y Docker Compose. Registrar evidencias y cerrar el módulo (CA-AE06).
+- [x] 8. Validar con Jest, cobertura, regresión y Docker Compose. Registrar evidencias y cerrar el módulo (CA-AE06).

@@ -72,6 +72,8 @@ El servicio independiente de IA no se incluye como módulo interno porque se eje
 | Rendición de Examen | Gestión de Usuarios | Consulta la carrera, sede y condición al iniciar un intento. | API pública del módulo |
 | Rendición de Examen | Procesamiento de Resultados | Comprueba que los intentos finalizados estén calificados antes de completar el cierre general. | API pública del módulo |
 | Analítica del Estudiante | Procesamiento de Resultados | Consulta los resultados para analizar el rendimiento. | API pública del módulo |
+| Analítica del Estudiante | Rendición de Examen | Verifica los cierres y consulta las sedes históricas de los intentos calificados. | API pública del módulo |
+| Analítica del Estudiante | Banco de Preguntas | Consulta metadatos congelados y asignaciones docentes para RF12. | API pública del módulo |
 | Worker | Procesamiento de Resultados | Pide calcular y registrar los resultados de un examen finalizado. | API pública del módulo |
 | Worker | Banco de Preguntas | Pide extraer el texto de una separata y generar las preguntas propuestas. | API pública del módulo |
 
@@ -107,7 +109,7 @@ El servicio independiente de IA no se incluye como módulo interno porque se eje
 4. Un worker independiente consume el evento.
 5. El worker invoca la API pública de Procesamiento de Resultados.
 6. Procesamiento de Resultados calcula los puntajes y los almacena en PostgreSQL.
-7. El worker de Ranking y Reportes compara el estado persistido con la proyección y publica en RabbitMQ los simulacros que requieren actualización. Las consultas leen la proyección de PostgreSQL. Analítica del Estudiante utiliza los resultados disponibles.
+7. El worker de Ranking y Reportes compara el estado persistido con la proyección y publica en RabbitMQ los simulacros que requieren actualización. Las consultas leen la proyección de PostgreSQL. Analítica del Estudiante calcula sus estadísticas al consultar los resultados definitivos. Persiste las recomendaciones y encarga al servicio de IA únicamente la redacción del refuerzo solicitado.
 
 ### Procesamiento asíncrono de separatas
 

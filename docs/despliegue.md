@@ -79,6 +79,23 @@ Docker Compose descargará las imágenes oficiales e iniciará en orden los sigu
 
 ## 5. Comprobar que el sistema funciona
 
+### Recorrido de Analítica del Estudiante
+
+Usa el archivo de entorno local con credenciales sintéticas del administrador general. El recorrido crea datos de prueba en el proyecto Compose aislado y comprueba las rutas de temas, los resultados definitivos, RF12 y la reutilización concurrente de recomendaciones RF13.
+
+```powershell
+$env:ANALITICA_IA = 'simulada'
+docker compose -p evalua-analitica up -d --build --wait
+docker compose -p evalua-analitica exec -T backend node dist/scripts/seed-admin.js
+$recorrido = Get-Content -Encoding utf8 -Raw pruebas/verificar-analitica-compose.cjs
+$recorrido | docker compose -p evalua-analitica exec -T backend node -
+$env:ANALITICA_IA = 'local'
+docker compose -p evalua-analitica up -d --no-deps --wait backend
+$recorrido | docker compose -p evalua-analitica exec -T backend node -
+```
+
+En el primer recorrido, `origen: ia` corresponde al proveedor simulado. En el segundo, `origen: local` corresponde a las plantillas deterministas. Ambos recorridos usan los workers normales de Rendición y Resultados con datos sintéticos.
+
 Una vez levantados los contenedores, verifica su funcionamiento abriendo tu navegador web o usando un cliente HTTP en las siguientes direcciones:
 
 - **Verificación de salud del backend:**

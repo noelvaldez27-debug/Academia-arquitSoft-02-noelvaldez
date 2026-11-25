@@ -44,3 +44,18 @@ El catálogo de temas pertenece al Banco. Cada tema tiene ID estable, curso, nom
 - CA-AE04 (RF20, AC04, RC15). Se valida el rol y el propietario en el servidor y se comprueban cuentas inactivas, accesos ajenos y permisos por sede y curso cuando apliquen. Las respuestas no incluyen claves ni datos personales ajenos al uso.
 - CA-AE05 (HU10, RF12). Los roles autorizados reciben tasas agrupadas por curso, pregunta y tema dentro de su alcance histórico. Se verifican versiones, filtros y restricciones docentes. Se conserva el aislamiento y se distingue la falta de metadatos históricos.
 - CA-AE06 (AC01, AC05, AC08). Un resultado nuevo aparece conforme a la estrategia aprobada, sin duplicaciones. Se documentan rutas en OpenAPI, regresión Jest y métricas reales, y se comprueban los flujos críticos en Docker Compose con IA simulada. Objetivos locales de cobertura: 80 % de líneas y 70 % de ramas.
+
+## API implementada
+
+- GET /api/v1/analitica/mi-historial devuelve evolución y desempeño por curso del postulante autenticado.
+- POST /api/v1/analitica/mi-recomendacion obtiene o genera la recomendación vigente del postulante autenticado.
+- GET /api/v1/analitica/estadisticas devuelve agregados por curso, tema y versión de pregunta. Los filtros son simulacroId, cursoId, temaId y sedeId. El valor sin-clasificar filtra temas desconocidos. Las referencias públicas de versión son los simulacros congelados correspondientes, agrupados por contenido y clave. La huella de agrupación permanece interna.
+- En Banco, GET y POST /api/banco-preguntas/cursos/{cursoId}/temas listan o crean temas. PUT /api/banco-preguntas/temas/{id} renombra y PATCH /api/banco-preguntas/temas/{id}/desactivar desactiva. Los flujos existentes de preguntas y revisión aceptan temaId opcional.
+
+La migración 015 incorpora el catálogo y verifica la asignación en la escritura, con bloqueo de la fila del tema durante la validación. La migración 016 guarda las recomendaciones por postulante, huella y versión de reglas. La vigencia se determina comparando la huella de los intentos definitivos y la versión actual de las reglas. La generación usa un bloqueo transaccional por clave para deduplicar solicitudes. No se comparten IDs personales con el proveedor.
+
+## Validación local
+
+- TypeScript compiló y Jest aprobó 428 pruebas en 87 suites. Cobertura de Analítica: 98,35 % de líneas (238/242) y 85,71 % de ramas (108/126). Cobertura global: 89,69 % de líneas y 83,03 % de ramas.
+- El proyecto Compose aislado aplicó las migraciones y ejecutó `pruebas/verificar-analitica-compose.cjs` con el proveedor simulado y con plantillas locales. Se comprobaron compatibilidad de versiones anteriores, nombres históricos tras edición y desactivación, restricciones de tema por curso y estado, RF12 con permisos JWT, llegada de resultados definitivos, generación concurrente y renovación de RF13.
+- La compatibilidad se comprobó en un esquema transaccional aislado que aplica las migraciones 001–014, inserta una versión previa sin tema y luego aplica las migraciones 015–016.

@@ -2,7 +2,7 @@
 
 ## Estado actual
 - Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3 y con el alcance por sede del módulo 1
-- Fase 2 (desarrollo): módulos 0 a 5 terminados. Módulo 6 en implementación.
+- Fase 2 (desarrollo): módulos 0 a 6 terminados. Validación integral del Sprint 2 pendiente.
 - Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
 - Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
 
@@ -15,7 +15,7 @@
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
 | 5 | Ranking y Reportes | terminado (9 de 9 tareas) |
-| 6 | Analítica del Estudiante | en curso (7 de 8 tareas) |
+| 6 | Analítica del Estudiante | terminado (8 de 8 tareas) |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
 
@@ -49,6 +49,8 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 6, tarea 8 completada. TypeScript compiló y Jest aprobó 428 pruebas en 87 suites. Analítica obtuvo 98,35 % de líneas y 85,71 % de ramas. El proyecto obtuvo 89,69 % de líneas y 83,03 % de ramas. Los recorridos Compose con IA simulada y plantillas locales pasaron, incluida la compatibilidad de las migraciones 015 y 016, el congelamiento histórico, permisos, concurrencia y renovación.
+
 Módulo 6, tarea 7 completada. RF12 expone agregados por curso, pregunta y tema filtrados por permisos e historia. TypeScript compiló y pasaron ocho pruebas específicas en cinco suites.
 
 Módulo 6, tarea 6 completada. Historial y recomendación propios protegidos con JWT y documentados en OpenAPI. TypeScript compiló y pasó la prueba HTTP de aislamiento.
@@ -100,10 +102,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Tarea 8 pendiente. Docker Desktop no expone el motor Linux en la comprobación inicial.
+Módulo 6 validado localmente. Docker Desktop se recuperó y la validación se ejecutó en el proyecto aislado evalua-analitica sin publicar puertos. El proyecto de prueba quedó detenido con sus volúmenes conservados. Queda pendiente la autorización de push.
 
 ## Siguiente paso exacto
-Ejecutar tarea 8 con regresión y cobertura, preparar y ejecutar el recorrido en Docker Compose.
+Esperar autorización para enviar los commits de Analítica a GitHub. Tras el envío, verificar la ejecución de CI de esos commits.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
