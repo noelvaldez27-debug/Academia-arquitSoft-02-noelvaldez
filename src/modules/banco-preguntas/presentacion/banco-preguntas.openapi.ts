@@ -42,6 +42,16 @@ const pregunta = {
     habilitada: { type: 'boolean' }, propuestaId: { ...texto, nullable: true } },
 };
 export const rutasOpenApiBanco = {
+  '/api/banco-preguntas/cursos/{cursoId}/separatas': {
+    post: {
+      ...operacionBanco('Subir separata (DOCX, PDF, JPG, JPEG o PNG)', 202, ['cursoId'], undefined, {
+        type: 'object', properties: { id: texto, estado: texto },
+      }),
+      requestBody: { required: true, content: { 'multipart/form-data': { schema: {
+        type: 'object', required: ['archivo'], properties: { archivo: { type: 'string', format: 'binary' } },
+      } } } },
+    },
+  },
   '/api/banco-preguntas/cursos': {
     post: operacionBanco('Crear curso', 201, [], curso, { ...curso, properties: { ...curso.properties, id: texto } }),
   },

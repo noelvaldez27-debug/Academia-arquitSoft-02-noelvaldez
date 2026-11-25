@@ -7,7 +7,7 @@
 - [x] 3. Crear las cuatro capas, la raíz de composición, las entidades y los puertos de repositorio. Probar reglas y transiciones.
 - [x] 4. Crear migraciones SQL y repositorios PostgreSQL de preguntas, separatas y propuestas. Validar que aprobar e incorporar al banco sea una operación atómica.
 - [x] 5. Implementar la gestión directa del banco por curso, con JWT, roles de Usuarios, endpoints y OpenAPI.
-- [ ] 6. Implementar la subida de separatas con validación, almacenamiento local mediante AlmacenArchivos y publicación confiable de SeparataSubida. Documentar el endpoint.
+- [x] 6. Implementar la subida de separatas con validación, almacenamiento local mediante AlmacenArchivos y publicación confiable de SeparataSubida. Documentar el endpoint.
 - [ ] 7. Implementar extractores por formato y extender ServicioIA de forma compatible para lectura multimodal. Incorporar el adaptador Gemini y actualizar el simulado para las pruebas.
 - [ ] 8. Implementar el worker RabbitMQ con reintentos y persistencia idempotente de propuestas. Verificar estados y errores de extracción.
 - [ ] 9. Implementar consulta de estado, revisión, corrección, aprobación y descarte. Documentar endpoints y validar acceso.

@@ -98,6 +98,7 @@ services:
 
       # Almacenamiento de archivos (separatas — ADR-012)
       ALMACEN_LOCAL_PATH: /app/uploads
+      SEPARATA_MAX_MB: ${SEPARATA_MAX_MB:-20}
 
       # Administrador General inicial (RF25, CA-U04: sin valores de respaldo)
       ADMIN_GENERAL_NOMBRE:   ${ADMIN_GENERAL_NOMBRE}
