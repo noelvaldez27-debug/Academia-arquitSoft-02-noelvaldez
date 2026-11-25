@@ -11,7 +11,7 @@ export interface ExamenParaCalificar {
   respuestas: { numero: number; alternativa: Alternativa | null }[];
 }
 type Correccion = 'correctas' | 'incorrectas' | 'omitidas';
-interface Conteos {
+export interface Conteos {
   correctas: number;
   incorrectas: number;
   omitidas: number;

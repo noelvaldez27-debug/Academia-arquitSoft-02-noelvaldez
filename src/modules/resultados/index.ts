@@ -12,3 +12,6 @@ export function iniciarWorkerResultados(
   return new ResultadoWorker(conectar, id => procesar.ejecutar(id),
     (mensaje, id) => console.error(mensaje, id ?? '')).ejecutar();
 }
+export { ResultadosModule } from './resultados.module';
+export type { ConsultaResultadosInterna } from './resultados.module';
+export { rutasOpenApiResultados } from './presentacion/resultados.openapi';

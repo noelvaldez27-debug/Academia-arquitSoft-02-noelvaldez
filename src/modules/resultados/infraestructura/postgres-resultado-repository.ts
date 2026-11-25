@@ -2,6 +2,9 @@ import { Pool } from 'pg';
 import { Resultado } from '../dominio/resultado';
 import { ResultadoRepository } from '../dominio/resultado-repository';
 
+const columnas = `examen_id AS "examenId", postulante_id AS "postulanteId", simulacro_id AS "simulacroId",
+  puntaje_centesimos AS "puntajeCentesimos", correctas, incorrectas, omitidas, por_curso AS "porCurso", detalle`;
+
 export class PostgresResultadoRepository implements ResultadoRepository {
   constructor(private readonly bd: Pick<Pool, 'query'>) {}
 
@@ -19,5 +22,21 @@ export class PostgresResultadoRepository implements ResultadoRepository {
       [examenId, postulanteId, simulacroId, puntajeCentesimos, correctas, incorrectas, omitidas,
         JSON.stringify(porCurso), JSON.stringify(detalle)],
     );
+  }
+
+  async buscar(id: string): Promise<Resultado | null> {
+    const { rows } = await this.bd.query<Resultado>(
+      `SELECT ${columnas} FROM resultados_examen WHERE examen_id = $1`, [id],
+    );
+    return rows[0] ?? null;
+  }
+
+  async listar(campo: 'simulacro_id' | 'postulante_id', id: string, despues = ''): Promise<Resultado[]> {
+    const columna = campo === 'simulacro_id' ? 'simulacro_id' : 'postulante_id';
+    const { rows } = await this.bd.query<Resultado>(
+      `SELECT ${columnas} FROM resultados_examen WHERE ${columna} = $1 AND examen_id > $2 ORDER BY examen_id LIMIT 100`,
+      [id, despues],
+    );
+    return rows;
   }
 }

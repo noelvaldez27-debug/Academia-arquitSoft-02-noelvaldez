@@ -1,4 +1,5 @@
 import { RendicionModule, rutasOpenApiRendicion } from './modules/rendicion-examen';
+import { ResultadosModule, rutasOpenApiResultados } from './modules/resultados';
 import { BancoPreguntasModule, rutasOpenApiBanco } from './modules/banco-preguntas';
 import { AlmacenArchivosLocal, crearApp, crearPoolPostgres, crearClienteRedis, obtenerConfiguracionRedisDesdeEnv } from './compartido/infraestructura';
 import { UsuariosModule } from './modules/usuarios';
@@ -20,12 +21,14 @@ const redis = crearClienteRedis({
 });
 const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModule.middlewareAutenticacion);
 rendicion.iniciarTrabajos();
+const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion);
 
 const app = crearApp({
   rutasUsuarios: usuariosModule.router,
   rutasBancoPreguntas: bancoPreguntas.rutas,
   rutasRendicion: rendicion.rutas,
-  rutasOpenApiAdicionales: { ...rutasOpenApiBanco, ...rutasOpenApiRendicion },
+  rutasResultados: resultados.rutas,
+  rutasOpenApiAdicionales: { ...rutasOpenApiBanco, ...rutasOpenApiRendicion, ...rutasOpenApiResultados },
 });
 const port = parseInt(process.env.PORT || '3000', 10);
 const host = '0.0.0.0';
