@@ -2,7 +2,7 @@
 
 ## Estado actual
 - Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3 y con el alcance por sede del módulo 1
-- Fase 2 (desarrollo): módulo 0 terminado; módulo 1 (Gestión de Usuarios) en curso, con registro individual y procesamiento asíncrono de cargas implementados
+- Fase 2 (desarrollo): módulos 0 y 1 terminados.
 - Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
 - Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
 
@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 24 completadas) |
+| 1 | Gestión de Usuarios | terminado (25 de 25 tareas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -49,10 +49,10 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 24: se verificó la coincidencia entre las 13 operaciones de Express y OpenAPI, incluida la respuesta de autenticación de cada una, y se añadieron pruebas de consulta, transacciones y publicación fallida. El recorrido con Docker de la tarea 23 está en pruebas/verificar-usuarios-compose.cjs.
+Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Tarea 25: Jest finalizó con código 0 y 314 pruebas aprobadas en 42 suites. Se restauró process.exitCode tras las pruebas de errores de migración y sembrado. El reporte local está en coverage/lcov-report/index.html. Cobertura global: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Falta validar GitHub Actions en el commit actual, previa autorización de push.
+Ninguna en Gestión de Usuarios.
 
 ## Siguiente paso exacto
 Módulo 1: Gestión de Usuarios. Completar la tarea 25 de `specs/usuarios/tasks.md`: obtener autorización para publicar los commits locales, verificar que GitHub Actions finalice correctamente para el SHA publicado y registrar el resultado.

@@ -35,7 +35,7 @@
 - [x] 22. Endpoints de la carga masiva: subir el archivo (responde de inmediato con un identificador) y consultar el estado y el resultado de la carga, con su documentación OpenAPI (CA-U13)
 - [x] 23. Verificar el módulo de punta a punta con docker compose up: aplicar las migraciones y crear el administrador general dentro del contenedor, crear un administrador de sede, iniciar sesión con ambos, registrar un estudiante en cada sede, comprobar que el administrador de sede no puede ver ni registrar estudiantes de otra sede, y probar los endpoints desde Swagger. Es la primera conexión real del backend con PostgreSQL
 - [x] 24. Verificar que todos los endpoints del módulo aparecen en OpenAPI/Swagger y coinciden con lo que responde el servidor (CA-U07, ADR-008), y completar las pruebas unitarias con Jest de los casos de uso que no estén cubiertas
-- [ ] 25. Verificar el reporte de cobertura de Jest y que las pruebas pasen en GitHub Actions
+- [x] 25. Verificar el reporte de cobertura de Jest y que las pruebas pasen en GitHub Actions
 
 ## Decisiones cerradas
 - Hay tres roles (postulante, docente y administrador). El administrador tiene dos niveles: el general, único y con todas las sedes, y el de sede, varios por sede y con una sola sede (RC15)
