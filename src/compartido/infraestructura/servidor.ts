@@ -8,6 +8,7 @@ export interface OpcionesServidor {
   rutasRanking?: Router;
   rutasRendicion?: Router;
   rutasResultados?: Router;
+  rutasAnalitica?: Router;
   rutasOpenApiAdicionales?: Record<string, object>;
 }
 
@@ -32,6 +33,7 @@ export function crearApp(opciones?: OpcionesServidor): Application {
 
   if (opciones?.rutasRendicion) app.use('/api/v1/examenes', opciones.rutasRendicion);
   if (opciones?.rutasResultados) app.use('/api/v1/resultados', opciones.rutasResultados);
+  if (opciones?.rutasAnalitica) app.use('/api/v1/analitica', opciones.rutasAnalitica);
 
   const documentacion = {
     ...especificacionOpenApi,

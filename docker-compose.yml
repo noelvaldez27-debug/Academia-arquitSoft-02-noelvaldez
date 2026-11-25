@@ -72,6 +72,9 @@ services:
     environment: &entorno-backend
       NODE_ENV: ${NODE_ENV:-development}
       PORT:     ${PORT:-3000}
+      ANALITICA_IA: ${ANALITICA_IA:-local}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODELO: ${GEMINI_MODELO:-}
 
       # PostgreSQL — el backend se conecta por nombre de servicio, no por localhost
       DB_HOST:     postgres
