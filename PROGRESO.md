@@ -49,6 +49,10 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 3, tarea 10 completada. GitHub Actions compiló con Node.js 20 y ejecutó Jest con cobertura para `ca81dfe`. En la validación local pasaron 381 pruebas en 62 suites, incluidas 18 de Rendición y 48 de Banco de Preguntas. Rendición alcanzó 93,26 % de líneas (249/267) y 91,67 % de ramas (77/84). Jest reportó 91,34 % de líneas y 83,94 % de ramas para el proyecto completo. [Ejecución 45536622028](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45536622028)
+
+La integración de CA-RE01 a CA-RE06 pasó con PostgreSQL, Redis y RabbitMQ. Durante la caída de RabbitMQ, dos cierres conservaron sus eventos en la bandeja de salida. Tras restablecer el broker, ambos mensajes llegaron a la cola y la bandeja se vació. El recorrido reproducible está en `pruebas/verificar-rendicion-compose.cjs` y sus comandos en `docs/despliegue.md`.
+
 Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con cobertura correctamente para e3210ec ([ejecución 45532258705](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45532258705)). La validación local registró 48 pruebas específicas en 13 suites y 363 pruebas generales en 56 suites, con código de salida 0. Cobertura local del módulo: 91,93 % de líneas y 85,78 % de ramas. Cobertura global local: 91,84 % de líneas y 84,09 % de ramas. El recorrido con PostgreSQL, RabbitMQ e IA simulada está en pruebas/verificar-banco-compose.cjs.
 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
