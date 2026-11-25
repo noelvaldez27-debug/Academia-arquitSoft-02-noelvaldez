@@ -59,3 +59,11 @@ La migración 015 incorpora el catálogo y verifica la asignación en la escritu
 - TypeScript compiló y Jest aprobó 428 pruebas en 87 suites. Cobertura de Analítica: 98,35 % de líneas (238/242) y 85,71 % de ramas (108/126). Cobertura global: 89,69 % de líneas y 83,03 % de ramas.
 - El proyecto Compose aislado aplicó las migraciones y ejecutó `pruebas/verificar-analitica-compose.cjs` con el proveedor simulado y con plantillas locales. Se comprobaron compatibilidad de versiones anteriores, nombres históricos tras edición y desactivación, restricciones de tema por curso y estado, RF12 con permisos JWT, llegada de resultados definitivos, generación concurrente y renovación de RF13.
 - La compatibilidad se comprobó en un esquema transaccional aislado que aplica las migraciones 001–014, inserta una versión previa sin tema y luego aplica las migraciones 015–016.
+- GitHub Actions aprobó la compilación con Node.js 20 y Jest con cobertura para el commit de implementación `e021a2d`. [Ejecución 45702048073](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45702048073)
+- El recorrido con IA simulada verificó el origen `ia` y el recorrido con plantillas deterministas verificó el origen `local`. El proveedor Gemini real queda fuera de la evidencia.
+
+## Integraciones y límites históricos
+
+- Banco de Preguntas posee el catálogo de temas y conserva el identificador y nombre con la pregunta congelada. Los cambios de nombre, clasificación o estado se mantienen separados de las versiones ya congeladas.
+- Rendición expone los cierres de intentos y su sede histórica mediante consultas por lote. Resultados expone páginas de calificaciones definitivas con filtro opcional por simulacro. Analítica usa los conteos ya calculados y conserva el puntaje original.
+- Los registros previos sin tema verificable contribuyen a las estadísticas por pregunta y curso cuando esos datos existen. Para los agregados por tema se muestran como no clasificados. Una sede histórica desconocida solo aparece en consultas sin filtro de sede y dentro de los permisos aplicables.
