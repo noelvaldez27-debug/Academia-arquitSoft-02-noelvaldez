@@ -32,3 +32,15 @@ test('CA-BP06 rechaza preguntas inhabilitadas y evita guardar la configuración'
   await expect(casos.guardar(general, configuracion)).rejects.toThrow('habilitadas');
   expect(guardarSimulacro).not.toHaveBeenCalled();
 });
+
+test('CA-BP06 distingue una selección inválida de una configuración inexistente', async () => {
+  const guardarSimulacro = jest.fn();
+  const casos = new GestionarSimulacrosUseCase({
+    buscarSimulacro: async () => null, guardarSimulacro,
+  } as unknown as PreguntaRepository, () => 's');
+  await expect(casos.guardar(general, { duracionMinutos: 5, preguntas: ['p1', 'p1'] })).rejects.toThrow('distintas');
+  await expect(casos.guardar(general, { duracionMinutos: 0, preguntas: ['p1'] })).rejects.toThrow('duración');
+  await expect(casos.guardar(general, configuracion, 'ausente')).rejects.toThrow('Simulacro no encontrado');
+  await expect(casos.clave('ausente')).rejects.toThrow('Simulacro no encontrado');
+  expect(guardarSimulacro).not.toHaveBeenCalled();
+});

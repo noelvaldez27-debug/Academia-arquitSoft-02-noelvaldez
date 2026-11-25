@@ -33,3 +33,29 @@ test('CA-BP05 protege la revisión docente de una edición directa', async () =>
   await expect(casos.editar(general, 'p', contenido)).rejects.toThrow('validación docente');
   expect(guardar).not.toHaveBeenCalled();
 });
+
+test('CA-BP01 edita preguntas manuales y mantiene el curso y el estado si se omite el indicador', async () => {
+  const guardar = jest.fn();
+  const actual = { ...contenido, id: 'p', cursoId: 'c', propuestaId: null, habilitada: false };
+  const repo = {
+    guardar, buscar: async (id: string) => id === 'p' ? actual : null, listar: async () => [actual],
+    curso: async () => null,
+  } as unknown as PreguntaRepository;
+  const casos = new GestionarPreguntasUseCase(repo, () => 'p');
+  await expect(casos.editar(general, 'p', { ...contenido, correcta: 'C' }))
+    .resolves.toMatchObject({ cursoId: 'c', correcta: 'C', habilitada: false });
+  await expect(casos.editar(general, 'p', { ...contenido, habilitada: true }))
+    .resolves.toMatchObject({ habilitada: true });
+  await expect(casos.editar(general, 'ausente', contenido)).rejects.toThrow('no encontrada');
+  await expect(casos.crear(general, 'ausente', contenido)).rejects.toThrow('Curso no encontrado');
+  await expect(casos.listar(general, 'c')).resolves.toEqual([actual]);
+  expect(guardar).toHaveBeenCalledTimes(2);
+});
+
+test('CA-BP01 exige un nombre de curso y conserva el identificador generado', async () => {
+  const guardarCurso = jest.fn();
+  const casos = new GestionarPreguntasUseCase({ guardarCurso } as unknown as PreguntaRepository, () => 'c');
+  await expect(casos.guardarCurso(general, ' ')).rejects.toThrow('nombre');
+  await expect(casos.guardarCurso(general, ' Matemática ')).resolves.toEqual({ id: 'c', nombre: 'Matemática' });
+  expect(guardarCurso).toHaveBeenCalledTimes(1);
+});
