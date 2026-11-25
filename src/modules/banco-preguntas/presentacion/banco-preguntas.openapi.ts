@@ -57,6 +57,10 @@ const configuracionSimulacro = {
     preguntas: { type: 'array', minItems: 1, uniqueItems: true, items: texto } },
 };
 export const rutasOpenApiBanco = {
+  '/api/banco-preguntas/cursos/{cursoId}/docentes/{docenteId}': {
+    put: operacionBanco('Asignar un docente a un curso como administrador general', 200, ['cursoId', 'docenteId']),
+    delete: operacionBanco('Retirar la asignación de un docente como administrador general', 200, ['cursoId', 'docenteId']),
+  },
   '/api/banco-preguntas/simulacros': {
     post: operacionBanco('Crear configuración de simulacro', 201, [], configuracionSimulacro),
   },

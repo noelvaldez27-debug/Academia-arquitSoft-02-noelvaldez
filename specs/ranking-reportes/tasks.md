@@ -6,7 +6,7 @@
 - [ ] 4. Adaptar los contratos públicos de integración y crear las migraciones y el repositorio de ranking (CA-RR01–02).
   - [x] 4a. Incorporar condición en Usuarios, altas individuales y masivas, gestión administrativa e instantánea en Rendición.
   - [x] 4b. Incorporar cierre general y coordinación concurrente con nuevos intentos.
-  - [ ] 4c. Incorporar asignaciones docentes y consulta pública interna.
+  - [x] 4c. Incorporar asignaciones docentes y consulta pública interna.
   - [ ] 4d. Implementar repositorio de ranking y adaptar las fuentes históricas y de resultados.
 - [ ] 5. Integrar el worker RabbitMQ, reintentos, concurrencia e idempotencia. Validar caché si se incorpora (CA-RR02).
 - [ ] 6. Implementar consulta autorizada y OpenAPI (CA-RR03).

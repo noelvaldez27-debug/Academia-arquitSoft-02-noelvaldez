@@ -14,7 +14,8 @@ const limiteSeparataMb = Number(process.env.SEPARATA_MAX_MB ?? '20');
 if (!Number.isFinite(limiteSeparataMb) || limiteSeparataMb <= 0) {
   throw new Error('SEPARATA_MAX_MB debe ser positivo.');
 }
-const bancoPreguntas = new BancoPreguntasModule(pool, usuariosModule.middlewareAutenticacion, almacen, Math.floor(limiteSeparataMb * 1024 * 1024));
+const bancoPreguntas = new BancoPreguntasModule(pool, usuariosModule.middlewareAutenticacion, almacen,
+  Math.floor(limiteSeparataMb * 1024 * 1024), usuariosModule.servicioConsultaUsuarios);
 const redis = crearClienteRedis({
   ...obtenerConfiguracionRedisDesdeEnv(), enableOfflineQueue: false, maxRetriesPerRequest: 0, commandTimeout: 3000,
   autoResendUnfulfilledCommands: false,

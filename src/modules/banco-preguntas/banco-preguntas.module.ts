@@ -8,7 +8,10 @@ import { SubirSeparataUseCase } from './aplicacion/subir-separata.use-case';
 import { crearRutasSeparata } from './presentacion/separata.routes';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
-import { MiddlewareAutenticacion } from '../usuarios';
+import { MiddlewareAutenticacion, RolUsuario, ServicioConsultaUsuarios } from '../usuarios';
+import { GestionarAsignacionesUseCase } from './aplicacion/gestionar-asignaciones.use-case';
+import { PostgresAsignacionesDocentes } from './infraestructura/postgres-asignaciones-docentes';
+import { crearRutasAsignaciones } from './presentacion/asignaciones.routes';
 import { GestionarPreguntasUseCase } from './aplicacion/gestionar-preguntas.use-case';
 import { PostgresPreguntaRepository } from './infraestructura/postgres-pregunta-repository';
 import { PostgresSeparataRepository } from './infraestructura/postgres-separata-repository';
@@ -19,15 +22,24 @@ export class BancoPreguntasModule {
   readonly rutas;
   readonly simulacros: ConsultaSimulacros;
   readonly clavesSimulacro: ConsultaClavesSimulacro;
+  readonly cursosAsignados: (docenteId: string) => Promise<string[]>;
   private readonly repositorios: RepositoriosBanco;
 
-  constructor(pool: Pool, auth: MiddlewareAutenticacion, almacen: AlmacenArchivos, maxBytes: number) {
+  constructor(pool: Pool, auth: MiddlewareAutenticacion, almacen: AlmacenArchivos, maxBytes: number,
+    usuarios?: ServicioConsultaUsuarios) {
     this.repositorios = {
       preguntas: new PostgresPreguntaRepository(pool),
       separatas: new PostgresSeparataRepository(pool),
     };
     const { preguntas, separatas } = this.repositorios;
     this.rutas = crearRutasPreguntas(new GestionarPreguntasUseCase(preguntas, randomUUID), auth);
+    const asignaciones = new PostgresAsignacionesDocentes(pool);
+    this.cursosAsignados = id => asignaciones.porDocente(id);
+    this.rutas.use(crearRutasAsignaciones(new GestionarAsignacionesUseCase(
+      async id => (await usuarios?.consultarPorId(id))?.rol === RolUsuario.Docente,
+      id => preguntas.curso(id),
+      (docente, curso, asignado) => asignaciones.guardar(docente, curso, asignado),
+    )));
     const gestionarSimulacros = new GestionarSimulacrosUseCase(preguntas, randomUUID);
     this.simulacros = { consultar: id => gestionarSimulacros.consultar(id) };
     const versiones = new PostgresVersionSimulacro(pool);
