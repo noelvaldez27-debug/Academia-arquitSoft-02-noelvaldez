@@ -67,7 +67,10 @@ El servicio independiente de IA no se incluye como módulo interno porque se eje
 | Rendición de Examen | Banco de Preguntas | Obtiene el identificador, la duración y la lista ordenada de preguntas del simulacro. El administrador general configura la selección con preguntas aprobadas y habilitadas. | API pública del módulo |
 | Procesamiento de Resultados | Rendición de Examen | Obtiene los datos de los exámenes finalizados para su calificación. | API pública del módulo |
 | Ranking y Reportes | Procesamiento de Resultados | Consulta los puntajes para generar clasificaciones. | API pública del módulo |
-| Ranking y Reportes | Rendición de Examen | Obtiene los datos históricos del intento para clasificar y medir participación. | API pública del módulo, integración pendiente |
+| Ranking y Reportes | Rendición de Examen | Obtiene las instantáneas de los intentos y el estado del cierre general para clasificar y medir participación. | API pública del módulo |
+| Ranking y Reportes | Banco de Preguntas | Comprueba los cursos asignados antes de consultar agregados docentes. | API pública del módulo |
+| Rendición de Examen | Gestión de Usuarios | Consulta la carrera, sede y condición al iniciar un intento. | API pública del módulo |
+| Rendición de Examen | Procesamiento de Resultados | Comprueba que los intentos finalizados estén calificados antes de completar el cierre general. | API pública del módulo |
 | Analítica del Estudiante | Procesamiento de Resultados | Consulta los resultados para analizar el rendimiento. | API pública del módulo |
 | Worker | Procesamiento de Resultados | Pide calcular y registrar los resultados de un examen finalizado. | API pública del módulo |
 | Worker | Banco de Preguntas | Pide extraer el texto de una separata y generar las preguntas propuestas. | API pública del módulo |
@@ -104,7 +107,7 @@ El servicio independiente de IA no se incluye como módulo interno porque se eje
 4. Un worker independiente consume el evento.
 5. El worker invoca la API pública de Procesamiento de Resultados.
 6. Procesamiento de Resultados calcula los puntajes y los almacena en PostgreSQL.
-7. Ranking y Reportes y Analítica del Estudiante utilizan los resultados disponibles.
+7. El worker de Ranking y Reportes compara el estado persistido con la proyección y publica en RabbitMQ los simulacros que requieren actualización. Las consultas leen la proyección de PostgreSQL. Analítica del Estudiante utiliza los resultados disponibles.
 
 ### Procesamiento asíncrono de separatas
 

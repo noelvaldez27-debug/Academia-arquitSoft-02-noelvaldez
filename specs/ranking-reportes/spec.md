@@ -41,3 +41,11 @@ El cálculo corre en segundo plano mediante RabbitMQ (RC06 y ADR-004). El worker
 - **CA-RR04.** La inscripción por simulacro se informa como no disponible. Se contabilizan por separado participantes, intentos activos, intentos finalizados e intentos calificados.
 - **CA-RR03 y CA-RR04.** El administrador general gestiona la relación muchos a muchos entre docentes y cursos existentes. Las asignaciones preexistentes requieren evidencia verificable. Cada docente accede solo a agregados de sus cursos asignados. La autoría de separatas sigue sus propias reglas.
 - La aclaración sobre área resuelve la discrepancia señalada con el C3 anterior. El texto C4 nivel 3 del repositorio ya coincide con RF10.
+
+## Evidencia local
+
+- TypeScript y Jest aprobaron 413 pruebas en 77 suites. Cobertura de Ranking y Reportes: 91,86 % de líneas (271/295) y 78,74 % de ramas (137/174). Cobertura global: 89,19 % de líneas y 83,22 % de ramas.
+- El recorrido de Docker Compose aislado con PostgreSQL, Redis y RabbitMQ verificó ranking provisional y definitivo, duplicados, empates, filtro combinado, datos históricos tras cambios y desactivación, asignación y retiro de cursos, reportes y Excel. La carrera concurrente produjo HTTP 200 en un recorrido y 409 en otro. Ambos resultados respetaron la inscripción de intentos bajo el bloqueo de cierre.
+- En el recorrido final, el primer sondeo exitoso de la nota ocurrió a 1,054 s y el del puesto a 2,902 s desde el cierre del intento. Son mediciones de un flujo local. La regresión de Resultados en Compose confirmó su nota y contrato.
+- Al detener RabbitMQ, el cierre general permaneció pendiente. Tras restablecerlo, se procesó la nota y se publicó el ranking definitivo. La verificación incremental aplicó las migraciones 009 a 014 sobre una cuenta, un intento y un resultado sintéticos creados con el esquema 008. Los datos preexistentes se conservaron y los atributos históricos ausentes quedaron nulos.
+- Si una actualización excepcional sustituye una proyección definitiva, PostgreSQL conserva la versión previa y las fechas de publicación y sustitución en la misma transacción. No se ofrece una operación de reapertura o de edición manual.

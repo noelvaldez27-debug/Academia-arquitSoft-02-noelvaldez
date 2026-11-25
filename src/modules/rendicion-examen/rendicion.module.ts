@@ -29,7 +29,7 @@ export class RendicionModule {
   private readonly despachar: DespacharExamenes;
   private readonly cierres: PostgresCierreSimulacro;
 
-  constructor(pool: Pool, redis: Redis, banco: Pick<BancoPreguntasModule, 'consultasVersionadas'>,
+  constructor(pool: Pool, redis: Redis, banco: Pick<BancoPreguntasModule, 'consultasVersionadas' | 'existeSimulacro'>,
     auth: MiddlewareAutenticacion, usuarios?: ServicioConsultaUsuarios) {
     const reloj = () => new Date();
     const examenes = new PostgresExamenRepository(pool);
@@ -58,7 +58,7 @@ export class RendicionModule {
       new RegistrarRespuestaUseCase(transaccion, temporales, reloj),
       finalizar,
     );
-    this.rutas = crearRutasCierreSimulacro(auth, transaccion);
+    this.rutas = crearRutasCierreSimulacro(auth, transaccion, banco.existeSimulacro);
     this.rutas.use(crearRutasExamen(controlador, auth.autenticar, auth.requerirRol(RolUsuario.Postulante)));
     this.examenesFinalizados = { consultar: (id: string) => examenes.consultarFinalizado(id) };
     this.consultasReportes = {

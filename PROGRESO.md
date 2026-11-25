@@ -14,7 +14,7 @@
 | 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
-| 5 | Ranking y Reportes | en curso (7 de 9 tareas) |
+| 5 | Ranking y Reportes | validado localmente (8 de 9 tareas) |
 | 6 | Analítica del Estudiante | sin empezar |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
@@ -49,6 +49,8 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 5, tarea 8 completada. TypeScript y Jest aprobaron 413 pruebas en 77 suites. Cobertura del módulo de 91,86 % de líneas y 78,74 % de ramas, global de 89,19 % y 83,22 %. Docker Compose verificó el cierre concurrente, el ranking y Excel, la migración de datos existentes y la recuperación de RabbitMQ. Las evidencias y mediciones están en `specs/ranking-reportes/spec.md` y el recorrido está en `pruebas/verificar-ranking-compose.cjs`.
+
 Módulo 5, tarea 7 completada. Reportes administrativos de participación, resultados y méritos en JSON y Excel. El docente consulta agregados de cursos asignados. Se comprobaron filtros, separación por sede y equivalencia de filas en Excel. Pasaron 411 pruebas en 75 suites.
 
 Módulo 5, tarea 6 completada. Las rutas de ranking propio y administrativo consultan la proyección y aplican la restricción por sede. OpenAPI documenta ambas. TypeScript compiló y pasaron 410 pruebas en 74 suites.
@@ -84,10 +86,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-La integración real queda pendiente. Compose validó su configuración, pero Docker Desktop no expuso el motor Linux para ejecutar las migraciones y comprobar la persistencia y concurrencia.
+La tarea 9 espera autorización de push y el resultado de GitHub Actions. Mantener el Módulo 6 en pausa hasta cerrar esta tarea.
 
 ## Siguiente paso exacto
-Ejecutar la tarea 8 de `specs/ranking-reportes/tasks.md`: validar recuperación y concurrencia, regresión y cobertura, y ejecutar el recorrido aislado con Docker Compose cuando el motor esté disponible.
+Tras autorización explícita, publicar los commits de `main` y verificar la ejecución de GitHub Actions antes de marcar la tarea 9 de `specs/ranking-reportes/tasks.md`.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

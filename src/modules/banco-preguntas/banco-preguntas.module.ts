@@ -23,6 +23,7 @@ export class BancoPreguntasModule {
   readonly simulacros: ConsultaSimulacros;
   readonly clavesSimulacro: ConsultaClavesSimulacro;
   readonly cursosAsignados: (docenteId: string) => Promise<string[]>;
+  readonly existeSimulacro: (id: string) => Promise<boolean>;
   private readonly repositorios: RepositoriosBanco;
 
   constructor(pool: Pool, auth: MiddlewareAutenticacion, almacen: AlmacenArchivos, maxBytes: number,
@@ -32,11 +33,15 @@ export class BancoPreguntasModule {
       separatas: new PostgresSeparataRepository(pool),
     };
     const { preguntas, separatas } = this.repositorios;
+    this.existeSimulacro = async id => Boolean(await preguntas.buscarSimulacro(id));
     this.rutas = crearRutasPreguntas(new GestionarPreguntasUseCase(preguntas, randomUUID), auth);
     const asignaciones = new PostgresAsignacionesDocentes(pool);
     this.cursosAsignados = id => asignaciones.porDocente(id);
     this.rutas.use(crearRutasAsignaciones(new GestionarAsignacionesUseCase(
-      async id => (await usuarios?.consultarPorId(id))?.rol === RolUsuario.Docente,
+      async id => {
+        const usuario = await usuarios?.consultarPorId(id);
+        return usuario?.id === id && usuario.rol === RolUsuario.Docente;
+      },
       id => preguntas.curso(id),
       (docente, curso, asignado) => asignaciones.guardar(docente, curso, asignado),
     )));

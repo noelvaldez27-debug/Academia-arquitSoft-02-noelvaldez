@@ -51,10 +51,10 @@ export const rutasOpenApiRendicion = {
       responses: {
         200: { description: 'Cierre general completado' },
         202: { description: 'Cierre registrado, pendiente de intentos o calificaciones' },
+        400: { description: 'Identificador inválido' },
         401: { description: 'Sesión inválida o cuenta inactiva' },
         403: { description: 'Se requiere el administrador general' },
         404: { description: 'Simulacro inexistente' },
-        409: { description: 'Configuración de simulacro no disponible' },
         503: { description: 'Infraestructura temporalmente no disponible' },
       },
     },

@@ -257,3 +257,25 @@ npm.cmd run test:cov -- --runInBand
 ```
 
 El primer recorrido mide desde el cierre hasta la primera lectura exitosa por sondeo. Los recorridos siguientes verifican que eventos repetidos no creen otra nota y que una interrupción del broker permita consultar el estado pendiente y recuperar la calificación al volver el servicio. Para repetir el recorrido histórico de Rendición que lee directamente de la cola de cierre, detén temporalmente `worker-resultados` en su proyecto de pruebas aislado.
+
+## Validación de Ranking y Reportes
+
+En un proyecto Compose de pruebas con credenciales administrativas sintéticas e IA simulada, ejecuta el recorrido desde el contenedor backend. Para aislar el proyecto cuando los puertos del host ya estén en uso, puedes usar un override de Compose con `ports: !reset []` en los servicios `backend` y `rabbitmq`.
+
+```powershell
+$proyecto = 'evalua-ranking-validacion'
+docker compose -p $proyecto up -d --build --wait
+docker exec "$proyecto-backend-1" node dist/scripts/seed-admin.js
+$recorrido = Get-Content -Encoding utf8 -Raw pruebas/verificar-ranking-compose.cjs
+$recorrido | docker exec -i "$proyecto-backend-1" node -
+$recorrido | docker exec -i -e RANKING_FASE=compatibilidad "$proyecto-backend-1" node -
+docker exec "$proyecto-rabbitmq-1" rabbitmqctl stop_app
+try {
+  $recorrido | docker exec -i -e RANKING_FASE=caido "$proyecto-backend-1" node -
+} finally {
+  docker exec "$proyecto-rabbitmq-1" rabbitmqctl start_app
+}
+$recorrido | docker exec -i -e RANKING_FASE=recuperado "$proyecto-backend-1" node -
+```
+
+El recorrido normal verifica el cierre concurrente, la clasificación, los permisos docentes y la exportación. La fase de compatibilidad aplica las migraciones en un esquema sintético dentro de una transacción que revierte al finalizar. Las fases de caída y recuperación comprueban que el ranking espere la calificación pendiente.

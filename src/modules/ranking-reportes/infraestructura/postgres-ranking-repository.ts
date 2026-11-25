@@ -11,11 +11,18 @@ export class PostgresRankingRepository implements PersistenciaRanking {
       await cliente.query('BEGIN');
       await cliente.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 17))', [id]);
       const datos = await construir();
+      const serializado = JSON.stringify(datos);
+      await cliente.query(
+        `INSERT INTO historial_ranking_definitivo (simulacro_id, datos_anteriores, publicado_en)
+         SELECT simulacro_id, datos, actualizado_en FROM proyecciones_ranking
+         WHERE simulacro_id = $1 AND datos->>'definitiva' = 'true' AND datos IS DISTINCT FROM $2::jsonb`,
+        [id, serializado],
+      );
       await cliente.query(
         `INSERT INTO proyecciones_ranking (simulacro_id, datos) VALUES ($1, $2)
          ON CONFLICT (simulacro_id) DO UPDATE SET datos = EXCLUDED.datos, actualizado_en = clock_timestamp()
          WHERE proyecciones_ranking.datos IS DISTINCT FROM EXCLUDED.datos`,
-        [id, JSON.stringify(datos)],
+        [id, serializado],
       );
       await cliente.query('COMMIT');
     } catch (error) {

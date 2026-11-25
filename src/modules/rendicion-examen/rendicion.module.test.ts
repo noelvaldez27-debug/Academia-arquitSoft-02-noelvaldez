@@ -46,6 +46,7 @@ function preparar() {
   };
   const auth = { autenticar, requerirRol: () => (_req: unknown, _res: unknown, next: () => void) => next() };
   const modulo = new RendicionModule(pool, redis as unknown as Redis, {
+    existeSimulacro: async id => id === 's',
     consultasVersionadas: () => ({
       consultar: async id => {
         if (id !== 's') throw new ErrorBancoPreguntas('no-encontrado', 'Simulacro no encontrado.');

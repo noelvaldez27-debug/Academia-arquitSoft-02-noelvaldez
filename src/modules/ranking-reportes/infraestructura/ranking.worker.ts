@@ -9,6 +9,7 @@ export class RankingWorker {
     private readonly pendientes: () => Promise<string[]>,
     private readonly actualizar: (id: string) => Promise<void>,
     private readonly informar: (error: unknown) => void,
+    private readonly pausa: (ms: number) => Promise<unknown> = esperar,
   ) {}
 
   async ejecutar(): Promise<never> {
@@ -18,7 +19,7 @@ export class RankingWorker {
       } catch (error) {
         this.informar(error);
       }
-      await esperar(2000);
+      await this.pausa(2000);
     }
   }
 
@@ -34,7 +35,7 @@ export class RankingWorker {
       canal.once('close', terminar);
       await canal.assertQueue(cola, { durable: true });
       await canal.prefetch(1);
-      const enVuelo = new Set<string>();
+      const enVuelo = new Map<string, number>();
       await canal.consume(cola, mensaje => {
         if (!mensaje) { terminar(); return; }
         const id = mensaje.content.toString('utf8');
@@ -46,13 +47,18 @@ export class RankingWorker {
         }).catch(terminar).finally(() => enVuelo.delete(id));
       });
       while (activa) {
-        for (const id of await this.pendientes()) {
+        const ids = new Set(await this.pendientes());
+        const ahora = Date.now();
+        for (const [id, vence] of enVuelo) {
+          if (!ids.has(id) || vence <= ahora) enVuelo.delete(id);
+        }
+        for (const id of ids) {
           if (!activa) break;
           if (enVuelo.has(id)) continue;
-          enVuelo.add(id);
+          enVuelo.set(id, ahora + 30_000);
           await publicar(canal, id);
         }
-        await esperar(2000);
+        await this.pausa(2000);
       }
     } finally {
       await conexion.close().catch(() => undefined);

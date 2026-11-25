@@ -11,5 +11,5 @@
 - [x] 5. Integrar el worker RabbitMQ, reintentos, concurrencia e idempotencia. Validar caché si se incorpora (CA-RR02).
 - [x] 6. Implementar consulta autorizada y OpenAPI (CA-RR03).
 - [x] 7. Implementar reportes, exportación, autorización y OpenAPI (CA-RR04).
-- [ ] 8. Validar flujos con Jest, Docker Compose, regresión, tiempos y cobertura (CA-RR05).
+- [x] 8. Validar flujos con Jest, Docker Compose, regresión, tiempos y cobertura (CA-RR05).
 - [ ] 9. Cerrar el módulo con evidencias y verificar CI tras autorización de push.

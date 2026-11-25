@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { AlcanceAdministrador, MiddlewareAutenticacion, RolUsuario } from '../../usuarios';
 import { TransaccionExamen } from '../aplicacion/transaccion-examen.port';
-import { ErrorRendicion } from '../dominio/error-rendicion';
 
-export function crearRutasCierreSimulacro(auth: MiddlewareAutenticacion, transaccion: TransaccionExamen): Router {
+export function crearRutasCierreSimulacro(auth: MiddlewareAutenticacion, transaccion: TransaccionExamen,
+  existeSimulacro: (id: string) => Promise<boolean>): Router {
   const router = Router();
   router.post('/simulacros/:id/cierre', auth.autenticar, async (req, res) => {
     const actor = req.usuario;
@@ -14,17 +14,10 @@ export function crearRutasCierreSimulacro(auth: MiddlewareAutenticacion, transac
     const id = String(req.params.id).trim();
     if (!id) { res.sendStatus(400); return; }
     try {
-      const cierre = await transaccion(async ({ consultarSimulacro, solicitarCierre }) => {
-        const registro = await solicitarCierre!(id, actor.id);
-        await consultarSimulacro(id);
-        return registro;
-      });
+      if (!await existeSimulacro(id)) { res.sendStatus(404); return; }
+      const cierre = await transaccion(({ solicitarCierre }) => solicitarCierre!(id, actor.id));
       res.status(cierre.cerradoEn ? 200 : 202).json(cierre);
-    } catch (error) {
-      if (error instanceof ErrorRendicion) {
-        res.status(error.codigo === 'no-encontrado' ? 404 : 409).json({ error: error.message });
-        return;
-      }
+    } catch {
       res.sendStatus(503);
     }
   });
