@@ -2,7 +2,7 @@
 
 ## Estado actual
 - Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3 y con el alcance por sede del módulo 1
-- Fase 2 (desarrollo): módulos 0 y 1 terminados.
+- Fase 2 (desarrollo): módulos 0, 1 y 2 terminados.
 - Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
 - Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
 
@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
 | 1 | Gestión de Usuarios | terminado (25 de 25 tareas) |
-| 2 | Banco de Preguntas | en curso (SDD confirmada, 11 de 12 tareas) |
+| 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
 | 5 | Ranking y Reportes | sin empezar |
@@ -49,15 +49,15 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Módulo 2, tarea 11: Integración Docker aprobada con cinco migraciones, PostgreSQL y RabbitMQ reales, PDF e imagen sintéticos, autorización, validación docente, simulacros y Swagger. Se corrigió la composición de OpenAPI para evitar un ciclo de importación.
+Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con cobertura correctamente para e3210ec ([ejecución 45532258705](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45532258705)). La validación local registró 48 pruebas específicas en 13 suites y 363 pruebas generales en 56 suites, con código de salida 0. Cobertura local del módulo: 91,93 % de líneas y 85,78 % de ramas. Cobertura global local: 91,84 % de líneas y 84,09 % de ramas. El recorrido con PostgreSQL, RabbitMQ e IA simulada está en pruebas/verificar-banco-compose.cjs.
 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Módulo 2, tarea 12: se añadieron 29 pruebas sobre roles, autorización y revocación, validación de archivos, revisión docente, simulacros, persistencia y recuperación de RabbitMQ. Pasaron 48 pruebas específicas en 13 suites y 363 pruebas generales en 56 suites, ambas con código de salida 0. Banco de Preguntas: 91,93 % de líneas y 85,78 % de ramas frente a 58,80 % y 45,33 % anteriores. Cobertura global: 91,84 % de líneas y 84,09 % de ramas. Los objetivos recomendados de 80 % de líneas y 70 % de ramas no son umbrales de los requisitos originales. Se usaron datos sintéticos y proveedores simulados. Pendiente GitHub Actions tras la autorización de push.
+Ninguna en Banco de Preguntas.
 
 ## Siguiente paso exacto
-Módulo 2, tarea 12: solicitar autorización para publicar los commits locales, comprobar el resultado de GitHub Actions para el SHA publicado y cerrar la tarea si CI pasa.
+Esperar la indicación del usuario antes de iniciar el Módulo 3.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
