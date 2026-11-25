@@ -9,6 +9,9 @@ import { crearConexionRabbitMQ } from '../../compartido/infraestructura';
 import type { MiddlewareAutenticacion } from '../usuarios';
 import { ConsultarRankingUseCase } from './aplicacion/consultar-ranking.use-case';
 import { crearRutasRanking } from './presentacion/ranking.routes';
+import { ConsultarReporteUseCase } from './aplicacion/consultar-reporte.use-case';
+import { exportarReporteExcel, tipoExcel } from './infraestructura/exportar-reporte-excel';
+import { crearRutasReportes } from './presentacion/reportes.routes';
 
 export class RankingReportesModule {
   readonly rutas;
@@ -17,9 +20,12 @@ export class RankingReportesModule {
   private readonly worker;
 
   constructor(pool: Pool, rendicion: RendicionModule['consultasReportes'], resultados: ConsultaResultadosInterna,
-    auth: MiddlewareAutenticacion) {
+    auth: MiddlewareAutenticacion, cursosAsignados: (id: string) => Promise<string[]>) {
     this.repositorio = new PostgresRankingRepository(pool);
     this.rutas = crearRutasRanking(new ConsultarRankingUseCase(id => this.repositorio.consultar(id)), auth);
+    this.rutas.use(crearRutasReportes(
+      new ConsultarReporteUseCase(id => this.repositorio.consultar(id), cursosAsignados), exportarReporteExcel, tipoExcel,
+    ));
     this.actualizar = new ActualizarRankingUseCase({
       cerrado: async id => Boolean((await rendicion.consultarCierre(id))?.cerradoEn),
       intentos: async (id, despues) => (await rendicion.porSimulacro(id, despues)).map(fila => ({

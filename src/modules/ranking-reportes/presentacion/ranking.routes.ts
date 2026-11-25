@@ -28,7 +28,7 @@ export function responderRanking(ejecutar: (req: Request, res: Response) => Prom
   return async (req, res) => {
     try {
       const resultado = await ejecutar(req, res);
-      if (!res.headersSent) res.json(resultado);
+      if (!res.headersSent) res.set('Cache-Control', 'private, no-store').json(resultado);
     } catch (error) {
       if (error instanceof ErrorConsultaRanking) {
         res.status(error.estado).json({ error: error.message });

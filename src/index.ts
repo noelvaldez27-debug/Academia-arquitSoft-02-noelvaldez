@@ -26,7 +26,7 @@ const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModul
 const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion);
 rendicion.iniciarTrabajos(resultados.consultas.contarCalificados);
 const rankings = new RankingReportesModule(pool, rendicion.consultasReportes, resultados.consultas,
-  usuariosModule.middlewareAutenticacion);
+  usuariosModule.middlewareAutenticacion, bancoPreguntas.cursosAsignados);
 rankings.iniciarTrabajos();
 
 const app = crearApp({

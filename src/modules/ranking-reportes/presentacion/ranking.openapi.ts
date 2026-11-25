@@ -25,6 +25,33 @@ const nota = { type: 'number', minimum: 0, maximum: 1000 };
 const resumen = { type: 'object', properties: { puesto: { ...entero, nullable: true }, participantes: entero } };
 
 export const rutasOpenApiRanking = {
+  [rutaRanking + '/reportes/{tipo}']: { get: operacionRanking(
+    'Consultar o exportar participación, resultados y cuadro de méritos como administrador',
+    [parametroSimulacro, { in: 'path', name: 'tipo', required: true,
+      schema: { ...texto, enum: ['participacion', 'resultados', 'meritos'] } }, ...parametrosAmbito,
+    { in: 'query', name: 'condicion', schema: { ...texto, enum: ['MATRICULADO', 'LIBRE', 'NO_DETERMINADA'] } },
+    ...['desde', 'hasta'].map(name => ({ in: 'query', name, schema: { ...texto, format: 'date-time' },
+      description: 'Límite inclusivo de la fecha de inicio del intento.' })),
+    { in: 'query', name: 'formato', schema: { ...texto, enum: ['xlsx'] } }],
+    {
+      ...jsonRanking({ simulacroId: texto, estado: { ...texto, enum: ['PROVISIONAL', 'DEFINITIVO'] },
+        resumen: { type: 'object', properties: {
+          inscritos: { ...entero, nullable: true, description: 'Sin registro verificable de inscripción.' },
+          participantes: entero, enCurso: entero, finalizados: entero, calificados: entero,
+        } },
+        filas: { type: 'array', items: { type: 'object', properties: {
+          simulacroId: texto, postulanteId: texto, carrera: { ...texto, nullable: true }, sedeId: { ...texto, nullable: true },
+          condicion: texto, puntaje: nota, correctas: entero, incorrectas: entero, omitidas: entero, puesto: entero, estado: texto,
+        } } },
+      }),
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': { schema: { ...texto, format: 'binary' } },
+    },
+  ) },
+  [rutaRanking + '/reportes/cursos/{cursoId}']: { get: operacionRanking('Consultar agregados de un curso asignado',
+    [parametroSimulacro, { in: 'path', name: 'cursoId', required: true, schema: texto }],
+    jsonRanking({ simulacroId: texto, cursoId: texto, definitiva: booleano,
+      resumen: { type: 'object', properties: { calificados: entero, correctas: entero, incorrectas: entero, omitidas: entero } },
+    })) },
   [rutaRanking + '/propio']: { get: operacionRanking('Consultar puesto y puntaje propios', [parametroSimulacro], jsonRanking({
     simulacroId: texto, definitiva: booleano, puntaje: { ...nota, nullable: true },
     general: resumen, carrera: { ...resumen, nullable: true }, sede: { ...resumen, nullable: true },
