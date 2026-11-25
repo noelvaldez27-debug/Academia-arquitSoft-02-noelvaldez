@@ -49,3 +49,12 @@ El cálculo corre en segundo plano mediante RabbitMQ (RC06 y ADR-004). El worker
 - En el recorrido final, el primer sondeo exitoso de la nota ocurrió a 1,054 s y el del puesto a 2,902 s desde el cierre del intento. Son mediciones de un flujo local. La regresión de Resultados en Compose confirmó su nota y contrato.
 - Al detener RabbitMQ, el cierre general permaneció pendiente. Tras restablecerlo, se procesó la nota y se publicó el ranking definitivo. La verificación incremental aplicó las migraciones 009 a 014 sobre una cuenta, un intento y un resultado sintéticos creados con el esquema 008. Los datos preexistentes se conservaron y los atributos históricos ausentes quedaron nulos.
 - Si una actualización excepcional sustituye una proyección definitiva, PostgreSQL conserva la versión previa y las fechas de publicación y sustitución en la misma transacción. No se ofrece una operación de reapertura o de edición manual.
+- Las pruebas HTTP verificaron el aislamiento entre sedes en consultas y exportaciones, el acceso exclusivo al puesto propio y el acceso docente a agregados de sus cursos asignados. La reproducción de mensajes de ranking en Compose conservó una única clasificación por ámbito.
+
+## Integración y cierre
+
+- Gestión de Usuarios registra la condición en las altas individuales y masivas, permite cambiarla según rol y sede, y conserva las cuentas anteriores sin condición verificable.
+- Banco de Preguntas administra asignaciones docentes con el catálogo existente y permite verificar la existencia del simulacro al solicitar el cierre.
+- Rendición de Examen conserva la instantánea de carrera, sede y condición al iniciar. Gestiona el cierre general y la reanudación de intentos activos.
+- Procesamiento de Resultados expone sus consultas de calificaciones y totales para validar el cierre y detectar cambios. Ranking reutiliza el puntaje en centésimos en la escala de 0 a 1000, sin penalizaciones.
+- GitHub Actions compiló el commit `5458167` con Node.js 20 y ejecutó Jest con cobertura. [Ejecución 45663589106](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45663589106)
