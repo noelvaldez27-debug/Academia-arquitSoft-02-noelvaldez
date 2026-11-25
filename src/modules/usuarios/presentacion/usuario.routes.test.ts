@@ -150,7 +150,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
     it('(CA-U06) debe responder 401 si no se envía token', async () => {
       const res = await request(app)
         .post('/api/usuarios/estudiantes')
-        .send({ nombre: 'Alumno', dni: '71234567', sedeId: 'Hana', carrera: 'Medicina' });
+        .send({ nombre: 'Alumno', dni: '71234567', sedeId: 'Hana', carrera: 'Medicina', condicion: 'LIBRE' });
 
       expect(res.status).toBe(401);
     });
@@ -177,7 +177,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       const res = await request(app)
         .post('/api/usuarios/estudiantes')
         .set('Authorization', 'Bearer token_postulante')
-        .send({ nombre: 'Alumno', dni: '71234567', sedeId: 'Hana', carrera: 'Medicina' });
+        .send({ nombre: 'Alumno', dni: '71234567', sedeId: 'Hana', carrera: 'Medicina', condicion: 'LIBRE' });
 
       expect(res.status).toBe(403);
     });
@@ -217,7 +217,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
           nombre: 'Carlos Estudiante',
           dni: '71234567',
           sedeId: 'Hana',
-          carrera: 'Medicina',
+          carrera: 'Medicina', condicion: 'LIBRE',
         });
 
       expect(res.status).toBe(201);
@@ -250,7 +250,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       const res = await request(app)
         .post('/api/usuarios/estudiantes')
         .set('Authorization', 'Bearer token_admin')
-        .send({ nombre: 'Carlos', dni: '123', sedeId: 'Hana', carrera: 'Medicina' });
+        .send({ nombre: 'Carlos', dni: '123', sedeId: 'Hana', carrera: 'Medicina', condicion: 'LIBRE' });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('8 digitos numericos');
@@ -278,7 +278,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       const res = await request(app)
         .post('/api/usuarios/estudiantes')
         .set('Authorization', 'Bearer token_admin')
-        .send({ nombre: 'Carlos', dni: '71234567', sedeId: 'Hana', carrera: 'Medicina' });
+        .send({ nombre: 'Carlos', dni: '71234567', sedeId: 'Hana', carrera: 'Medicina', condicion: 'LIBRE' });
 
       expect(res.status).toBe(409);
       expect(res.body.error).toContain('DNI ya se encuentra registrado');

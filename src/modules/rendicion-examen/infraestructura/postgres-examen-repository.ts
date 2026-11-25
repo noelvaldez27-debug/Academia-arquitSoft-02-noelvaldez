@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { ExamenRepository, ExamenFinalizado } from '../dominio/examen-repository';
-import { Examen } from '../dominio/examen';
+import { DatosInicialesPostulante, Examen, IntentoParaReportes } from '../dominio/examen';
 import { Respuesta } from '../dominio/respuesta';
 
 interface FilaExamen {
@@ -10,9 +10,13 @@ interface FilaExamen {
   inicio: Date;
   vence: Date;
   cierre: Date | null;
+  carrera: DatosInicialesPostulante['carrera'];
+  sedeId: DatosInicialesPostulante['sedeId'];
+  condicion: DatosInicialesPostulante['condicion'];
 }
 
-const columnas = 'id, postulante_id AS "postulanteId", simulacro_id AS "simulacroId", inicio, vence, cierre';
+const columnas = `id, postulante_id AS "postulanteId", simulacro_id AS "simulacroId", inicio, vence, cierre,
+  carrera_inicial AS carrera, sede_inicial AS "sedeId", condicion_inicial AS condicion`;
 
 export function crearConsultaExamenesFinalizados(bd: Pick<Pool, 'query'>) {
   const examenes = new PostgresExamenRepository(bd);
@@ -20,11 +24,23 @@ export function crearConsultaExamenesFinalizados(bd: Pick<Pool, 'query'>) {
 }
 
 function cargar(fila: FilaExamen | undefined): Examen | null {
-  return fila ? new Examen(fila.id, fila.postulanteId, fila.simulacroId, fila.inicio, fila.vence, fila.cierre) : null;
+  return fila ? new Examen(fila.id, fila.postulanteId, fila.simulacroId, fila.inicio, fila.vence, fila.cierre, {
+    carrera: fila.carrera ?? null, sedeId: fila.sedeId ?? null, condicion: fila.condicion ?? null,
+  }) : null;
 }
 
 export class PostgresExamenRepository implements ExamenRepository {
   constructor(private readonly bd: Pick<Pool, 'query'>) {}
+
+  async listarParaReportes(simulacroId: string, despues: string | null = null): Promise<IntentoParaReportes[]> {
+    const { rows } = await this.bd.query<IntentoParaReportes>(
+      `SELECT ${columnas} FROM examenes_rendicion
+       WHERE simulacro_id = $1 AND ($2::text IS NULL OR id > $2) ORDER BY id LIMIT 100`,
+      [simulacroId, despues],
+    );
+    return rows.map(({ id, postulanteId, inicio, cierre, carrera, sedeId, condicion }) =>
+      ({ id, postulanteId, simulacroId, inicio, cierre, carrera, sedeId, condicion }));
+  }
 
   async buscar(id: string): Promise<Examen | null> {
     const { rows } = await this.bd.query<FilaExamen>(
@@ -43,9 +59,10 @@ export class PostgresExamenRepository implements ExamenRepository {
 
   async insertar(examen: Examen): Promise<Examen> {
     const { rows } = await this.bd.query<FilaExamen>(
-      `INSERT INTO examenes_rendicion (id, postulante_id, simulacro_id, inicio, vence)
-       VALUES ($1, $2, $3, $4, $5) ON CONFLICT (postulante_id, simulacro_id) DO NOTHING RETURNING ${columnas}`,
-      [examen.id, examen.postulanteId, examen.simulacroId, examen.inicio, examen.vence],
+      `INSERT INTO examenes_rendicion (id, postulante_id, simulacro_id, inicio, vence, carrera_inicial, sede_inicial, condicion_inicial)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (postulante_id, simulacro_id) DO NOTHING RETURNING ${columnas}`,
+      [examen.id, examen.postulanteId, examen.simulacroId, examen.inicio, examen.vence,
+        examen.datosIniciales?.carrera, examen.datosIniciales?.sedeId, examen.datosIniciales?.condicion],
     );
     if (rows[0]) return cargar(rows[0])!;
     const existente = await this.buscarIntento(examen.postulanteId, examen.simulacroId);

@@ -181,6 +181,28 @@ export const especificacionOpenApi = {
         },
       },
     },
+    '/api/usuarios/estudiantes/{id}/condicion': {
+      patch: {
+        tags: ['Usuarios'],
+        summary: 'Actualizar la condición académica de un postulante',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object', required: ['condicion'],
+            properties: { condicion: { type: 'string', enum: ['MATRICULADO', 'LIBRE'] } },
+          } } },
+        },
+        responses: {
+          '204': { description: 'Condición actualizada' },
+          '400': { description: 'Identificador o condición inválida' },
+          '401': { description: 'Autenticación requerida' },
+          '403': { description: 'Se requiere un administrador autorizado' },
+          '404': { description: 'Postulante no encontrado en el ámbito autorizado' },
+        },
+      },
+    },
     '/api/usuarios/estudiantes': {
       post: {
         summary: 'Registrar estudiante (postulante)',
@@ -193,12 +215,13 @@ export const especificacionOpenApi = {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['nombre', 'dni', 'sedeId', 'carrera'],
+                required: ['nombre', 'dni', 'sedeId', 'carrera', 'condicion'],
                 properties: {
                   nombre: { type: 'string', example: 'Juan Alumno' },
                   dni: { type: 'string', example: '71234567' },
                   sedeId: { type: 'string', example: 'Hana' },
                   carrera: { type: 'string', example: 'Medicina Humana' },
+                  condicion: { type: 'string', enum: ['MATRICULADO', 'LIBRE'] },
                 },
               },
             },
@@ -220,6 +243,7 @@ export const especificacionOpenApi = {
                     rol: { type: 'string', example: 'POSTULANTE' },
                     sedeId: { type: 'string' },
                     carrera: { type: 'string' },
+                    condicion: { type: 'string', enum: ['MATRICULADO', 'LIBRE'] },
                     activo: { type: 'boolean' },
                   },
                 },

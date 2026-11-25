@@ -32,6 +32,7 @@ export class ProcesarCargaMasivaUseCase {
               alcanceAdministrador: administrador.alcanceAdministrador,
             },
             nombre: fila.nombre, dni: fila.dni, sedeId: String(fila.sedeId), carrera: fila.carrera,
+            condicion: fila.condicion,
           });
           carga.incrementarCreadas();
         } catch (error) {

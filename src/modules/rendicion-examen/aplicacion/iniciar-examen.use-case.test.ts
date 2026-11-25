@@ -1,9 +1,9 @@
-import { Examen } from '../dominio/examen';
+import { DatosInicialesPostulante, Examen } from '../dominio/examen';
 import { ExamenRepository } from '../dominio/examen-repository';
 import { IniciarExamenUseCase, consultarPropio } from './iniciar-examen.use-case';
 import { TransaccionExamen } from './transaccion-examen.port';
 
-function preparar() {
+function preparar(consultarDatos?: () => Promise<DatosInicialesPostulante>) {
   let instante = new Date(0);
   let guardado: Examen | null = null;
   const inicializar = jest.fn();
@@ -19,9 +19,20 @@ function preparar() {
   const transaccion: TransaccionExamen = operar => operar({ examenes, consultarSimulacro: async () => simulacro });
   return {
     transaccion, inicializar, avanzar: (ms: number) => { instante = new Date(ms); },
-    iniciar: new IniciarExamenUseCase(transaccion, () => instante, () => 'e', inicializar),
+    iniciar: new IniciarExamenUseCase(transaccion, () => instante, () => 'e', inicializar, consultarDatos),
   };
 }
+
+it('CA-RR01 conserva carrera, sede y condición al reanudar un intento', async () => {
+  const consultar = jest.fn()
+    .mockResolvedValueOnce({ carrera: 'MEDICINA', sedeId: '1', condicion: null })
+    .mockResolvedValue({ carrera: 'DERECHO', sedeId: '2', condicion: 'LIBRE' });
+  const { iniciar } = preparar(consultar);
+  await iniciar.ejecutar('u', 's');
+  const { examen } = await iniciar.ejecutar('u', 's');
+  expect(examen.datosIniciales).toEqual({ carrera: 'MEDICINA', sedeId: '1', condicion: null });
+  expect(consultar).toHaveBeenCalledTimes(1);
+});
 
 it('CA-RE02 conserva el primer inicio y rechaza reiniciar un intento vencido', async () => {
   const { iniciar, avanzar, inicializar } = preparar();

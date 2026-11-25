@@ -1,3 +1,4 @@
+import { CambiarCondicionUseCase } from './aplicacion/cambiar-condicion.use-case';
 import { PostgresCargaMasivaRepository } from './infraestructura/postgres-carga-masiva-repository';
 import { ConsultarCargaMasivaUseCase } from './aplicacion/consultar-carga-masiva.use-case';
 import { crearRutasCargaMasiva } from './presentacion/carga-masiva.routes';
@@ -131,6 +132,12 @@ export class UsuariosModule {
     );
 
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);
+    const cambiarCondicion = new CambiarCondicionUseCase((id, condicion, sede) =>
+      usuarioRepo.cambiarCondicion(id, condicion, sede));
+    this.router.patch('/estudiantes/:id/condicion', this.middlewareAutenticacion.autenticar, async (req, res) => {
+      const estado = await cambiarCondicion.ejecutar(req.usuario, String(req.params.id), req.body?.condicion);
+      res.sendStatus(estado);
+    });
     this.router.use(crearRutasCargaMasiva(
       this.prepararCargaMasiva,
       new ConsultarCargaMasivaUseCase(new PostgresCargaMasivaRepository(config.pool)),

@@ -1,5 +1,5 @@
 import { ExamenRepository } from '../dominio/examen-repository';
-import { Examen, SimulacroVisible } from '../dominio/examen';
+import { DatosInicialesPostulante, Examen, SimulacroVisible } from '../dominio/examen';
 import { ErrorRendicion } from '../dominio/error-rendicion';
 import { TransaccionExamen } from './transaccion-examen.port';
 import { Reloj } from './reloj.port';
@@ -10,6 +10,7 @@ export class IniciarExamenUseCase {
     private readonly reloj: Reloj,
     private readonly generarId: () => string,
     private readonly inicializarRespuestas: (id: string) => Promise<void>,
+    private readonly consultarDatos?: (id: string) => Promise<DatosInicialesPostulante>,
   ) {}
 
   ejecutar(postulanteId: string, simulacroId: string) {
@@ -19,9 +20,10 @@ export class IniciarExamenUseCase {
       const simulacro = await consultarSimulacro(simulacroId);
       if (existente) return { examen: existente, simulacro };
 
+      const datosIniciales = await this.consultarDatos?.(postulanteId) ?? null;
       const inicio = this.reloj();
       const candidato = new Examen(this.generarId(), postulanteId, simulacroId, inicio,
-        new Date(inicio.getTime() + simulacro.duracionMinutos * 60_000));
+        new Date(inicio.getTime() + simulacro.duracionMinutos * 60_000), null, datosIniciales);
       const examen = await examenes.insertar(candidato);
       examen.verificarVigencia(this.reloj());
       if (examen.id === candidato.id) await this.inicializarRespuestas(examen.id);

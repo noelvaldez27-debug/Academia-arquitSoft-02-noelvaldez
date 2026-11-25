@@ -28,6 +28,7 @@ export class ConsultarUsuarioUseCase implements ServicioConsultaUsuarios {
       activo: usuario.activo,
       sedeId: usuario.sedeId ?? null,
       carrera: usuario.carrera ?? null,
+      ...(usuario.condicion ? { condicion: usuario.condicion } : {}),
       alcanceAdministrador: usuario.alcanceAdministrador ?? null,
     };
   }

@@ -1,6 +1,6 @@
 # SDD · Ranking y Reportes
 
-Estado: reglas de negocio aprobadas. Las dependencias sin fuente se detallan al final.
+Estado: reglas de negocio aprobadas. Las dependencias autorizadas se detallan al final.
 
 ## Alcance confirmado
 
@@ -11,7 +11,7 @@ Estado: reglas de negocio aprobadas. Las dependencias sin fuente se detallan al 
 
 ## Diseño e integración
 
-El módulo se ubica en `src/modules/ranking-reportes/` con Dominio, Aplicación, Infraestructura, Presentación y raíz de composición (ADR-001 y ADR-002). Lee puntajes paginados mediante `ConsultaResultadosInterna.porSimulacro`, y sede y carrera mediante `ServicioConsultaUsuarios.consultarPorId`. El puerto de Usuarios no incluye área, modalidad de participación ni listados de inscritos. Los reportes que requieran datos adicionales dependerán de extensiones mínimas a los contratos públicos de los módulos propietarios.
+El módulo se ubica en `src/modules/ranking-reportes/` con Dominio, Aplicación, Infraestructura, Presentación y raíz de composición (ADR-001 y ADR-002). Lee puntajes paginados mediante `ConsultaResultadosInterna.porSimulacro` y datos históricos mediante la consulta paginada de Rendición. Rendición obtiene los datos vigentes de Usuarios al iniciar el intento y persiste su instantánea. Las cargas masivas ya encoladas antes de la migración se procesan con condición no determinada cuando carecen de un valor.
 
 El cálculo del ranking corre en segundo plano mediante RabbitMQ (RC06 y ADR-004). El worker actual de Resultados persiste calificaciones idempotentes y no emite un evento de resultado confirmado. La implementación deberá garantizar que una calificación persistida pueda incorporarse al ranking aunque el broker o el worker se interrumpan. PostgreSQL conserva los datos definitivos (RC07, ADR-015 y C4 niveles 2–3). El patrón Decorator permite añadir Redis a lecturas frecuentes cuando se justifique. Si se incorpora, PostgreSQL seguirá siendo la fuente definitiva y se verificará la recuperación de lecturas ante fallos o invalidaciones.
 
@@ -34,10 +34,10 @@ El cálculo del ranking corre en segundo plano mediante RabbitMQ (RC06 y ADR-004
 - CA-RR04. Inscripción requiere un registro válido del simulacro. Participación corresponde al inicio de un intento válido. Finalización corresponde al cierre voluntario o por vencimiento y calificación al resultado procesado. Los reportes filtran por simulacro, carrera, sede, condición y fechas cuando corresponda. Las filas incluyen, según el reporte y el rol, simulacro, identificador del postulante, carrera, sede, condición, puntaje sobre 1000, aciertos, errores, omisiones, puesto y estado. El cuadro de méritos incluye todos los resultados válidos del ámbito, ordenados por puesto, sin cupos ni nota mínima. El formato inicial es Excel (.xlsx).
 - CA-RR05. Validar también límites de puntaje, empates, filtros combinados, conservación histórica, resultados tardíos, aislamiento y equivalencia entre consulta y exportación. Los objetivos recomendados son 80 % de líneas y 70 % de ramas del módulo.
 
-## Dependencias verificadas
+## Dependencias verificadas y solución aprobada
 
-- Usuarios expone carrera y sede actuales. Su esquema y contrato carecen de condición de matriculado o libre. Hace falta aprobar su fuente y el tratamiento de registros existentes. El historial de intentos previos carece de una copia verificable de carrera, sede y condición al inicio.
-- Rendición guarda inicio, vencimiento y cierre por intento. Banco configura duración por intento y congela la versión del examen. No existe cierre general; la transición a definitivo queda pendiente de una fuente aprobada.
-- No existe una entidad de inscripción a un simulacro. Se aplica la limitación aprobada y no se derivan inscripciones de la matrícula ni de los intentos.
-- No existe un contrato de asignación docente a cursos. Las separatas registran autor y curso, pero no acreditan una asignación académica. El acceso docente depende de una fuente autorizada.
+- **CA-RR01 y CA-RR04.** Usuarios incorpora MATRICULADO y LIBRE como condición académica, con asignación explícita en altas nuevas y gestión del administrador general o de la sede propia. Las cuentas previas sin evidencia conservan condición no determinada y acceso normal. Rendición congela carrera, sede y condición al iniciar. Los intentos históricos conservan sus resultados y solo incluyen dimensiones demostrables. Participan en el ranking general y en los ámbitos específicos cuyo dato se conoce.
+- **CA-RR02.** El administrador general solicita el cierre. Se registra el responsable, la fecha de solicitud y la fecha efectiva. Las solicitudes son idempotentes y se coordinan con el inicio concurrente. El estado en cierre bloquea nuevas altas y permite reanudar y finalizar intentos existentes. El estado cerrado requiere todos los intentos válidos finalizados y calificados. Una interrupción del procesamiento mantiene pendiente el cierre. Ranking consulta el estado del propietario. Sin reapertura ni horarios adicionales.
+- **CA-RR04.** La inscripción por simulacro se informa como no disponible. Se contabilizan por separado participantes, intentos activos, intentos finalizados e intentos calificados.
+- **CA-RR03 y CA-RR04.** El administrador general gestiona la relación muchos a muchos entre docentes y cursos existentes. Las asignaciones preexistentes requieren evidencia verificable. Cada docente accede solo a agregados de sus cursos asignados. La autoría de separatas sigue sus propias reglas.
 - La aclaración sobre área resuelve la discrepancia señalada con el C3 anterior. El texto C4 nivel 3 del repositorio ya coincide con RF10.

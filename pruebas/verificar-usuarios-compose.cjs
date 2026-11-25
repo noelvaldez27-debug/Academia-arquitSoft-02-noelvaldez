@@ -49,22 +49,22 @@ async function verificar() {
   for (const [indice, sede] of sedes.entries()) {
     await consultar(api + '/estudiantes', 201, {
       metodo: 'POST', token: sede.id === hana.id ? adminSede : general,
-      datos: { nombre: 'Estudiante ' + sede.nombre, dni: String(41000000 + indice), sedeId: String(sede.id), carrera: 'Medicina' },
+      datos: { nombre: 'Estudiante ' + sede.nombre, dni: String(41000000 + indice), sedeId: String(sede.id), carrera: 'Medicina', condicion: 'LIBRE' },
     });
   }
   await consultar(api + '?sedeId=' + urin.id, 403, { token: adminSede });
   await consultar(api + '/estudiantes', 403, {
     metodo: 'POST', token: adminSede,
-    datos: { nombre: 'Fuera de sede', dni: '42000000', sedeId: String(urin.id), carrera: 'Medicina' },
+    datos: { nombre: 'Fuera de sede', dni: '42000000', sedeId: String(urin.id), carrera: 'Medicina', condicion: 'LIBRE' },
   });
 
   const libro = new ExcelJS.Workbook();
   const hoja = libro.addWorksheet('Estudiantes');
   hoja.addRows([
-    ['Nombre', 'DNI', 'Sede', 'Carrera'],
-    ['Estudiante nuevo', '43000000', 'Hana', 'Medicina'],
-    ['Nombre diferente', String(41000000 + sedes.indexOf(hana)), 'Hana', 'Medicina'],
-    ['Otra sede', '44000000', 'Urin', 'Medicina'],
+    ['Nombre', 'DNI', 'Sede', 'Carrera', 'Condición'],
+    ['Estudiante nuevo', '43000000', 'Hana', 'Medicina', 'LIBRE'],
+    ['Nombre diferente', String(41000000 + sedes.indexOf(hana)), 'Hana', 'Medicina', 'LIBRE'],
+    ['Otra sede', '44000000', 'Urin', 'Medicina', 'MATRICULADO'],
   ]);
   const bytes = await libro.xlsx.writeBuffer();
   async function cargar() {

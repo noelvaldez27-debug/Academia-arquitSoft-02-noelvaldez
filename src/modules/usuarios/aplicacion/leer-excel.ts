@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import { ErrorValidacion } from '../dominio/errores';
+import { esCondicionPostulante, type CondicionPostulante } from '../dominio/usuario';
 
 /** Límite de tamaño descomprimido en bytes para proteger contra zip bombs */
 const MAX_BYTES_DESCOMPRIMIDO_DEFAULT = 10 * 1024 * 1024; // 10 MB
@@ -11,6 +12,7 @@ export interface FilaExcelValidada {
   dni: string;
   sede: string;
   carrera: string;
+  condicion?: CondicionPostulante;
 }
 
 export interface ResultadoLecturaExcel {
@@ -46,6 +48,7 @@ export async function leerYValidarExcel(
   buffer: Buffer | ArrayBuffer,
   opciones?: {
     exigirColumnaSede?: boolean;
+    exigirCondicion?: boolean;
     maxMb?: number;
     maxFilas?: number;
     sedeAdminNombre?: string | null; // si se indica, fuerza esa sede para las filas
@@ -93,6 +96,7 @@ export async function leerYValidarExcel(
   const colDni = columnas['DNI'];
   const colSede = columnas['SEDE'];
   const colCarrera = columnas['CARRERA'];
+  const colCondicion = columnas['CONDICIÓN'] ?? columnas['CONDICION'];
 
   if (!colNombre || !colDni || !colCarrera) {
     throw new ErrorValidacion(
@@ -102,6 +106,9 @@ export async function leerYValidarExcel(
 
   if (opciones?.exigirColumnaSede && !colSede) {
     throw new ErrorValidacion('El archivo debe contener la columna Sede.');
+  }
+  if (opciones?.exigirCondicion && !colCondicion) {
+    throw new ErrorValidacion('El archivo debe contener la columna Condición.');
   }
 
   // 5. Leer filas de datos
@@ -129,6 +136,11 @@ export async function leerYValidarExcel(
     const dniRaw = String(row.getCell(colDni).value ?? '').trim();
     const carrera = String(row.getCell(colCarrera).value ?? '').trim();
     const sedeRaw = colSede ? String(row.getCell(colSede).value ?? '').trim() : '';
+    const condicion = colCondicion ? String(row.getCell(colCondicion).value ?? '').trim().toUpperCase() : undefined;
+    if (colCondicion && !esCondicionPostulante(condicion)) {
+      filaRechazadas.push({ fila: rowNum, motivo: 'La condición debe ser MATRICULADO o LIBRE.' });
+      continue;
+    }
 
     // Validación: nombre no vacío
     if (!nombre) {
@@ -184,6 +196,7 @@ export async function leerYValidarExcel(
       dni: dniRaw,
       sede: sedeFinal,
       carrera: carrera.toUpperCase(),
+      ...(esCondicionPostulante(condicion) ? { condicion } : {}),
     });
   }
 

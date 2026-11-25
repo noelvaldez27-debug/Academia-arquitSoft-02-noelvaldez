@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Redis } from 'ioredis';
 import { Pool } from 'pg';
 import { BancoPreguntasModule, ErrorBancoPreguntas } from '../banco-preguntas';
-import { MiddlewareAutenticacion, RolUsuario } from '../usuarios';
+import { MiddlewareAutenticacion, RolUsuario, ServicioConsultaUsuarios } from '../usuarios';
 import { crearConexionRabbitMQ } from '../../compartido/infraestructura';
 import { ConsultarExamenUseCase } from './aplicacion/consultar-examen.use-case';
 import { ExpirarExamenes } from './aplicacion/expirar-examenes';
@@ -21,10 +21,12 @@ import { crearRutasExamen } from './presentacion/examen.routes';
 export class RendicionModule {
   readonly rutas;
   readonly examenesFinalizados;
+  readonly consultasReportes;
   private readonly expirar: ExpirarExamenes;
   private readonly despachar: DespacharExamenes;
 
-  constructor(pool: Pool, redis: Redis, banco: Pick<BancoPreguntasModule, 'consultasVersionadas'>, auth: MiddlewareAutenticacion) {
+  constructor(pool: Pool, redis: Redis, banco: Pick<BancoPreguntasModule, 'consultasVersionadas'>,
+    auth: MiddlewareAutenticacion, usuarios?: ServicioConsultaUsuarios) {
     const reloj = () => new Date();
     const examenes = new PostgresExamenRepository(pool);
     const temporales = new RedisRespuestasAdapter(redis);
@@ -43,13 +45,19 @@ export class RendicionModule {
     });
     const finalizar = new FinalizarExamenUseCase(transaccion, temporales, reloj);
     const controlador = new ExamenController(
-      new IniciarExamenUseCase(transaccion, reloj, randomUUID, id => temporales.inicializar(id)),
+      new IniciarExamenUseCase(transaccion, reloj, randomUUID, id => temporales.inicializar(id), async id => {
+        const usuario = await usuarios?.consultarPorId(id);
+        return { carrera: usuario?.carrera ?? null, sedeId: usuario?.sedeId ?? null, condicion: usuario?.condicion ?? null };
+      }),
       new ConsultarExamenUseCase(transaccion, temporales, reloj),
       new RegistrarRespuestaUseCase(transaccion, temporales, reloj),
       finalizar,
     );
     this.rutas = crearRutasExamen(controlador, auth.autenticar, auth.requerirRol(RolUsuario.Postulante));
     this.examenesFinalizados = { consultar: (id: string) => examenes.consultarFinalizado(id) };
+    this.consultasReportes = {
+      porSimulacro: (id: string, despues?: string) => examenes.listarParaReportes(id, despues),
+    };
     this.expirar = new ExpirarExamenes(examenes, finalizar, reloj, informarError);
     this.despachar = new DespacharExamenes(pool, new RabbitmqExamenAdapter(crearConexionRabbitMQ), temporales);
   }

@@ -12,5 +12,6 @@ export interface RegistrarEstudianteCommand {
   dni: string;
   sedeId: string;
   carrera: string;
+  condicion?: unknown;
   ejecutor?: EjecutorAccion;
 }

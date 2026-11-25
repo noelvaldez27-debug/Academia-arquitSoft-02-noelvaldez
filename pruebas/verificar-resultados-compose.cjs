@@ -29,7 +29,7 @@ async function preparar() {
   const [sede] = await http('GET', usuarios + '/sedes', 200, admin);
   async function postulante() {
     const dni = String(randomInt(10_000_000, 100_000_000));
-    await http('POST', usuarios + '/estudiantes', 201, admin, { dni, nombre: 'Postulante', carrera: 'Ingeniería', sedeId: sede.id });
+    await http('POST', usuarios + '/estudiantes', 201, admin, { dni, nombre: 'Postulante', carrera: 'Ingeniería', condicion: 'LIBRE', sedeId: sede.id });
     return login(dni + '@sofia.edu', dni);
   }
   const [token, ajeno] = await Promise.all([postulante(), postulante()]);

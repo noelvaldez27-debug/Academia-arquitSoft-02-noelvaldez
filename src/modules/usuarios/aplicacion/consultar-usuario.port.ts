@@ -14,6 +14,7 @@ export interface UsuarioPublicoDTO {
   activo: boolean;
   sedeId?: string | null;
   carrera?: string | null;
+  condicion?: 'MATRICULADO' | 'LIBRE' | null;
   alcanceAdministrador?: AlcanceAdministrador | null;
 }
 

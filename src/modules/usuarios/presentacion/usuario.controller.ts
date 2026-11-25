@@ -41,12 +41,13 @@ export class UsuarioController {
 
   public registrarEstudiante = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { nombre, dni, sedeId, carrera } = req.body ?? {};
+      const { nombre, dni, sedeId, carrera, condicion } = req.body ?? {};
       const estudiante = await this.registrarEstudianteUseCase.ejecutar({
         nombre,
         dni,
         sedeId,
         carrera,
+        condicion,
         ejecutor: req.usuario
           ? {
               id: req.usuario.id,
@@ -65,6 +66,7 @@ export class UsuarioController {
         rol: estudiante.rol,
         sedeId: estudiante.sedeId,
         carrera: estudiante.carrera,
+        condicion: estudiante.condicion,
         activo: estudiante.activo,
       });
     } catch (error) {

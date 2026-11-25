@@ -11,6 +11,7 @@ import {
 } from '../dominio';
 import { GeneradorCredenciales } from './generar-credenciales';
 import { RegistrarEstudianteCommand } from './registrar-estudiante.command';
+import { esCondicionPostulante } from '../dominio/usuario';
 
 /**
  * Caso de uso: registrar estudiante con nombre, DNI, sede y carrera (RF01, RF22, HU01, CA-U01).
@@ -22,7 +23,8 @@ export class RegistrarEstudianteUseCase {
   constructor(
     private readonly usuarioRepository: UsuarioRepository,
     private readonly sedeRepository: SedeRepository,
-    private readonly generadorCredenciales: GeneradorCredenciales
+    private readonly generadorCredenciales: GeneradorCredenciales,
+    private readonly admitirCargaAnterior = false,
   ) {}
 
   public async ejecutar(command: RegistrarEstudianteCommand): Promise<Usuario> {
@@ -74,6 +76,11 @@ export class RegistrarEstudianteUseCase {
       throw new ErrorConflicto('El DNI ya se encuentra registrado.');
     }
 
+    const condicion = command.condicion;
+    if (!esCondicionPostulante(condicion) && !(this.admitirCargaAnterior && condicion == null)) {
+      throw new ErrorValidacion('La condición del postulante debe ser MATRICULADO o LIBRE.');
+    }
+
     const credenciales = await this.generadorCredenciales.generarParaDni(command.dni.trim());
 
     const nuevoPostulante = Usuario.crearPostulante({
@@ -83,6 +90,7 @@ export class RegistrarEstudianteUseCase {
       passwordHash: credenciales.passwordHash,
       sedeId: sede.id ?? sede.nombre,
       carrera: command.carrera,
+      condicion: esCondicionPostulante(condicion) ? condicion : null,
     });
 
     return await this.usuarioRepository.guardar(nuevoPostulante);

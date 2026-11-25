@@ -141,7 +141,7 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
       expect(mockQuery).toHaveBeenCalledTimes(1);
       const call = mockQuery.mock.calls[0];
       expect(call[0]).toContain('INSERT INTO filas_carga_masiva');
-      expect(call[1]).toEqual(['c-1', 1, 2, 'Juan Perez', '12345678', 1, 'MEDICINA', 'PENDIENTE']);
+      expect(call[1]).toEqual(['c-1', 1, 2, 'Juan Perez', '12345678', 1, 'MEDICINA', 'PENDIENTE', null]);
     });
 
     it('no debe hacer query si la lista de filas esta vacia', async () => {

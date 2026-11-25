@@ -55,6 +55,7 @@ describe('PostgresUsuarioRepository (Pool simulado)', () => {
         1,
         'MEDICINA',
         null,
+        null,
       ]
     );
     expect(guardado.id).toBe('10');
@@ -102,6 +103,7 @@ describe('PostgresUsuarioRepository (Pool simulado)', () => {
         null,
         null,
         AlcanceAdministrador.General,
+        null,
       ]
     );
     expect(guardado.id).toBe('1');

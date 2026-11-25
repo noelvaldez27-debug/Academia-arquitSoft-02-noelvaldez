@@ -1,3 +1,4 @@
+import type { CondicionPostulante } from './usuario';
 export type EstadoCargaMasiva = 'PENDIENTE' | 'PROCESANDO' | 'COMPLETADA' | 'FALLIDA';
 
 export interface DetalleErrorFila {
@@ -14,6 +15,7 @@ export interface FilaCargaMasiva {
   dni: string;
   sedeId: number;
   carrera: string;
+  condicion?: CondicionPostulante | null;
   estado?: 'PENDIENTE' | 'PROCESADA' | 'ERROR';
 }
 

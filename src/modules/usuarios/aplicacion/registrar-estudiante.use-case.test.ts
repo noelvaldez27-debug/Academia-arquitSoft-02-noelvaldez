@@ -117,7 +117,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
       nombre: 'Carlos Alumno',
       dni: '71234567',
       sedeId: 'sede-uuid-hana',
-      carrera: '  ingenieria de sistemas  ',
+      carrera: '  ingenieria de sistemas  ', condicion: 'LIBRE',
       ejecutor: ejecutorAdminGeneral,
     };
 
@@ -140,7 +140,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
       nombre: 'Lucia Gomez',
       dni: '72345678',
       sedeId: 'Urin',
-      carrera: 'Derecho',
+      carrera: 'Derecho', condicion: 'LIBRE',
       ejecutor: ejecutorAdminGeneral,
     };
 
@@ -154,7 +154,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
       nombre: 'Ana Perez',
       dni: '81234567',
       sedeId: 'sede-uuid-hana',
-      carrera: 'Medicina',
+      carrera: 'Medicina', condicion: 'LIBRE',
       ejecutor: ejecutorAdminSedeHana,
     };
 
@@ -168,7 +168,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
       nombre: 'Mario Vargas',
       dni: '82345678',
       sedeId: 'sede-uuid-urin',
-      carrera: 'Medicina',
+      carrera: 'Medicina', condicion: 'LIBRE',
       ejecutor: ejecutorAdminSedeHana,
     };
 
@@ -183,7 +183,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
       nombre: 'Primer Estudiante',
       dni: '77778888',
       sedeId: 'sede-uuid-hana',
-      carrera: 'Educacion',
+      carrera: 'Educacion', condicion: 'LIBRE',
       ejecutor: ejecutorAdminGeneral,
     });
 
@@ -191,7 +191,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
       nombre: 'Segundo Estudiante',
       dni: '77778888',
       sedeId: 'sede-uuid-central',
-      carrera: 'Derecho',
+      carrera: 'Derecho', condicion: 'LIBRE',
       ejecutor: ejecutorAdminGeneral,
     };
 
@@ -207,7 +207,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
         nombre: 'Estudiante',
         dni: '1234567',
         sedeId: 'sede-uuid-hana',
-        carrera: 'Medicina',
+        carrera: 'Medicina', condicion: 'LIBRE',
         ejecutor: ejecutorAdminGeneral,
       })
     ).rejects.toThrow(ErrorValidacion);
@@ -217,7 +217,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
         nombre: 'Estudiante',
         dni: '123456789',
         sedeId: 'sede-uuid-hana',
-        carrera: 'Medicina',
+        carrera: 'Medicina', condicion: 'LIBRE',
         ejecutor: ejecutorAdminGeneral,
       })
     ).rejects.toThrow(ErrorValidacion);
@@ -227,7 +227,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
         nombre: 'Estudiante',
         dni: '1234ABCD',
         sedeId: 'sede-uuid-hana',
-        carrera: 'Medicina',
+        carrera: 'Medicina', condicion: 'LIBRE',
         ejecutor: ejecutorAdminGeneral,
       })
     ).rejects.toThrow(ErrorValidacion);
@@ -239,7 +239,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
         nombre: '   ',
         dni: '70000001',
         sedeId: 'sede-uuid-hana',
-        carrera: 'Medicina',
+        carrera: 'Medicina', condicion: 'LIBRE',
         ejecutor: ejecutorAdminGeneral,
       })
     ).rejects.toThrow(ErrorValidacion);
@@ -261,7 +261,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
         nombre: 'Estudiante',
         dni: '70000003',
         sedeId: 'sede-fantasma',
-        carrera: 'Medicina',
+        carrera: 'Medicina', condicion: 'LIBRE',
         ejecutor: ejecutorAdminGeneral,
       })
     ).rejects.toThrow(ErrorValidacion);
@@ -284,7 +284,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
         nombre: 'Nuevo',
         dni: '70000004',
         sedeId: 'sede-uuid-hana',
-        carrera: 'Medicina',
+        carrera: 'Medicina', condicion: 'LIBRE',
         ejecutor: ejecutorPostulante,
       })
     ).rejects.toThrow(ErrorAccesoDenegado);
@@ -294,7 +294,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
         nombre: 'Nuevo',
         dni: '70000005',
         sedeId: 'sede-uuid-hana',
-        carrera: 'Medicina',
+        carrera: 'Medicina', condicion: 'LIBRE',
         ejecutor: ejecutorDocente,
       })
     ).rejects.toThrow(ErrorAccesoDenegado);
@@ -306,7 +306,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
         nombre: 'Nuevo',
         dni: '70000006',
         sedeId: 'sede-uuid-hana',
-        carrera: 'Medicina',
+        carrera: 'Medicina', condicion: 'LIBRE',
       })
     ).rejects.toThrow(ErrorNoAutenticado);
   });

@@ -8,6 +8,14 @@ const participantes = [
 ];
 
 describe('CA-RR01 · clasificación por puntaje definitivo', () => {
+  it('conserva resultados históricos incompletos en el ranking general', () => {
+    const historico = { postulanteId: 'h', carrera: null, sedeId: '2', puntajeCentesimos: 80000 };
+    const datos = [...participantes, historico];
+    expect(clasificar(datos).find(fila => fila.postulanteId === 'h')?.puesto).toBe(2);
+    expect(clasificar(datos, { sedeId: '2' })[0]?.postulanteId).toBe('h');
+    expect(clasificar(datos, { carrera: 'MEDICINA', sedeId: '2' }).map(fila => fila.postulanteId)).toEqual(['b', 'd']);
+  });
+
   it('ordena de 1000 a 0 puntos y comparte puestos entre matriculados y libres', () => {
     const resultado = clasificar(participantes);
     expect(resultado.map(({ postulanteId, puesto, puntajeCentesimos }) =>

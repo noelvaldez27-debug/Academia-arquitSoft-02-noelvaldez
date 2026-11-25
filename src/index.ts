@@ -19,7 +19,8 @@ const redis = crearClienteRedis({
   ...obtenerConfiguracionRedisDesdeEnv(), enableOfflineQueue: false, maxRetriesPerRequest: 0, commandTimeout: 3000,
   autoResendUnfulfilledCommands: false,
 });
-const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModule.middlewareAutenticacion);
+const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModule.middlewareAutenticacion,
+  usuariosModule.servicioConsultaUsuarios);
 rendicion.iniciarTrabajos();
 const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion);
 

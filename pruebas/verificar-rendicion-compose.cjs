@@ -40,7 +40,7 @@ async function verificar() {
     async function crearPostulante() {
       const dni = String(randomInt(10_000_000, 99_999_999));
       const usuario = await http('POST', usuarios + '/estudiantes', 201, admin, {
-        dni, nombre: 'Postulante de prueba', carrera: 'Ingeniería', sedeId: sede.id,
+        dni, nombre: 'Postulante de prueba', carrera: 'Ingeniería', condicion: 'LIBRE', sedeId: sede.id,
       });
       return { id: usuario.id, token: await login(dni + '@sofia.edu', dni) };
     }

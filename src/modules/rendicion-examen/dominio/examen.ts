@@ -15,6 +15,20 @@ export interface SimulacroVisible {
   preguntas: PreguntaVisible[];
 }
 
+export interface DatosInicialesPostulante {
+  carrera: string | null;
+  sedeId: string | null;
+  condicion: 'MATRICULADO' | 'LIBRE' | null;
+}
+
+export interface IntentoParaReportes extends DatosInicialesPostulante {
+  id: string;
+  postulanteId: string;
+  simulacroId: string;
+  inicio: Date;
+  cierre: Date | null;
+}
+
 export class Examen {
   constructor(
     readonly id: string,
@@ -23,6 +37,7 @@ export class Examen {
     readonly inicio: Date,
     readonly vence: Date,
     readonly cierre: Date | null = null,
+    readonly datosIniciales: DatosInicialesPostulante | null = null,
   ) {}
 
   get estado(): EstadoExamen {
@@ -47,7 +62,7 @@ export class Examen {
   finalizar(ahora: Date): Examen {
     if (this.cierre) return this;
     const cierre = new Date(Math.min(ahora.getTime(), this.vence.getTime()));
-    return new Examen(this.id, this.postulanteId, this.simulacroId, this.inicio, this.vence, cierre);
+    return new Examen(this.id, this.postulanteId, this.simulacroId, this.inicio, this.vence, cierre, this.datosIniciales);
   }
 }
 

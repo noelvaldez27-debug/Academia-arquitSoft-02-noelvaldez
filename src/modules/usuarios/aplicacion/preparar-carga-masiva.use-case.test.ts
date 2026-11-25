@@ -28,9 +28,9 @@ function preparar() {
 describe('PrepararCargaMasivaUseCase (CA-U13)', () => {
   it('registra los rechazos por sede y genera envíos por lote', async () => {
     const { caso, admin, guardar, guardarFilas, guardarEnvios } = preparar();
-    const filas = Array.from({ length: 51 }, (_, i) => ['Estudiante', String(10000000 + i), 'Hana', 'Medicina']);
-    filas.push(['Otra sede', '20000000', 'Urin', 'Medicina']);
-    await expect(caso.ejecutar(await archivo(['Nombre', 'DNI', 'Sede', 'Carrera'], filas), admin)).resolves.toBe('id');
+    const filas = Array.from({ length: 51 }, (_, i) => ['Estudiante', String(10000000 + i), 'Hana', 'Medicina', 'LIBRE']);
+    filas.push(['Otra sede', '20000000', 'Urin', 'Medicina', 'MATRICULADO']);
+    await expect(caso.ejecutar(await archivo(['Nombre', 'DNI', 'Sede', 'Carrera', 'Condición'], filas), admin)).resolves.toBe('id');
     const carga: CargaMasiva = guardar.mock.calls[0][0];
     expect(carga.totalFilas).toBe(52);
     expect(carga.errores).toEqual([{ fila: 53, motivo: expect.any(String) }]);

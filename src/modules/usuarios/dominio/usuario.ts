@@ -2,6 +2,12 @@ import { RolUsuario, AlcanceAdministrador } from './rol-usuario';
 
 export const LONGITUD_MINIMA_PASSWORD = 8;
 
+export type CondicionPostulante = 'MATRICULADO' | 'LIBRE';
+
+export function esCondicionPostulante(valor: unknown): valor is CondicionPostulante {
+  return valor === 'MATRICULADO' || valor === 'LIBRE';
+}
+
 export interface PropiedadesUsuario {
   id?: string;
   nombre: string;
@@ -12,10 +18,12 @@ export interface PropiedadesUsuario {
   activo?: boolean;
   sedeId?: string | null;
   carrera?: string | null;
+  condicion?: CondicionPostulante | null;
   alcanceAdministrador?: AlcanceAdministrador | null;
 }
 
 export class Usuario {
+  readonly condicion: PropiedadesUsuario['condicion'];
   private readonly _id?: string;
   private _nombre: string;
   private readonly _dni?: string | null;
@@ -43,6 +51,7 @@ export class Usuario {
     this._correo = props.correo.trim().toLowerCase();
     this._passwordHash = props.passwordHash;
     this._rol = props.rol;
+    this.condicion = props.rol === RolUsuario.Postulante ? props.condicion ?? null : null;
     this._activo = props.activo !== undefined ? props.activo : true;
 
     if (this._rol === RolUsuario.Postulante) {
@@ -108,6 +117,7 @@ export class Usuario {
     passwordHash: string;
     sedeId: string;
     carrera: string;
+    condicion?: CondicionPostulante | null;
     activo?: boolean;
   }): Usuario {
     return new Usuario({

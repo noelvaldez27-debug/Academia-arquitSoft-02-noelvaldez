@@ -31,6 +31,7 @@ interface FilaLoteBD {
   dni: string;
   sede_id: number;
   carrera: string;
+  condicion: FilaCargaMasiva['condicion'];
   estado: string;
 }
 
@@ -133,7 +134,7 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
 
       bloque.forEach((fila) => {
         const offset = params.length;
-        clausulasValores.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`);
+        clausulasValores.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9})`);
         params.push(
           fila.cargaId,
           fila.numeroLote,
@@ -142,12 +143,13 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
           fila.dni,
           fila.sedeId,
           fila.carrera,
-          fila.estado ?? 'PENDIENTE'
+          fila.estado ?? 'PENDIENTE',
+          fila.condicion ?? null,
         );
       });
 
       const sql = `
-        INSERT INTO filas_carga_masiva (carga_id, numero_lote, numero_fila, nombre, dni, sede_id, carrera, estado)
+        INSERT INTO filas_carga_masiva (carga_id, numero_lote, numero_fila, nombre, dni, sede_id, carrera, estado, condicion)
         VALUES ${clausulasValores.join(', ')};
       `;
       await this.pool.query(sql, params);
@@ -156,7 +158,7 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
 
   public async obtenerFilasPorLote(cargaId: string, lote: number): Promise<FilaCargaMasiva[]> {
     const query = `
-      SELECT id, carga_id, numero_lote, numero_fila, nombre, dni, sede_id, carrera, estado
+      SELECT id, carga_id, numero_lote, numero_fila, nombre, dni, sede_id, carrera, estado, condicion
       FROM filas_carga_masiva
       WHERE carga_id = $1 AND numero_lote = $2
       ORDER BY numero_fila ASC;
@@ -171,6 +173,7 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
       dni: fila.dni,
       sedeId: fila.sede_id,
       carrera: fila.carrera,
+      ...(fila.condicion ? { condicion: fila.condicion } : {}),
       estado: fila.estado as 'PENDIENTE' | 'PROCESADA' | 'ERROR',
     }));
   }

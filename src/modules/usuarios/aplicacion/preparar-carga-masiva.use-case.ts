@@ -21,7 +21,9 @@ export class PrepararCargaMasivaUseCase {
     if (sedeId && !sedeAdmin) {
       throw new ErrorAccesoDenegado('La sede del administrador no está disponible.');
     }
-    const lectura = await leerYValidarExcel(archivo, { ...this.limites, exigirColumnaSede: true, sedeAdminNombre: sedeAdmin?.nombre });
+    const lectura = await leerYValidarExcel(archivo, {
+      ...this.limites, exigirColumnaSede: true, exigirCondicion: true, sedeAdminNombre: sedeAdmin?.nombre,
+    });
     const carga = new CargaMasiva({
       id: this.generarId(),
       usuarioId: Number(administrador.id),
@@ -47,6 +49,7 @@ export class PrepararCargaMasivaUseCase {
         cargaId: carga.id, numeroLote: Math.floor(filas.length / FILAS_POR_LOTE) + 1,
         numeroFila: fila.numeroFila, nombre: fila.nombre, dni: fila.dni,
         sedeId: Number(sede.id), carrera: fila.carrera,
+        condicion: fila.condicion,
       });
     }
     if (filas.length === 0) {

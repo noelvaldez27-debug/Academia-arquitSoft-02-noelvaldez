@@ -1,7 +1,7 @@
 export interface ParticipanteRanking {
   postulanteId: string;
-  carrera: string;
-  sedeId: string;
+  carrera: string | null;
+  sedeId: string | null;
   puntajeCentesimos: number;
 }
 
