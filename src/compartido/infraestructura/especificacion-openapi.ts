@@ -1,5 +1,3 @@
-import { rutasOpenApiBanco } from '../../modules/banco-preguntas';
-
 const esquemaDetallesCarga = {
   type: 'array',
   items: {
@@ -26,7 +24,6 @@ export const especificacionOpenApi = {
     },
   },
   paths: {
-    ...rutasOpenApiBanco,
     '/api/usuarios/cargas-masivas': {
       post: {
         tags: ['Usuarios'],

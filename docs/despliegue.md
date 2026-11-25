@@ -203,3 +203,20 @@ Si deseas ejecutar las pruebas unitarias y de integración en tu computadora sin
 ## 10. Despliegue en la nube (AWS)
 
 El despliegue en la nube mediante AWS corresponde a la planificación del Sprint 3 y se encuentra actualmente pendiente de ejecución. Las instrucciones contenidas en este documento aplican exclusivamente al entorno de desarrollo local.
+
+## 11. Verificación local de Banco de Preguntas
+
+El servicio `worker-separatas` comparte el volumen de originales con el backend.
+Usa `SEPARATAS_IA_PROVEEDOR=simulado` en pruebas. Activar Gemini requiere
+autorización específica de operación, un modelo y una clave en variables de
+entorno. El administrador general registra aparte la autorización de cada
+separata y el alcance de la transferencia.
+
+Ejecutar la integración con una base nueva y datos sintéticos. El script aplica
+las migraciones y crea las cuentas de prueba dentro del contenedor.
+
+```powershell
+$env:SEPARATAS_IA_PROVEEDOR = 'simulado'
+docker compose -p evalua-banco up -d --build --wait
+Get-Content pruebas/verificar-banco-compose.cjs -Raw | docker compose -p evalua-banco exec -T backend node
+```

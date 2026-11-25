@@ -1,4 +1,4 @@
-import { BancoPreguntasModule } from './modules/banco-preguntas';
+import { BancoPreguntasModule, rutasOpenApiBanco } from './modules/banco-preguntas';
 import { AlmacenArchivosLocal, crearApp, crearPoolPostgres } from './compartido/infraestructura';
 import { UsuariosModule } from './modules/usuarios';
 
@@ -13,7 +13,11 @@ if (!Number.isFinite(limiteSeparataMb) || limiteSeparataMb <= 0) {
   throw new Error('SEPARATA_MAX_MB debe ser positivo.');
 }
 const bancoPreguntas = new BancoPreguntasModule(pool, usuariosModule.middlewareAutenticacion, almacen, Math.floor(limiteSeparataMb * 1024 * 1024));
-const app = crearApp({ rutasUsuarios: usuariosModule.router, rutasBancoPreguntas: bancoPreguntas.rutas });
+const app = crearApp({
+  rutasUsuarios: usuariosModule.router,
+  rutasBancoPreguntas: bancoPreguntas.rutas,
+  rutasOpenApiAdicionales: rutasOpenApiBanco,
+});
 const port = parseInt(process.env.PORT || '3000', 10);
 const host = '0.0.0.0';
 

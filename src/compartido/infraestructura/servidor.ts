@@ -5,6 +5,7 @@ import { especificacionOpenApi } from './especificacion-openapi';
 export interface OpcionesServidor {
   rutasUsuarios?: Router;
   rutasBancoPreguntas?: Router;
+  rutasOpenApiAdicionales?: Record<string, object>;
 }
 
 export function crearApp(opciones?: OpcionesServidor): Application {
@@ -25,7 +26,11 @@ export function crearApp(opciones?: OpcionesServidor): Application {
 
   if (opciones?.rutasBancoPreguntas) app.use('/api/banco-preguntas', opciones.rutasBancoPreguntas);
 
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(especificacionOpenApi));
+  const documentacion = {
+    ...especificacionOpenApi,
+    paths: { ...especificacionOpenApi.paths, ...opciones?.rutasOpenApiAdicionales },
+  };
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(documentacion));
 
   return app;
 }

@@ -12,7 +12,7 @@
 - [x] 8. Implementar el worker RabbitMQ con reintentos y persistencia idempotente de propuestas. Verificar estados y errores de extracción.
 - [x] 9. Implementar consulta de estado, revisión, corrección, aprobación y descarte. Documentar endpoints y validar acceso.
 - [x] 10. Exponer la API pública de Banco de Preguntas para Rendición y Resultados, con el alcance confirmado en la tarea 2.
-- [ ] 11. Validar el flujo completo con Docker Compose, PostgreSQL y RabbitMQ reales e IA simulada. Contrastar las respuestas con OpenAPI.
+- [x] 11. Validar el flujo completo con Docker Compose, PostgreSQL y RabbitMQ reales e IA simulada. Contrastar las respuestas con OpenAPI.
 - [ ] 12. Ejecutar Jest con cobertura, registrar evidencias y verificar GitHub Actions tras la publicación autorizada.
 
 Antes de la tarea que corresponda, registrar decisiones sobre el contrato de adjuntos, los extractores, la fiabilidad del consumidor y cualquier dependencia o variable de entorno nueva. No incluir claves o datos reales en las pruebas ni usar Gemini en CI.
