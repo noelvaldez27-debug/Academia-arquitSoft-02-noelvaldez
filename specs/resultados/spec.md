@@ -29,3 +29,9 @@ Calificar en segundo plano los exámenes finalizados, conservar sus resultados e
 - **CA-PR02.** Se calcula con aritmética exacta y se redondea al centésimo más cercano al final; los empates suben al siguiente centésimo. Se usan centésimos enteros en el dominio y en persistencia. Todos los aciertos equivalen exactamente a 1000 puntos.
 - **CA-PR01 y CA-PR03.** La regla se aplica a los eventos de intentos finalizados disponibles en la cola, sin ajustes por simulacro. Se consumen únicamente la versión congelada y las respuestas definitivas. Ediciones posteriores del Banco no alteran una calificación.
 - **CA-PR05 y CA-PR06.** El postulante propietario puede ver el puntaje, los totales de aciertos, errores y omisiones y el desglose de estos conteos por curso al terminar el procesamiento. Mientras espera recibe un estado consultable. El detalle por pregunta se conserva para uso interno y las claves correctas permanecen en Banco. Ranking y Analítica se incorporarán en sus propios módulos.
+
+## Evidencia local del Sprint 2
+
+Jest aprobó 395 pruebas en 67 suites. El módulo alcanzó 82,39 % de líneas (117/142) y 94,44 % de ramas (68/72). El proyecto completo reportó 90,47 % de líneas y 84,60 % de ramas.
+
+El recorrido `pruebas/verificar-resultados-compose.cjs` comprobó un puntaje de 333,33 y el desglose por curso tras editar la configuración y las claves vigentes. Ocho entregas repetidas conservaron una sola fila. Durante la interrupción de RabbitMQ, la consulta respondió 202 y el evento permaneció en la bandeja de Rendición. La nota fue consultable tras recuperar el broker. En una ejecución normal sin inyectar duplicados, el tiempo del cierre a la primera consulta exitosa fue 1124 ms, incluido el intervalo de sondeo (AC01). La medición corresponde al entorno aislado de pruebas.

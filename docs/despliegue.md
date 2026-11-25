@@ -233,3 +233,27 @@ npm.cmd run test:cov -- --runInBand
 ```
 
 El recorrido crea datos sintéticos y comprueba JWT, aislamiento, orden y claves congeladas, reconexión, conflictos de revisión, cierres concurrentes, vencimiento, Swagger y entrega de eventos. Para comprobar la bandeja de salida durante una interrupción, detén la aplicación RabbitMQ dentro del proyecto aislado con `rabbitmqctl stop_app`, ejecuta el mismo recorrido pasando `-e RENDICION_BROKER_CAIDO=1` a `docker compose exec`, y restablece el broker con `rabbitmqctl start_app`. La API debe conservar los cierres y el publicador debe recuperarlos al volver el broker.
+
+## Validación de Procesamiento de Resultados
+
+Compose inicia `worker-resultados` después de aplicar las migraciones. El worker consume `examen.finalizado` con confirmación manual y publica reintentos persistentes antes de confirmar la entrega anterior. Tras tres reintentos o ante un evento inválido, conserva el mensaje en `examen.finalizado.fallos` para revisión y eventual republicación del evento corregido, sin el encabezado de intento. Una desconexión del consumidor deja los mensajes no confirmados disponibles para nueva entrega.
+
+En un proyecto Compose de pruebas con las variables `ADMIN_GENERAL_*` configuradas, ejecuta:
+
+```powershell
+docker compose up -d --build --wait
+docker compose exec -T backend node dist/scripts/seed-admin.js
+$recorrido = Get-Content -Raw pruebas/verificar-resultados-compose.cjs
+$recorrido | docker compose exec -T backend node -
+$recorrido | docker compose exec -T -e RESULTADOS_FASE=duplicados backend node -
+docker compose exec -T rabbitmq rabbitmqctl stop_app
+try {
+  $recorrido | docker compose exec -T -e RESULTADOS_FASE=caido backend node -
+} finally {
+  docker compose exec -T rabbitmq rabbitmqctl start_app
+}
+$recorrido | docker compose exec -T -e RESULTADOS_FASE=recuperado backend node -
+npm.cmd run test:cov -- --runInBand
+```
+
+El primer recorrido mide desde el cierre hasta la primera lectura exitosa por sondeo. Los recorridos siguientes verifican que eventos repetidos no creen otra nota y que una interrupción del broker permita consultar el estado pendiente y recuperar la calificación al volver el servicio. Para repetir el recorrido histórico de Rendición que lee directamente de la cola de cierre, detén temporalmente `worker-resultados` en su proyecto de pruebas aislado.

@@ -7,5 +7,5 @@
 - [x] 5. Crear migraciones, repositorio transaccional y caso de uso idempotente (CA-PR01–CA-PR03).
 - [x] 6. Implementar el worker RabbitMQ, reintentos y recuperación (CA-PR03–CA-PR04).
 - [x] 7. Implementar consulta autorizada, OpenAPI y contratos internos (CA-PR05–CA-PR06).
-- [ ] 8. Validar flujos con Docker Compose, regresión, latencia y cobertura (CA-PR07).
+- [x] 8. Validar flujos con Docker Compose, regresión, latencia y cobertura (CA-PR07).
 - [ ] 9. Cerrar el módulo con evidencias y verificar CI tras autorización de push.
