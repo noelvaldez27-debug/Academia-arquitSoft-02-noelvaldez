@@ -2,7 +2,7 @@
 
 ## Estado actual
 - Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3 y con el alcance por sede del módulo 1
-- Fase 2 (desarrollo): módulos 0 a 5 terminados. Módulo 6 en especificación.
+- Fase 2 (desarrollo): módulos 0 a 5 terminados. Módulo 6 en implementación.
 - Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
 - Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
 
@@ -15,7 +15,7 @@
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
 | 5 | Ranking y Reportes | terminado (9 de 9 tareas) |
-| 6 | Analítica del Estudiante | en curso (1 de 8 tareas) |
+| 6 | Analítica del Estudiante | en curso (2 de 8 tareas) |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
 
@@ -49,6 +49,8 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 6, tarea 2 completada. Aprobadas las reglas de desempeño, RF12, RF13, permisos, actualización y persistencia de recomendaciones.
+
 Módulo 6, tarea 1 completada. El borrador en specs/analitica/spec.md traza RF09, RF11, RF12 y RF13 y registra fuentes, criterios de aceptación y decisiones pendientes. La regresión local pasó con 413 pruebas en 77 suites al ejecutar Jest con acceso a sockets locales. No se cambió el backend.
 
 Módulo 5, tarea 9 completada. GitHub Actions compiló con Node.js 20 y ejecutó Jest con cobertura para `5458167`. La validación local registró 413 pruebas en 77 suites, 91,86 % de líneas y 78,74 % de ramas del módulo, y 89,19 % de líneas y 83,22 % de ramas globales. La [SDD](specs/ranking-reportes/spec.md) conserva las decisiones aprobadas, los ajustes en los módulos anteriores, la limitación de inscripciones y la evidencia reproducible de Compose. [Ejecución 45663589106](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45663589106)
@@ -90,10 +92,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Módulo 6, tarea 2 pendiente de aprobación. Confirmar indicadores, alcance de RF12, criterio de debilidades, visibilidad y actualización con las decisiones agrupadas en la SDD.
+Módulo 6, tarea 3 pendiente. Incorporar contratos públicos por lote para fechas, resultados y metadatos históricos.
 
 ## Siguiente paso exacto
-Registrar las decisiones aprobadas en specs/analitica/spec.md, cerrar la tarea 2 en specs/analitica/tasks.md y continuar con la tarea 3.
+Ejecutar la tarea 3 de specs/analitica/tasks.md empezando por los contratos de Rendición y Banco.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
