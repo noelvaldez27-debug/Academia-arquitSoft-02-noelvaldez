@@ -41,6 +41,7 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
         0,
         0,
         '[]',
+        '[]',
         carga.creadoEn,
         carga.actualizadoEn,
       ]);
@@ -114,6 +115,7 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
         0,
         1,
         JSON.stringify([{ fila: 3, motivo: 'Sede invalida' }]),
+        '[]',
         carga.actualizadoEn,
         'c-1',
       ]);

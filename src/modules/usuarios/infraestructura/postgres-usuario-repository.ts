@@ -6,6 +6,7 @@ import {
   ResultadoPaginadoUsuarios,
   RolUsuario,
   AlcanceAdministrador,
+  ErrorConflicto,
 } from '../dominio';
 
 interface FilaUsuario {
@@ -22,7 +23,7 @@ interface FilaUsuario {
 }
 
 export class PostgresUsuarioRepository implements UsuarioRepository {
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pick<Pool, 'query'>, private readonly idempotente = false) {}
 
   private mapearFilaAUsuario(fila: FilaUsuario): Usuario {
     return new Usuario({
@@ -47,6 +48,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     const res = await this.pool.query<FilaUsuario>(
       `INSERT INTO usuarios (nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ${this.idempotente ? "ON CONFLICT DO NOTHING" : ""}
        RETURNING id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador;`,
       [
         usuario.nombre,
@@ -61,6 +63,12 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
       ]
     );
 
+    if (this.idempotente && res.rows.length === 0) {
+      if (usuario.dni && await this.buscarPorDni(usuario.dni)) {
+        throw new ErrorConflicto('El DNI ya se encuentra registrado.');
+      }
+      throw new Error('No se pudo guardar el postulante por un conflicto de persistencia.');
+    }
     return this.mapearFilaAUsuario(res.rows[0]);
   }
 

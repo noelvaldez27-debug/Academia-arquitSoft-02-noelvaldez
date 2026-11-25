@@ -27,6 +27,7 @@ export interface CargaMasivaProps {
   yaExistian?: number;
   rechazadas?: number;
   errores?: DetalleErrorFila[];
+  avisos?: DetalleErrorFila[];
   creadoEn?: Date;
   actualizadoEn?: Date;
 }
@@ -41,6 +42,7 @@ export class CargaMasiva {
   private _yaExistian: number;
   private _rechazadas: number;
   private _errores: DetalleErrorFila[];
+  private _avisos: DetalleErrorFila[];
   private readonly _creadoEn: Date;
   private _actualizadoEn: Date;
 
@@ -61,6 +63,7 @@ export class CargaMasiva {
     this._yaExistian = props.yaExistian ?? 0;
     this._rechazadas = props.rechazadas ?? 0;
     this._errores = props.errores ? [...props.errores] : [];
+    this._avisos = props.avisos ? [...props.avisos] : [];
     this._creadoEn = props.creadoEn ?? new Date();
     this._actualizadoEn = props.actualizadoEn ?? new Date();
   }
@@ -101,6 +104,10 @@ export class CargaMasiva {
     return [...this._errores];
   }
 
+  get avisos(): ReadonlyArray<DetalleErrorFila> {
+    return [...this._avisos];
+  }
+
   get creadoEn(): Date {
     return this._creadoEn;
   }
@@ -136,10 +143,12 @@ export class CargaMasiva {
 
   public agregarRechazo(fila: number, motivo: string): void {
     this._rechazadas += 1;
-    // Guardar los detalles de error con un tope razonable (1000 primeros) para evitar saturar memoria
-    if (this._errores.length < 1000) {
-      this._errores.push({ fila, motivo });
-    }
+    this._errores.push({ fila, motivo });
+    this._actualizadoEn = new Date();
+  }
+
+  public agregarAviso(fila: number, motivo: string): void {
+    this._avisos.push({ fila, motivo });
     this._actualizadoEn = new Date();
   }
 }

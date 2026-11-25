@@ -7,5 +7,6 @@ export interface CargaMasivaRepository {
   guardarFilas(filas: FilaCargaMasiva[]): Promise<void>;
   obtenerFilasPorLote(cargaId: string, lote: number): Promise<FilaCargaMasiva[]>;
   contarLotes(cargaId: string): Promise<number>;
+  contarFilasPendientes(cargaId: string): Promise<number>;
   marcarFilaProcesada(filaId: number, estado: 'PROCESADA' | 'ERROR'): Promise<void>;
 }

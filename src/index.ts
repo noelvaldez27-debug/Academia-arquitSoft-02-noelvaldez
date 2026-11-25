@@ -4,6 +4,8 @@ import { UsuariosModule } from './modules/usuarios';
 const pool = crearPoolPostgres();
 const usuariosModule = new UsuariosModule({ pool });
 
+void usuariosModule.consumidorCargaMasiva.ejecutar();
+
 const app = crearApp({ rutasUsuarios: usuariosModule.router });
 const port = parseInt(process.env.PORT || '3000', 10);
 const host = '0.0.0.0';

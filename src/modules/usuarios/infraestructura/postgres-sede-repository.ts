@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 import { Sede, SedeRepository } from '../dominio';
 
 export class PostgresSedeRepository implements SedeRepository {
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pick<Pool, 'query'>) {}
 
   public async guardar(sede: Sede): Promise<Sede> {
     const res = await this.pool.query<{ id: number; nombre: string }>(

@@ -45,6 +45,7 @@ function verificarFirmaXlsx(buffer: Buffer | ArrayBuffer): void {
 export async function leerYValidarExcel(
   buffer: Buffer | ArrayBuffer,
   opciones?: {
+    exigirColumnaSede?: boolean;
     maxMb?: number;
     maxFilas?: number;
     sedeAdminNombre?: string | null; // si se indica, fuerza esa sede para las filas
@@ -68,7 +69,11 @@ export async function leerYValidarExcel(
 
   // 3. Leer con ExcelJS
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buf as unknown as ArrayBuffer);
+  try {
+    await workbook.xlsx.load(buf as unknown as ArrayBuffer);
+  } catch {
+    throw new ErrorValidacion('El archivo no es un .xlsx válido.');
+  }
 
   const hoja = workbook.worksheets[0];
   if (!hoja) {
@@ -93,6 +98,10 @@ export async function leerYValidarExcel(
     throw new ErrorValidacion(
       'El archivo no contiene las columnas obligatorias: Nombre, DNI, Carrera.'
     );
+  }
+
+  if (opciones?.exigirColumnaSede && !colSede) {
+    throw new ErrorValidacion('El archivo debe contener la columna Sede.');
   }
 
   // 5. Leer filas de datos

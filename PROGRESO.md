@@ -2,7 +2,7 @@
 
 ## Estado actual
 - Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3 y con el alcance por sede del módulo 1
-- Fase 2 (desarrollo): módulo 0 terminado; módulo 1 (Gestión de Usuarios) en curso, con especificación y tareas listas y sin código todavía
+- Fase 2 (desarrollo): módulo 0 terminado; módulo 1 (Gestión de Usuarios) en curso, con registro individual y procesamiento asíncrono de cargas implementados
 - Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
 - Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
 
@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 18 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 21 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -52,13 +52,13 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 20 de `specs/usuarios/tasks.md`: Lectura y validación del archivo .xlsx. Librerías elegidas: `exceljs@4.4.0` (lector xlsx, puro JS sin binarios nativos, mantiene activamente, 2 vulnerabilidades moderadas en uuid—no altas/críticas) y `multer@2.5.0` (recepción de archivos multipart, middleware estándar). Se implementó `leerYValidarExcel` en `src/modules/usuarios/aplicacion/leer-excel.ts` con verificación de firma PK, límite de tamaño/filas, lectura de primera hoja, validación de columnas y por fila, detección de DNI repetidos en el archivo, y alcance por sede. Variables nuevas: `CARGA_MASIVA_MAX_MB=10` y `CARGA_MASIVA_MAX_FILAS=10000`, documentadas en `.env.example` y pasadas al compose con valores por defecto.
+Tarea 21: lotes de 50 filas con RabbitMQ, publicación confirmada, reintentos, persistencia transaccional y migración incremental de avisos. Se conservan todos los rechazos. Se confirmó que no hay tope por sede y que el cambio de nombre genera un aviso por fila sin exponer datos de la cuenta existente. Pasaron 37 pruebas dirigidas de carga masiva. La validación con servicios reales corresponde a la tarea 23.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 21 de `specs/usuarios/tasks.md`: Caso de uso procesarCargaMasiva en segundo plano con RabbitMQ.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 22 de `specs/usuarios/tasks.md`: endpoints de subida, consulta y documentación OpenAPI.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
@@ -100,4 +100,3 @@ Módulo 1: Gestión de Usuarios. Ejecutar la tarea 21 de `specs/usuarios/tasks.m
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit`, `npm test` y `npm run test:cov` pasan sin errores.
 - TypeScript se mantiene en la serie 5 (`^5.9.3`). No actualizar a TypeScript 7+ ya que `ts-jest@29` no lo soporta.
 - Nunca crear ni comitear `.env` en el repositorio; cada desarrollador debe crearlo localmente copiando `.env.example`.
-

@@ -54,14 +54,14 @@ describe('Entidad CargaMasiva (CA-U13)', () => {
     expect(carga.yaExistian).toBe(2);
   });
 
-  it('debe registrar rechazos con límite de 1000 en el arreglo pero contador total exacto', () => {
+  it('debe registrar rechazos con el detalle de cada fila', () => {
     const carga = new CargaMasiva({ id: 'uuid-1', usuarioId: 1, sedeId: null });
     for (let i = 1; i <= 1005; i++) {
       carga.agregarRechazo(i, `Error fila ${i}`);
     }
 
     expect(carga.rechazadas).toBe(1005);
-    expect(carga.errores.length).toBe(1000);
+    expect(carga.errores.length).toBe(carga.rechazadas);
     expect(carga.errores[0]).toEqual({ fila: 1, motivo: 'Error fila 1' });
   });
 });

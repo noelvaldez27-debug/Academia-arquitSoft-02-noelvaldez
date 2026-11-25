@@ -1,3 +1,8 @@
+import { randomUUID } from 'node:crypto';
+import { PostgresCargaMasivaAdapter } from './infraestructura/postgres-carga-masiva.adapter';
+import { RabbitmqCargaMasivaWorker } from './infraestructura/rabbitmq-carga-masiva.worker';
+import { PrepararCargaMasivaUseCase } from './aplicacion/preparar-carga-masiva.use-case';
+import { ProcesarCargaMasivaUseCase } from './aplicacion/procesar-carga-masiva.use-case';
 import { Router } from 'express';
 import { Pool } from 'pg';
 import { PostgresUsuarioRepository } from './infraestructura/postgres-usuario-repository';
@@ -33,6 +38,8 @@ export interface ConfigModuloUsuarios {
  * Conecta casos de uso, repositorios y adaptadores mediante inyección de dependencias.
  */
 export class UsuariosModule {
+  public readonly prepararCargaMasiva: PrepararCargaMasivaUseCase;
+  public readonly consumidorCargaMasiva: RabbitmqCargaMasivaWorker;
   public readonly router: Router;
   public readonly middlewareAutenticacion: MiddlewareAutenticacion;
   public readonly registrarEstudianteUseCase: RegistrarEstudianteUseCase;
@@ -59,6 +66,15 @@ export class UsuariosModule {
       duracion: config.jwtDuracion,
     });
     const generadorCredenciales = new GeneradorCredenciales(hashAdapter);
+
+    const persistenciaCarga = new PostgresCargaMasivaAdapter(config.pool, generadorCredenciales);
+    this.prepararCargaMasiva = new PrepararCargaMasivaUseCase(persistenciaCarga, sedeRepo, randomUUID, {
+      maxMb: Number(process.env.CARGA_MASIVA_MAX_MB) || 10,
+      maxFilas: Number(process.env.CARGA_MASIVA_MAX_FILAS) || 10000,
+    });
+    this.consumidorCargaMasiva = new RabbitmqCargaMasivaWorker(
+      config.pool, new ProcesarCargaMasivaUseCase(persistenciaCarga),
+    );
 
     this.registrarEstudianteUseCase = new RegistrarEstudianteUseCase(
       usuarioRepo,
