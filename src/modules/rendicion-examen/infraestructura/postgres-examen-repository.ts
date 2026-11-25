@@ -18,6 +18,24 @@ interface FilaExamen {
 const columnas = `id, postulante_id AS "postulanteId", simulacro_id AS "simulacroId", inicio, vence, cierre,
   carrera_inicial AS carrera, sede_inicial AS "sedeId", condicion_inicial AS condicion`;
 
+export type IntentoCerradoParaAnalitica = Pick<IntentoParaReportes,
+  'id' | 'postulanteId' | 'simulacroId' | 'sedeId'> & { cierre: Date };
+
+export function crearConsultaIntentosCerrados(bd: Pick<Pool, 'query'>) {
+  return async (ids: string[], postulanteId?: string): Promise<IntentoCerradoParaAnalitica[]> => {
+    if (!ids.length) return [];
+    const { rows } = await bd.query<IntentoCerradoParaAnalitica>(
+      `SELECT id, postulante_id AS "postulanteId", simulacro_id AS "simulacroId",
+              sede_inicial AS "sedeId", cierre
+       FROM examenes_rendicion
+       WHERE id = ANY($1::text[]) AND cierre IS NOT NULL
+         AND ($2::text IS NULL OR postulante_id = $2)`,
+      [ids, postulanteId ?? null],
+    );
+    return rows;
+  };
+}
+
 export function crearConsultaExamenesFinalizados(bd: Pick<Pool, 'query'>) {
   const examenes = new PostgresExamenRepository(bd);
   return { consultar: (id: string) => examenes.consultarFinalizado(id) };

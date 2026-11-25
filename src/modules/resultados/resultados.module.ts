@@ -16,9 +16,11 @@ export interface ConsultaResultadosInterna {
 export class ResultadosModule {
   readonly rutas;
   readonly consultas: ConsultaResultadosInterna;
+  readonly resultadosParaAnalitica: (simulacroId: string | undefined, despues?: string) => Promise<Resultado[]>;
 
   constructor(pool: Pool, examenes: ExamenesFinalizadosPort, auth: MiddlewareAutenticacion) {
     const repo = new PostgresResultadoRepository(pool);
+    this.resultadosParaAnalitica = (simulacroId, despues) => repo.listarParaAnalitica(simulacroId, despues);
     this.rutas = crearRutasResultados(new ConsultarResultadoUseCase(id => repo.buscar(id), examenes),
       auth.autenticar, auth.requerirRol(RolUsuario.Postulante));
     this.consultas = {

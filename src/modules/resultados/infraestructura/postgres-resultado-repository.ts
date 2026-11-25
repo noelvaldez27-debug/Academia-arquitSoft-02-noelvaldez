@@ -53,4 +53,13 @@ export class PostgresResultadoRepository implements ResultadoRepository {
     );
     return rows;
   }
+
+  async listarParaAnalitica(simulacroId: string | undefined, despues = ''): Promise<Resultado[]> {
+    if (simulacroId !== undefined) return this.listar('simulacro_id', simulacroId, despues);
+    const { rows } = await this.bd.query<Resultado>(
+      `SELECT ${columnas} FROM resultados_examen WHERE examen_id > $1 ORDER BY examen_id LIMIT 100`,
+      [despues],
+    );
+    return rows;
+  }
 }

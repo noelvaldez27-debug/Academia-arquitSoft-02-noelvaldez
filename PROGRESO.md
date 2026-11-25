@@ -92,10 +92,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Módulo 6, tarea 3 pendiente. Incorporar contratos públicos por lote para fechas, resultados y metadatos históricos.
+Módulo 6, tarea 3 en curso. Rendición expone cierres y sede histórica por lote, Resultados permite paginar calificaciones y Banco expone nombres por lote y metadatos congelados. La huella de contenido y clave solo sirve para agrupar internamente. La regresión dio 416 pruebas aprobadas en 80 suites antes de añadir la consulta de nombres, que pasó en la suite específica de Banco. Está pendiente confirmar quién puede crear y asignar temas, porque Banco no dispone de catálogo ni de una relación pregunta-tema.
 
 ## Siguiente paso exacto
-Ejecutar la tarea 3 de specs/analitica/tasks.md empezando por los contratos de Rendición y Banco.
+Tras confirmar la gestión de temas, completar la tarea 3 con el soporte incremental de Banco y congelar la referencia histórica en nuevas versiones. Conservar sin clasificación las versiones anteriores y verificar los contratos antes de marcar la tarea.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

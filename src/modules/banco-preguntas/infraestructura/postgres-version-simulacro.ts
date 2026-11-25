@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Pool } from 'pg';
 import { ErrorBancoPreguntas } from '../dominio/errores';
 import { ClaveAlternativa } from '../dominio/pregunta';
@@ -5,6 +6,36 @@ import { SimulacroParaRendicion } from '../aplicacion/gestionar-simulacros.use-c
 
 type PreguntaCongelada = SimulacroParaRendicion['preguntas'][number] & { correcta: ClaveAlternativa };
 type Version = Omit<SimulacroParaRendicion, 'preguntas'> & { preguntas: PreguntaCongelada[] };
+
+export function crearConsultaNombresCursos(bd: Pick<Pool, 'query'>) {
+  return async (ids: string[]): Promise<{ id: string; nombre: string }[]> => {
+    if (!ids.length) return [];
+    const { rows } = await bd.query<{ id: string; nombre: string }>(
+      'SELECT id, nombre FROM cursos_banco WHERE id = ANY($1::text[])', [ids],
+    );
+    return rows;
+  };
+}
+
+export function crearConsultaPreguntasHistoricas(bd: Pick<Pool, 'query'>) {
+  return async (ids: string[]) => {
+    if (!ids.length) return [];
+    const { rows } = await bd.query<Version>(
+      'SELECT id, preguntas FROM versiones_simulacro WHERE id = ANY($1::text[])',
+      [ids],
+    );
+    return rows.flatMap(({ id: simulacroId, preguntas }) =>
+      preguntas.map(({ id: preguntaId, cursoId, enunciado, alternativas, correcta }) => {
+        const contenido = [enunciado, alternativas.A, alternativas.B, alternativas.C, alternativas.D,
+          alternativas.E, correcta];
+        return {
+          simulacroId, preguntaId, cursoId, enunciado,
+          // Incluye la clave para distinguir versiones. Solo se usa para agrupación interna.
+          huellaInterna: createHash('sha256').update(JSON.stringify(contenido)).digest('hex'),
+        };
+      }));
+  };
+}
 
 export function crearConsultaClavesCongeladas(bd: Pick<Pool, 'query'>) {
   const versiones = new PostgresVersionSimulacro(bd);
