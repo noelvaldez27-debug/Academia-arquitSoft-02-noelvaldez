@@ -1,3 +1,4 @@
+import { PostgresVersionSimulacro } from './infraestructura/postgres-version-simulacro';
 import { ConsultaClavesSimulacro, ConsultaSimulacros, GestionarSimulacrosUseCase } from './aplicacion/gestionar-simulacros.use-case';
 import { crearRutasSimulacros } from './presentacion/simulacro.routes';
 import { RevisarSeparataUseCase } from './aplicacion/revisar-separata.use-case';
@@ -29,9 +30,15 @@ export class BancoPreguntasModule {
     this.rutas = crearRutasPreguntas(new GestionarPreguntasUseCase(preguntas, randomUUID), auth);
     const gestionarSimulacros = new GestionarSimulacrosUseCase(preguntas, randomUUID);
     this.simulacros = { consultar: id => gestionarSimulacros.consultar(id) };
-    this.clavesSimulacro = { clave: id => gestionarSimulacros.clave(id) };
+    const versiones = new PostgresVersionSimulacro(pool);
+    this.clavesSimulacro = { clave: async id => await versiones.clave(id) ?? gestionarSimulacros.clave(id) };
     this.rutas.use(crearRutasSimulacros(gestionarSimulacros));
     this.rutas.use(crearRutasRevision(new RevisarSeparataUseCase(separatas, () => new Date(), almacen)));
     this.rutas.use(crearRutasSeparata(new SubirSeparataUseCase(preguntas, separatas, almacen, randomUUID, maxBytes), maxBytes));
+  }
+
+  consultasVersionadas(transaccion: Pick<Pool, 'query'>): ConsultaSimulacros {
+    const versiones = new PostgresVersionSimulacro(transaccion);
+    return { consultar: id => versiones.congelar(id) };
   }
 }
