@@ -1,13 +1,13 @@
 # SDD · Ranking y Reportes
 
-Estado: borrador pendiente de aprobación académica y funcional.
+Estado: reglas de negocio aprobadas. Las dependencias sin fuente se detallan al final.
 
 ## Alcance confirmado
 
 - RF10 y C4 nivel 3 definen el ranking por simulacro en los ámbitos general, por carrera y por sede. HU07 pide que el postulante pueda ver su posición.
 - HU11 pide reportes de inscripción y participación. RF14 pide exportar resultados y cuadro de méritos. Actores y HU14 contemplan la consulta docente de reportes académicos.
 - Resultados es la fuente de puntajes definitivos. Se conserva la escala de 0 a 1000 y la precisión de `puntajeCentesimos`. El módulo no vuelve a calificar ni aplica penalizaciones.
-- AC04, RC15 y ADR-007 exigen proteger los datos y aplicar los límites de rol y sede. Actores concede explícitamente la exportación de resultados y cuadro de méritos al administrador general.
+- AC04, RC15 y ADR-007 exigen proteger los datos y aplicar los límites de rol y sede. El administrador general tiene alcance global y el de sede opera exclusivamente dentro de su sede.
 
 ## Diseño e integración
 
@@ -25,11 +25,19 @@ El cálculo del ranking corre en segundo plano mediante RabbitMQ (RC06 y ADR-004
 | CA-RR04 | Los reportes de inscripción y participación y las exportaciones de resultados y cuadro de méritos se verifican contra las definiciones, filtros, campos, formatos y permisos aprobados. | HU11, HU14, RF14, AC04 |
 | CA-RR05 | Jest y Docker Compose verifican el recorrido desde el resultado hasta la consulta y exportación, incluyendo duplicados, fallos y recuperación. Se registra la cobertura y se mide el tiempo hasta la disponibilidad del ranking y el efecto sobre la consulta de nota individual. | AC01, Sprint 2 |
 
-## Decisiones que requieren aprobación
 
-1. **Clasificación.** Confirmar orden descendente por el puntaje definitivo en centésimos. Definir criterios y orden de desempate y qué puestos se asignan en un empate total, incluido el puesto siguiente.
-2. **Ámbitos.** RF10 indica general, por carrera y por sede. Confirmar si área es un cuarto ranking o si se mantiene RF10. Si se incorpora, definir el catálogo, su fuente y la relación con carreras. Confirmar si carrera y sede se consultan por separado o también combinadas, y en qué momento se fijan esos datos para el historial.
-3. **Participación.** Confirmar si matriculados y libres compiten juntos, por separado o tienen distinta elegibilidad. Si son categorías, definir su fuente y cuándo se fija la condición. Confirmar si los resultados históricos de cuentas desactivadas siguen contando.
-4. **Actualización y publicación.** Precisar si se publica una clasificación provisional conforme llegan resultados o si se espera al cierre y a todas las calificaciones. Definir cuándo queda definitiva y qué ocurre con resultados que llegan tarde.
-5. **Visibilidad y permisos.** Definir si el postulante ve solo su puesto o también filas de otros postulantes, y qué datos aparecen. Confirmar qué reportes y consultas corresponden a docentes, su ámbito y si ven datos individuales. Confirmar qué consultas y exportaciones puede hacer un administrador de sede dentro de su sede. El administrador general tiene la exportación explícita de RF14.
-6. **Reportes y exportación.** Definir qué se cuenta como inscripción y como participación, el alcance de los reportes docentes, los filtros, campos permitidos y formatos de archivo para cada salida, y si el cuadro de méritos comprende todo el ranking o un subconjunto.
+## Aclaraciones de negocio aprobadas
+
+- CA-RR01. Orden descendente por puntaje definitivo en centésimos (0 a 100 000). Los empates usan puestos de competición (1, 2, 2, 4). El identificador estable ordena la presentación entre empatados. Tiempo, entrega, edad y DNI no intervienen. Los ámbitos son general, carrera y sede, con filtro combinado por carrera y sede. Se excluyen área y curso. Los datos de carrera, sede y condición se congelan al iniciar el intento. Compiten juntos matriculados y libres con intentos válidos, cerrados y calificados. Se conservan los resultados históricos de cuentas desactivadas.
+- CA-RR02. El ranking se actualiza con cada resultado válido, incluidos los tardíos por fallos técnicos. Permanece provisional hasta que cierre la rendición general y todos los intentos válidos estén calificados. Cualquier corrección excepcional de un ranking definitivo requiere trazabilidad.
+- CA-RR03. El postulante consulta solo su puntaje, puesto, total de participantes y estado de publicación en sus ámbitos. El docente consulta agregados de sus cursos asignados. El administrador de sede consulta y exporta exclusivamente dentro de su sede. El administrador general consulta y exporta en todos los ámbitos. Los permisos y filtros se aplican también a las descargas. Se excluyen credenciales, claves y datos personales innecesarios.
+- CA-RR04. Inscripción requiere un registro válido del simulacro. Participación corresponde al inicio de un intento válido. Finalización corresponde al cierre voluntario o por vencimiento y calificación al resultado procesado. Los reportes filtran por simulacro, carrera, sede, condición y fechas cuando corresponda. Las filas incluyen, según el reporte y el rol, simulacro, identificador del postulante, carrera, sede, condición, puntaje sobre 1000, aciertos, errores, omisiones, puesto y estado. El cuadro de méritos incluye todos los resultados válidos del ámbito, ordenados por puesto, sin cupos ni nota mínima. El formato inicial es Excel (.xlsx).
+- CA-RR05. Validar también límites de puntaje, empates, filtros combinados, conservación histórica, resultados tardíos, aislamiento y equivalencia entre consulta y exportación. Los objetivos recomendados son 80 % de líneas y 70 % de ramas del módulo.
+
+## Dependencias verificadas
+
+- Usuarios expone carrera y sede actuales. Su esquema y contrato carecen de condición de matriculado o libre. Hace falta aprobar su fuente y el tratamiento de registros existentes. El historial de intentos previos carece de una copia verificable de carrera, sede y condición al inicio.
+- Rendición guarda inicio, vencimiento y cierre por intento. Banco configura duración por intento y congela la versión del examen. No existe cierre general; la transición a definitivo queda pendiente de una fuente aprobada.
+- No existe una entidad de inscripción a un simulacro. Se aplica la limitación aprobada y no se derivan inscripciones de la matrícula ni de los intentos.
+- No existe un contrato de asignación docente a cursos. Las separatas registran autor y curso, pero no acreditan una asignación académica. El acceso docente depende de una fuente autorizada.
+- La aclaración sobre área resuelve la discrepancia señalada con el C3 anterior. El texto C4 nivel 3 del repositorio ya coincide con RF10.

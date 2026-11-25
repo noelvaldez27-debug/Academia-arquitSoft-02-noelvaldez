@@ -67,6 +67,7 @@ El servicio independiente de IA no se incluye como módulo interno porque se eje
 | Rendición de Examen | Banco de Preguntas | Obtiene el identificador, la duración y la lista ordenada de preguntas del simulacro. El administrador general configura la selección con preguntas aprobadas y habilitadas. | API pública del módulo |
 | Procesamiento de Resultados | Rendición de Examen | Obtiene los datos de los exámenes finalizados para su calificación. | API pública del módulo |
 | Ranking y Reportes | Procesamiento de Resultados | Consulta los puntajes para generar clasificaciones. | API pública del módulo |
+| Ranking y Reportes | Rendición de Examen | Obtiene los datos históricos del intento para clasificar y medir participación. | API pública del módulo, integración pendiente |
 | Analítica del Estudiante | Procesamiento de Resultados | Consulta los resultados para analizar el rendimiento. | API pública del módulo |
 | Worker | Procesamiento de Resultados | Pide calcular y registrar los resultados de un examen finalizado. | API pública del módulo |
 | Worker | Banco de Preguntas | Pide extraer el texto de una separata y generar las preguntas propuestas. | API pública del módulo |

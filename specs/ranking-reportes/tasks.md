@@ -1,7 +1,7 @@
 # Tareas · Ranking y Reportes
 
 - [x] 1. Elaborar el borrador SDD, trazar los criterios y registrar las decisiones pendientes.
-- [ ] 2. Resolver las decisiones pendientes y aprobar la SDD antes de implementar.
+- [x] 2. Registrar y aprobar las reglas de negocio de la SDD, con las dependencias sin fuente documentadas.
 - [ ] 3. Implementar clasificación, ámbitos y desempates aprobados con pruebas de dominio (CA-RR01).
 - [ ] 4. Adaptar los contratos públicos de integración y crear las migraciones y el repositorio de ranking (CA-RR01–02).
 - [ ] 5. Integrar el worker RabbitMQ, reintentos, concurrencia e idempotencia. Validar caché si se incorpora (CA-RR02).
