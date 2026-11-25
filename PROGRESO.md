@@ -2,7 +2,7 @@
 
 ## Estado actual
 - Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3 y con el alcance por sede del módulo 1
-- Fase 2 (desarrollo): módulos 0, 1, 2 y 3 terminados.
+- Fase 2 (desarrollo): módulos 0, 1, 2, 3 y 4 terminados.
 - Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
 - Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
 
@@ -13,7 +13,7 @@
 | 1 | Gestión de Usuarios | terminado (25 de 25 tareas) |
 | 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
-| 4 | Procesamiento de Resultados | en curso (8 de 9 tareas) |
+| 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
 | 5 | Ranking y Reportes | sin empezar |
 | 6 | Analítica del Estudiante | sin empezar |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
@@ -49,6 +49,10 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 4, tarea 9 completada. GitHub Actions compiló con Node.js 20 y ejecutó Jest con cobertura para `2ebedd2`. La validación local aprobó 395 pruebas en 67 suites, incluidas 13 pruebas de Resultados. El módulo alcanzó 82,39 % de líneas (117/142) y 94,44 % de ramas (68/72). Jest reportó 90,47 % de líneas y 84,60 % de ramas para el proyecto completo. [Ejecución 45541070460](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45541070460)
+
+En Docker Compose aislado, el recorrido normal registró 1,124 segundos desde el cierre hasta la primera lectura exitosa por sondeo, con PostgreSQL, Redis y RabbitMQ y sin inyectar duplicados durante esa medición. Fue una medición local de un solo flujo. El recorrido separado de duplicados conservó una sola calificación. La API protegió resultados ajenos y devolvió estado pendiente durante la caída de RabbitMQ. Al restaurar el broker, el evento pendiente llegó al worker y se obtuvo la calificación esperada. Las evidencias y el recorrido están en `specs/resultados/spec.md` y `pruebas/verificar-resultados-compose.cjs`.
+
 Módulo 3, tarea 10 completada. GitHub Actions compiló con Node.js 20 y ejecutó Jest con cobertura para `ca81dfe`. En la validación local pasaron 381 pruebas en 62 suites, incluidas 18 de Rendición y 48 de Banco de Preguntas. Rendición alcanzó 93,26 % de líneas (249/267) y 91,67 % de ramas (77/84). Jest reportó 91,34 % de líneas y 83,94 % de ramas para el proyecto completo. [Ejecución 45536622028](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45536622028)
 
 La integración de CA-RE01 a CA-RE06 pasó con PostgreSQL, Redis y RabbitMQ. Durante la caída de RabbitMQ, dos cierres conservaron sus eventos en la bandeja de salida. Tras restablecer el broker, ambos mensajes llegaron a la cola y la bandeja se vació. El recorrido reproducible está en `pruebas/verificar-rendicion-compose.cjs` y sus comandos en `docs/despliegue.md`.
@@ -58,10 +62,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Módulo 4, tarea 8 completada. 395 pruebas en 67 suites. Resultados: 82,39 % de líneas y 94,44 % de ramas. Proyecto: 90,47 % y 84,60 %. Compose verificó el resultado congelado, duplicados, estado pendiente y recuperación de RabbitMQ. Latencia observada de 1124 ms.
+Ninguna en Procesamiento de Resultados.
 
 ## Siguiente paso exacto
-Módulo 4, tarea 9: solicitar autorización de push, verificar Actions y registrar el cierre tras CI.
+Esperar una indicación explícita antes de iniciar el Módulo 5.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
