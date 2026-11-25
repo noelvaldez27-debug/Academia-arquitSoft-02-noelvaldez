@@ -50,4 +50,9 @@ export class PostgresVersionSimulacro {
     const version = await this.buscar(id);
     return version?.preguntas.map(({ id: preguntaId, correcta }) => ({ preguntaId, correcta }));
   }
+
+  async claveCongelada(id: string) {
+    const version = await this.buscar(id);
+    return version?.preguntas.map(({ id: preguntaId, cursoId, correcta }) => ({ preguntaId, cursoId, correcta })) ?? null;
+  }
 }

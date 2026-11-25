@@ -19,6 +19,7 @@ export class BancoPreguntasModule {
   readonly rutas;
   readonly simulacros: ConsultaSimulacros;
   readonly clavesSimulacro: ConsultaClavesSimulacro;
+  readonly clavesCongeladas;
   private readonly repositorios: RepositoriosBanco;
 
   constructor(pool: Pool, auth: MiddlewareAutenticacion, almacen: AlmacenArchivos, maxBytes: number) {
@@ -31,6 +32,7 @@ export class BancoPreguntasModule {
     const gestionarSimulacros = new GestionarSimulacrosUseCase(preguntas, randomUUID);
     this.simulacros = { consultar: id => gestionarSimulacros.consultar(id) };
     const versiones = new PostgresVersionSimulacro(pool);
+    this.clavesCongeladas = { clave: (id: string) => versiones.claveCongelada(id) };
     this.clavesSimulacro = { clave: async id => await versiones.clave(id) ?? gestionarSimulacros.clave(id) };
     this.rutas.use(crearRutasSimulacros(gestionarSimulacros));
     this.rutas.use(crearRutasRevision(new RevisarSeparataUseCase(separatas, () => new Date(), almacen)));
