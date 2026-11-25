@@ -42,8 +42,9 @@ function configurarIaAnalitica() {
     return undefined;
   }
 }
-const analitica = new AnaliticaModule(pool, usuariosModule.middlewareAutenticacion, resultados.consultas,
-  configurarIaAnalitica());
+const analitica = new AnaliticaModule(pool, usuariosModule.middlewareAutenticacion,
+  { ...resultados.consultas, paraAnalitica: resultados.resultadosParaAnalitica },
+  bancoPreguntas.cursosAsignados, configurarIaAnalitica());
 
 const app = crearApp({
   rutasUsuarios: usuariosModule.router,

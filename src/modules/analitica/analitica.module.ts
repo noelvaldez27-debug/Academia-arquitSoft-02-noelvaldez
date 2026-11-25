@@ -6,6 +6,7 @@ import { crearConsultaIntentosCerrados } from '../rendicion-examen';
 import type { ConsultaResultadosInterna } from '../resultados';
 import type { MiddlewareAutenticacion } from '../usuarios';
 import { ConsultarHistorialUseCase } from './aplicacion/consultar-historial.use-case';
+import { ConsultarEstadisticasUseCase } from './aplicacion/consultar-estadisticas.use-case';
 import { GenerarRecomendacionUseCase } from './aplicacion/generar-recomendacion.use-case';
 import { PostgresRecomendacionRepository } from './infraestructura/postgres-recomendacion-repository';
 import { crearRutasAnalitica } from './presentacion/analitica.routes';
@@ -13,7 +14,9 @@ import { crearRutasAnalitica } from './presentacion/analitica.routes';
 export class AnaliticaModule {
   readonly rutas;
 
-  constructor(pool: Pool, auth: MiddlewareAutenticacion, resultados: ConsultaResultadosInterna,
+  constructor(pool: Pool, auth: MiddlewareAutenticacion,
+    resultados: ConsultaResultadosInterna & { paraAnalitica: ConstructorParameters<typeof ConsultarEstadisticasUseCase>[0] },
+    cursosAsignados: (id: string) => Promise<string[]>,
     ia?: Pick<ServicioIA, 'recomendar'>) {
     const intentos = crearConsultaIntentosCerrados(pool);
     const preguntas = crearConsultaPreguntasHistoricas(pool);
@@ -26,6 +29,7 @@ export class AnaliticaModule {
         cursos.map(({ desempeno, temas }) => ({ desempeno, temas })))),
       () => console.error('Fallo del proveedor de recomendaciones de Analitica.'),
     );
-    this.rutas = crearRutasAnalitica(auth, historial, recomendacion);
+    const estadisticas = new ConsultarEstadisticasUseCase(resultados.paraAnalitica, intentos, preguntas, cursosAsignados);
+    this.rutas = crearRutasAnalitica(auth, historial, recomendacion, estadisticas);
   }
 }
