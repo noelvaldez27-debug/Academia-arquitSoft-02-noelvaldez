@@ -1,4 +1,4 @@
-import { CargaMasiva, ErrorAccesoDenegado, FilaCargaMasiva, RolUsuario, Sede, SedeRepository, Usuario } from '../dominio';
+import { CargaMasiva, ErrorAccesoDenegado, FilaCargaMasiva, RolUsuario, Sede, SedeRepository } from '../dominio';
 import { PersistenciaCargaMasiva } from './carga-masiva.port';
 import { leerYValidarExcel } from './leer-excel';
 
@@ -12,7 +12,7 @@ export class PrepararCargaMasivaUseCase {
     private readonly limites: { maxMb?: number; maxFilas?: number },
   ) {}
 
-  async ejecutar(archivo: Buffer, administrador: Usuario): Promise<string> {
+  async ejecutar(archivo: Buffer, administrador: { id: string; activo: boolean; rol: RolUsuario; sedeId: string | null }): Promise<string> {
     if (!administrador.id || !administrador.activo || administrador.rol !== RolUsuario.Administrador) {
       throw new ErrorAccesoDenegado('Solo un administrador activo puede registrar estudiantes.');
     }

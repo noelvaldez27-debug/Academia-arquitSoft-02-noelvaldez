@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import { SedeRepository, Usuario } from '../dominio';
+import { SedeRepository, RolUsuario } from '../dominio';
 import { CargaMasiva } from '../dominio/carga-masiva';
 import { TransaccionCargaMasiva } from './carga-masiva.port';
 import { PrepararCargaMasivaUseCase } from './preparar-carga-masiva.use-case';
@@ -21,9 +21,7 @@ function preparar() {
     buscarPorId: async () => ({ id: '1', nombre: 'Hana' }),
   } as unknown as SedeRepository;
   const caso = new PrepararCargaMasivaUseCase({ transaccion: operacion => operacion(contexto) }, sedes, () => 'id', {});
-  const admin = Usuario.crearAdministradorSede({
-    id: '2', nombre: 'Admin', correo: 'admin@sofia.edu', passwordHash: 'hash', sedeId: '1',
-  });
+  const admin = { id: '2', rol: RolUsuario.Administrador, activo: true, sedeId: '1' };
   return { caso, admin, guardar, guardarFilas, guardarEnvios };
 }
 

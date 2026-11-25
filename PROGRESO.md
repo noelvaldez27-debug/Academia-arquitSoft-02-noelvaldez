@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 21 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 22 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -52,13 +52,13 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 21: lotes de 50 filas con RabbitMQ, publicación confirmada, reintentos, persistencia transaccional y migración incremental de avisos. Se conservan todos los rechazos. Se confirmó que no hay tope por sede y que el cambio de nombre genera un aviso por fila sin exponer datos de la cuenta existente. Pasaron 37 pruebas dirigidas de carga masiva. La validación con servicios reales corresponde a la tarea 23.
+Tarea 22: subida multipart de XLSX con respuesta 202 y consulta de estado, totales, rechazos y avisos protegida por rol y sede. Ambos endpoints están documentados en OpenAPI. TypeScript compiló y pasaron las 5 pruebas dirigidas de rutas y preparación.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 22 de `specs/usuarios/tasks.md`: endpoints de subida, consulta y documentación OpenAPI.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 23 de `specs/usuarios/tasks.md`: validación de punta a punta con Docker Compose y Swagger.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

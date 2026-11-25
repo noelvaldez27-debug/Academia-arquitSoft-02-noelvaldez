@@ -1,3 +1,6 @@
+import { PostgresCargaMasivaRepository } from './infraestructura/postgres-carga-masiva-repository';
+import { ConsultarCargaMasivaUseCase } from './aplicacion/consultar-carga-masiva.use-case';
+import { crearRutasCargaMasiva } from './presentacion/carga-masiva.routes';
 import { randomUUID } from 'node:crypto';
 import { PostgresCargaMasivaAdapter } from './infraestructura/postgres-carga-masiva.adapter';
 import { RabbitmqCargaMasivaWorker } from './infraestructura/rabbitmq-carga-masiva.worker';
@@ -68,8 +71,9 @@ export class UsuariosModule {
     const generadorCredenciales = new GeneradorCredenciales(hashAdapter);
 
     const persistenciaCarga = new PostgresCargaMasivaAdapter(config.pool, generadorCredenciales);
+    const maxMb = Number(process.env.CARGA_MASIVA_MAX_MB) || 10;
     this.prepararCargaMasiva = new PrepararCargaMasivaUseCase(persistenciaCarga, sedeRepo, randomUUID, {
-      maxMb: Number(process.env.CARGA_MASIVA_MAX_MB) || 10,
+      maxMb,
       maxFilas: Number(process.env.CARGA_MASIVA_MAX_FILAS) || 10000,
     });
     this.consumidorCargaMasiva = new RabbitmqCargaMasivaWorker(
@@ -127,5 +131,11 @@ export class UsuariosModule {
     );
 
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);
+    this.router.use(crearRutasCargaMasiva(
+      this.prepararCargaMasiva,
+      new ConsultarCargaMasivaUseCase(new PostgresCargaMasivaRepository(config.pool)),
+      this.middlewareAutenticacion,
+      maxMb,
+    ));
   }
 }

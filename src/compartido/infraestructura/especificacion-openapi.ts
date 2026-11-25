@@ -1,3 +1,11 @@
+const esquemaDetallesCarga = {
+  type: 'array',
+  items: {
+    type: 'object',
+    required: ['fila', 'motivo'],
+    properties: { fila: { type: 'integer' }, motivo: { type: 'string' } },
+  },
+};
 export const especificacionOpenApi = {
   openapi: '3.0.0',
   info: {
@@ -16,6 +24,66 @@ export const especificacionOpenApi = {
     },
   },
   paths: {
+    '/api/usuarios/cargas-masivas': {
+      post: {
+        tags: ['Usuarios'],
+        summary: 'Aceptar un Excel para registro masivo en segundo plano',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'multipart/form-data': { schema: {
+            type: 'object', required: ['archivo'],
+            properties: { archivo: { type: 'string', format: 'binary' } },
+          } } },
+        },
+        responses: {
+          '202': {
+            description: 'Carga aceptada',
+            headers: { Location: { schema: { type: 'string' }, description: 'Ruta de consulta del resultado' } },
+            content: { 'application/json': { schema: {
+              type: 'object', required: ['id'],
+              properties: { id: { type: 'string', format: 'uuid' } },
+            } } },
+          },
+          '400': { description: 'Archivo XLSX inválido, sin columnas requeridas o fuera de los límites' },
+          '401': { description: 'Sesión inválida o ausente' },
+          '403': { description: 'Se requiere rol de administrador' },
+          '500': { description: 'No se pudo aceptar la carga' },
+        },
+      },
+    },
+    '/api/usuarios/cargas-masivas/{id}': {
+      get: {
+        tags: ['Usuarios'],
+        summary: 'Consultar estado, totales, rechazos y avisos de una carga',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: {
+          '200': {
+            description: 'Estado y resultado',
+            content: { 'application/json': { schema: {
+              type: 'object',
+              required: ['id', 'estado', 'totalFilas', 'creadas', 'yaExistian', 'rechazadas', 'errores', 'avisos'],
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                estado: { type: 'string', enum: ['PENDIENTE', 'PROCESANDO', 'COMPLETADA', 'FALLIDA'] },
+                totalFilas: { type: 'integer' },
+                creadas: { type: 'integer' },
+                yaExistian: { type: 'integer' },
+                rechazadas: { type: 'integer' },
+                errores: esquemaDetallesCarga,
+                avisos: esquemaDetallesCarga,
+              },
+            } } },
+          },
+          '400': { description: 'Identificador inválido' },
+          '401': { description: 'Sesión inválida o ausente' },
+          '403': { description: 'Rol no permitido o carga fuera del alcance de la sede' },
+          '404': { description: 'Carga no encontrada' },
+          '500': { description: 'No se pudo consultar la carga' },
+        },
+      },
+    },
     '/health': {
       get: {
         summary: 'Verificar estado de salud del servidor',
