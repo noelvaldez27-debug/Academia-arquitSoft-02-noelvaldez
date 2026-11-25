@@ -44,6 +44,7 @@ export class PostgresSeparataRepository implements SeparataRepository {
 
   async guardarAutorizacion(autorizacion: AutorizacionExterna): Promise<void> {
     await transaccionBanco(this.pool, async bd => {
+      await bd.query("SELECT pg_advisory_xact_lock(hashtextextended('separata:' || $1, 0))", [autorizacion.separataId]);
       await bd.query(
         `INSERT INTO autorizaciones_separata (separata_id, autorizador_id, fecha, estado, alcance)
          VALUES ($1, $2, $3, $4, $5)`,

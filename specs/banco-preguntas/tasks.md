@@ -9,7 +9,7 @@
 - [x] 5. Implementar la gestión directa del banco por curso, con JWT, roles de Usuarios, endpoints y OpenAPI.
 - [x] 6. Implementar la subida de separatas con validación, almacenamiento local mediante AlmacenArchivos y publicación confiable de SeparataSubida. Documentar el endpoint.
 - [x] 7. Implementar extractores por formato y extender ServicioIA de forma compatible para lectura multimodal. Incorporar el adaptador Gemini y actualizar el simulado para las pruebas.
-- [ ] 8. Implementar el worker RabbitMQ con reintentos y persistencia idempotente de propuestas. Verificar estados y errores de extracción.
+- [x] 8. Implementar el worker RabbitMQ con reintentos y persistencia idempotente de propuestas. Verificar estados y errores de extracción.
 - [ ] 9. Implementar consulta de estado, revisión, corrección, aprobación y descarte. Documentar endpoints y validar acceso.
 - [ ] 10. Exponer la API pública de Banco de Preguntas para Rendición y Resultados, con el alcance confirmado en la tarea 2.
 - [ ] 11. Validar el flujo completo con Docker Compose, PostgreSQL y RabbitMQ reales e IA simulada. Contrastar las respuestas con OpenAPI.
