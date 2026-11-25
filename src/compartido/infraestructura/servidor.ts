@@ -5,6 +5,7 @@ import { especificacionOpenApi } from './especificacion-openapi';
 export interface OpcionesServidor {
   rutasUsuarios?: Router;
   rutasBancoPreguntas?: Router;
+  rutasRendicion?: Router;
   rutasOpenApiAdicionales?: Record<string, object>;
 }
 
@@ -25,6 +26,8 @@ export function crearApp(opciones?: OpcionesServidor): Application {
   }
 
   if (opciones?.rutasBancoPreguntas) app.use('/api/banco-preguntas', opciones.rutasBancoPreguntas);
+
+  if (opciones?.rutasRendicion) app.use('/api/v1/examenes', opciones.rutasRendicion);
 
   const documentacion = {
     ...especificacionOpenApi,

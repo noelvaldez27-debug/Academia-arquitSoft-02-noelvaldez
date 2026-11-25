@@ -117,6 +117,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      migraciones:
+        condition: service_completed_successfully
 
   worker-separatas:
     build: *build-backend
@@ -133,6 +135,16 @@ services:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      migraciones:
+        condition: service_completed_successfully
+
+  migraciones:
+    build: *build-backend
+    command: ["node", "dist/scripts/migrar.js"]
+    environment: *entorno-backend
+    depends_on:
+      postgres:
         condition: service_healthy
 
 volumes:

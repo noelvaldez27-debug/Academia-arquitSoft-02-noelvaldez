@@ -11,3 +11,4 @@ export type {
   ConsultaSimulacros,
   SimulacroParaRendicion,
 } from './aplicacion/gestionar-simulacros.use-case';
+export { ErrorBancoPreguntas } from './dominio/errores';
