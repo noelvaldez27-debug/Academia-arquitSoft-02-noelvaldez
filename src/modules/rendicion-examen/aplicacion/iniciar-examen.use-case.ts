@@ -1,3 +1,4 @@
+import { ExamenRepository } from '../dominio/examen-repository';
 import { Examen, SimulacroVisible } from '../dominio/examen';
 import { ErrorRendicion } from '../dominio/error-rendicion';
 import { TransaccionExamen } from './transaccion-examen.port';
@@ -29,14 +30,14 @@ export class IniciarExamenUseCase {
   }
 }
 
-export async function consultarPropio(
+export async function consultarPropio<T>(
   transaccion: TransaccionExamen, id: string, postulanteId: string,
-  proyectar: (examen: Examen, simulacro: SimulacroVisible) => Promise<unknown>,
+  proyectar: (examen: Examen, simulacro: SimulacroVisible, examenes: ExamenRepository) => Promise<T>,
 ) {
   return transaccion(async ({ examenes, consultarSimulacro }) => {
     const examen = await examenes.buscar(id);
     if (!examen) throw new ErrorRendicion('no-encontrado', 'Examen no encontrado.');
     examen.verificarPropietario(postulanteId);
-    return proyectar(examen, await consultarSimulacro(examen.simulacroId));
+    return proyectar(examen, await consultarSimulacro(examen.simulacroId), examenes);
   });
 }
