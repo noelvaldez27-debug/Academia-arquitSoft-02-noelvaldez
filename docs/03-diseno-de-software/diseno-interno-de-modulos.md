@@ -277,3 +277,7 @@ Hay un extractor por formato, y todos cumplen el mismo contrato `ExtractorDeText
 - Si la extracción falla, la separata pasa a `ERROR_EXTRACCION`. El docente consulta el estado y el motivo en el módulo (CA-BP03).
 - Conviene que el worker sea idempotente, para que un evento repetido no genere preguntas duplicadas.
 - ADR-010 a ADR-012 establecen Gemini mediante ServicioIA para la lectura multimodal y AlmacenArchivos para los originales. Solo se transfiere contenido académico autorizado, excluyendo datos personales, credenciales e información confidencial.
+
+## Reglas aprobadas de Rendición de Examen
+
+La [SDD de Rendición](../../specs/rendicion-examen/spec.md#decisiones-aprobadas) fija el intento único, el plazo del servidor, el cierre automático con respuestas confirmadas y la recuperación del estado vigente al reconectar (RF04–RF06, AC07). La modalidad impresa usa el número de pregunta de la versión congelada. El registro, cambio y borrado usan revisiones para protegerse frente a reintentos y concurrencia.

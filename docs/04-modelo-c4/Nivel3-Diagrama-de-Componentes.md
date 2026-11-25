@@ -155,3 +155,7 @@ Esta organización permitirá mantener una estructura consistente en todos los m
 
 - **Azul:** contenedor. **Celeste:** componente (módulo). **Gris:** sistema externo.
 - **Flecha:** relación con verbo y [protocolo]. **Línea discontinua:** límite del contenedor o de la agrupación de módulos.
+
+### Versión del simulacro (RC10)
+
+El Banco conserva la versión congelada al primer intento. Rendición obtiene la duración y las preguntas ordenadas sin claves, y Procesamiento de Resultados consulta las claves congeladas mediante un contrato interno separado. Las ediciones posteriores al banco no cambian la versión usada en rendición. Véase la [SDD de Rendición](../../specs/rendicion-examen/spec.md#decisiones-aprobadas).
