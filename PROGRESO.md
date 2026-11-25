@@ -108,7 +108,7 @@ Módulo 6 validado localmente y publicado. GitHub Actions completó la compilaci
 La revisión de a5cddf0 quedó documentada en docs/sprint-2.md. Las actividades 1, 3, 6 y 7 tienen evidencia suficiente para el alcance revisado. Las actividades 2, 4, 5 y 8 quedan parcialmente acreditadas. Se reutilizaron las evidencias de Jest, CI y Compose. Las tareas V1–V6 y el plan de carga están pendientes de aprobación.
 
 ## Siguiente paso exacto
-Esperar aprobación del diagnóstico y del alcance de V1–V4 en docs/sprint-2.md, junto con la decisión sobre HU11. Tras la aprobación, comenzar por V1. Las pruebas integrales de carga y las actividades del Sprint 3 permanecen pendientes.
+La auditoría y los criterios técnicos fueron aprobados. Consultar specs/validacion-sprint-2/tasks.md. La implementación de las reglas de cuentas y HU11 requiere resolver las decisiones agrupadas en su SDD. La campaña k6 aún requiere autorización de ejecución.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

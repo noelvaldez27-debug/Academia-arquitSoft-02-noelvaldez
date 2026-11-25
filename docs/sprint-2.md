@@ -115,3 +115,9 @@ Quedan pendientes un inventario contractual consolidado, observación de Postgre
 | V6. Consolidar acta de Sprint 2 | Alta para cierre. Registrar resultados y brechas aceptadas por fase. | V1–V5. | Matriz final con resultados por SHA, alcance backend y pendientes explícitos del Sprint 3. |
 
 Para autorizar la siguiente etapa, confirmar V1, el alcance de V2–V4 y el tratamiento de HU11. La propuesta preserva las reglas aprobadas del backend y mantiene las correcciones y ejecuciones pendientes de autorización.
+
+### Criterios técnicos aprobados para la siguiente etapa
+
+AC01 se operacionaliza con p95 de hasta 2 s para consultas REST habituales, hasta 1 s para registrar respuestas, hasta 5 s desde el cierre hasta que la nota definitiva esté disponible y hasta 3 s para consultas de ranking. Bajo carga, los errores técnicos deben ser inferiores al 1 %. Los estados esperados, como 202 mientras se procesa un resultado, se miden aparte. Estos valores complementan el texto original. El 99,9 % de disponibilidad es un objetivo propuesto. Una prueba local controlada mide recuperación, éxito de solicitudes y consistencia dentro de su ventana, sin acreditar disponibilidad mensual o anual.
+
+El impacto de las nuevas reglas y sus criterios se registra en la [SDD de validación](../specs/validacion-sprint-2/spec.md). Los escenarios de cifrado del entorno desplegado, cliente offline y usabilidad de la aplicación se conservan en la matriz con sus dependencias de Sprint 3.
