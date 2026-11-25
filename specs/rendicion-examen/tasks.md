@@ -9,4 +9,4 @@
 - [x] 7. Implementar cierre, publicación recuperable en RabbitMQ y API interna de exámenes finalizados (CA-RE04–CA-RE05).
 - [x] 8. Integrar rutas autenticadas, composición y OpenAPI (CA-RE01–CA-RE06).
 - [x] 9. Validar recorridos y fallas con Docker Compose y ejecutar Jest con cobertura (CA-RE06).
-- [ ] 10. Cerrar el módulo con evidencias y registrar el estado de CI según autorización de push.
+- [x] 10. Cerrar el módulo con evidencias y registrar el estado de CI según autorización de push.
