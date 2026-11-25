@@ -37,20 +37,40 @@ function clave(id: string): string {
   return 'rendicion:examen:' + id;
 }
 
+const sellar = `
+if redis.call('HEXISTS', KEYS[1], 'activo') == 0 then return {} end
+redis.call('HSETNX', KEYS[1], 'cierre', ARGV[1])
+return redis.call('HGETALL', KEYS[1])
+`;
+
+function extraer(datos: Record<string, string>): Respuesta[] {
+  if (!datos.activo) throw new Error('No están disponibles las respuestas temporales.');
+  return Object.entries(datos)
+    .filter(([campo]) => campo.startsWith('marca:'))
+    .map(([, valor]) => JSON.parse(valor) as Respuesta)
+    .sort((a, b) => a.numero - b.numero);
+}
+
 export class RedisRespuestasAdapter implements RespuestasTemporales {
-  constructor(private readonly redis: Pick<Redis, 'hset' | 'hgetall' | 'eval'>) {}
+  constructor(private readonly redis: Pick<Redis, 'hset' | 'hgetall' | 'eval' | 'del'>) {}
 
   async inicializar(id: string): Promise<void> {
     await this.redis.hset(clave(id), 'activo', '1');
   }
 
   async listar(id: string): Promise<Respuesta[]> {
-    const datos = await this.redis.hgetall(clave(id));
-    if (!datos.activo) throw new Error('No están disponibles las respuestas temporales.');
-    return Object.entries(datos)
-      .filter(([campo]) => campo.startsWith('marca:'))
-      .map(([, valor]) => JSON.parse(valor) as Respuesta)
-      .sort((a, b) => a.numero - b.numero);
+    return extraer(await this.redis.hgetall(clave(id)));
+  }
+
+  async sellar(id: string, cierre: Date) {
+    const campos = await this.redis.eval(sellar, 1, clave(id), cierre.getTime()) as string[];
+    const datos: Record<string, string> = {};
+    for (let i = 0; i < campos.length; i += 2) datos[campos[i]] = campos[i + 1];
+    return { respuestas: extraer(datos), cierre: new Date(Number(datos.cierre)) };
+  }
+
+  async limpiar(id: string): Promise<void> {
+    await this.redis.del(clave(id));
   }
 
   async registrar(id: string, vence: Date, comando: RegistrarRespuestaCommand): Promise<Respuesta> {

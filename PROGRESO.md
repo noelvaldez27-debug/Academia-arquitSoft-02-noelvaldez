@@ -12,7 +12,7 @@
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
 | 1 | Gestión de Usuarios | terminado (25 de 25 tareas) |
 | 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
-| 3 | Rendición de Examen | en curso (6 de 10 tareas) |
+| 3 | Rendición de Examen | en curso (7 de 10 tareas) |
 | 4 | Procesamiento de Resultados | sin empezar |
 | 5 | Ranking y Reportes | sin empezar |
 | 6 | Analítica del Estudiante | sin empezar |
@@ -54,10 +54,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Módulo 3, tarea 6 completada. Sincronización, recuperación y AOF de Redis; 12 pruebas específicas aprobadas.
+Módulo 3, tarea 7 completada. Consolidación, barrido de vencidos y publicación confirmada; 14 pruebas específicas aprobadas.
 
 ## Siguiente paso exacto
-Módulo 3, tarea 7: consolidar cierres, expirar intentos y despachar el evento pendiente.
+Módulo 3, tarea 8: conectar autenticación, rutas, OpenAPI y arranque de los trabajos.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
