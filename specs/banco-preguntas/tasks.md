@@ -5,7 +5,7 @@
 - [x] 1. Elaborar la SDD a partir del análisis, ADR, C4 y diseño interno. Registrar las reglas pendientes de confirmación.
 - [x] 2. Confirmar el alcance funcional y los criterios pendientes. Alinear los permisos de gestión con el análisis y C4. Resolver los requisitos de configuración que necesita Rendición.
 - [x] 3. Crear las cuatro capas, la raíz de composición, las entidades y los puertos de repositorio. Probar reglas y transiciones.
-- [ ] 4. Crear migraciones SQL y repositorios PostgreSQL de preguntas, separatas y propuestas. Validar que aprobar e incorporar al banco sea una operación atómica.
+- [x] 4. Crear migraciones SQL y repositorios PostgreSQL de preguntas, separatas y propuestas. Validar que aprobar e incorporar al banco sea una operación atómica.
 - [ ] 5. Implementar la gestión directa del banco por curso, con JWT, roles de Usuarios, endpoints y OpenAPI.
 - [ ] 6. Implementar la subida de separatas con validación, almacenamiento local mediante AlmacenArchivos y publicación confiable de SeparataSubida. Documentar el endpoint.
 - [ ] 7. Implementar extractores por formato y extender ServicioIA de forma compatible para lectura multimodal. Incorporar el adaptador Gemini y actualizar el simulado para las pruebas.
