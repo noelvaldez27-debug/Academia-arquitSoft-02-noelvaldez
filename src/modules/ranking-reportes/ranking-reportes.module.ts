@@ -3,10 +3,14 @@ import type { RendicionModule } from '../rendicion-examen';
 import type { ConsultaResultadosInterna } from '../resultados';
 import { ActualizarRankingUseCase } from './aplicacion/actualizar-ranking.use-case';
 import { PostgresRankingRepository } from './infraestructura/postgres-ranking-repository';
+import { detectarCambiosRanking } from './aplicacion/detectar-cambios-ranking';
+import { RankingWorker } from './infraestructura/ranking.worker';
+import { crearConexionRabbitMQ } from '../../compartido/infraestructura';
 
 export class RankingReportesModule {
   readonly repositorio;
   readonly actualizar;
+  private readonly worker;
 
   constructor(pool: Pool, rendicion: RendicionModule['consultasReportes'], resultados: ConsultaResultadosInterna) {
     this.repositorio = new PostgresRankingRepository(pool);
@@ -21,5 +25,17 @@ export class RankingReportesModule {
           ({ examenId, puntajeCentesimos, correctas, incorrectas, omitidas, porCurso }),
       ),
     }, this.repositorio);
+    this.worker = new RankingWorker(crearConexionRabbitMQ, async () => {
+      const [intentos, calificaciones, proyecciones] = await Promise.all([
+        rendicion.estados(), resultados.totalesPorSimulacro(), this.repositorio.estados(),
+      ]);
+      return detectarCambiosRanking(intentos, calificaciones, proyecciones);
+    }, id => this.actualizar.ejecutar(id), error => {
+      console.error('Actualización de ranking pendiente.', error instanceof Error ? error.name : 'Error');
+    });
+  }
+
+  iniciarTrabajos(): void {
+    void this.worker.ejecutar();
   }
 }

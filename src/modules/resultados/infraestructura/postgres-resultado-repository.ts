@@ -8,6 +8,13 @@ const columnas = `examen_id AS "examenId", postulante_id AS "postulanteId", simu
 export class PostgresResultadoRepository implements ResultadoRepository {
   constructor(private readonly bd: Pick<Pool, 'query'>) {}
 
+  async totalesPorSimulacro() {
+    const { rows } = await this.bd.query<{ id: string; total: number }>(
+      'SELECT simulacro_id AS id, count(*)::int AS total FROM resultados_examen GROUP BY simulacro_id',
+    );
+    return rows;
+  }
+
   async contarCalificados(ids: string[]): Promise<number> {
     const { rows } = await this.bd.query<{ total: number }>(
       'SELECT count(*)::int AS total FROM resultados_examen WHERE examen_id = ANY($1::text[])', [ids],

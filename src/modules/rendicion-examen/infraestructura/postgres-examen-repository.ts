@@ -32,6 +32,19 @@ function cargar(fila: FilaExamen | undefined): Examen | null {
 export class PostgresExamenRepository implements ExamenRepository {
   constructor(private readonly bd: Pick<Pool, 'query'>) {}
 
+  async estadoParaReportes() {
+    const { rows } = await this.bd.query<{ id: string; intentos: number; finalizados: number; cerrado: boolean }>(
+      `WITH intentos AS (
+         SELECT simulacro_id, count(*)::int AS total, count(cierre)::int AS finalizados
+         FROM examenes_rendicion GROUP BY simulacro_id
+       )
+       SELECT simulacro_id AS id, coalesce(total, 0) AS intentos,
+         coalesce(finalizados, 0) AS finalizados, cerrado_en IS NOT NULL AS cerrado
+       FROM intentos FULL JOIN cierres_simulacro_rendicion USING (simulacro_id)`,
+    );
+    return rows;
+  }
+
   async listarParaReportes(simulacroId: string, despues: string | null = null): Promise<IntentoParaReportes[]> {
     const { rows } = await this.bd.query<IntentoParaReportes>(
       `SELECT ${columnas} FROM examenes_rendicion

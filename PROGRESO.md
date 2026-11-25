@@ -14,7 +14,7 @@
 | 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
-| 5 | Ranking y Reportes | en curso (4 de 9 tareas) |
+| 5 | Ranking y Reportes | en curso (5 de 9 tareas) |
 | 6 | Analítica del Estudiante | sin empezar |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
@@ -49,6 +49,8 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 5, tarea 5 completada en código y Jest. El worker compara el estado persistido con la proyección, publica en RabbitMQ y reconstruye en segundo plano con confirmación posterior a persistencia. Pasaron 409 pruebas en 73 suites. El motor Linux de Docker Desktop siguió sin arrancar tras el intento por CLI.
+
 Módulo 5, tarea 4 completada en código y Jest. La proyección se persiste por simulacro con reemplazo transaccional y bloqueo por simulacro. Consume contratos paginados y conserva el puntaje definitivo y las dimensiones históricas. Pasaron 408 pruebas en 72 suites, con 88,29 % de líneas y 83,83 % de ramas globales.
 
 Módulo 5, subtarea 4c completada. Banco permite asignar o retirar docentes por curso como administrador general y expone la consulta interna de cursos asignados. TypeScript compiló y Jest aprobó 407 pruebas en 71 suites.
@@ -81,7 +83,7 @@ Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el 
 La integración real queda pendiente. Compose validó su configuración, pero Docker Desktop no expuso el motor Linux para ejecutar las migraciones y comprobar la persistencia y concurrencia.
 
 ## Siguiente paso exacto
-Implementar la tarea 5 de `specs/ranking-reportes/tasks.md`: integrar el envío de las actualizaciones a RabbitMQ, el consumo idempotente y la recuperación de trabajos pendientes.
+Implementar la tarea 6 de `specs/ranking-reportes/tasks.md`: consulta por rol y sede del ranking y documentación OpenAPI.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

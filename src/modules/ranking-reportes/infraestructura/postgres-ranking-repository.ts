@@ -32,4 +32,15 @@ export class PostgresRankingRepository implements PersistenciaRanking {
     );
     return rows[0]?.datos ?? null;
   }
+
+  async estados() {
+    const { rows } = await this.pool.query<{
+      id: string; intentos: number; finalizados: number; calificaciones: number; definitiva: boolean;
+    }>(`SELECT simulacro_id AS id, jsonb_array_length(datos->'intentos') AS intentos,
+      (SELECT count(*)::int FROM jsonb_array_elements(datos->'intentos') intento
+        WHERE intento->>'cierre' IS NOT NULL) AS finalizados,
+      jsonb_array_length(datos->'calificaciones') AS calificaciones,
+      (datos->>'definitiva')::boolean AS definitiva FROM proyecciones_ranking`);
+    return rows;
+  }
 }

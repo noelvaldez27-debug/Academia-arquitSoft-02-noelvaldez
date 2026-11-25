@@ -64,6 +64,7 @@ export class RendicionModule {
     this.consultasReportes = {
       porSimulacro: (id: string, despues?: string) => examenes.listarParaReportes(id, despues),
       consultarCierre: (id: string) => this.cierres.consultar(id),
+      estados: () => examenes.estadoParaReportes(),
     };
     this.expirar = new ExpirarExamenes(examenes, finalizar, reloj, informarError);
     this.despachar = new DespacharExamenes(pool, new RabbitmqExamenAdapter(crearConexionRabbitMQ), temporales);

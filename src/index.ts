@@ -3,6 +3,7 @@ import { ResultadosModule, rutasOpenApiResultados } from './modules/resultados';
 import { BancoPreguntasModule, rutasOpenApiBanco } from './modules/banco-preguntas';
 import { AlmacenArchivosLocal, crearApp, crearPoolPostgres, crearClienteRedis, obtenerConfiguracionRedisDesdeEnv } from './compartido/infraestructura';
 import { UsuariosModule } from './modules/usuarios';
+import { RankingReportesModule } from './modules/ranking-reportes';
 
 const pool = crearPoolPostgres();
 const usuariosModule = new UsuariosModule({ pool });
@@ -24,6 +25,8 @@ const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModul
   usuariosModule.servicioConsultaUsuarios);
 const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion);
 rendicion.iniciarTrabajos(resultados.consultas.contarCalificados);
+const rankings = new RankingReportesModule(pool, rendicion.consultasReportes, resultados.consultas);
+rankings.iniciarTrabajos();
 
 const app = crearApp({
   rutasUsuarios: usuariosModule.router,
