@@ -14,7 +14,7 @@
 | 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
-| 5 | Ranking y Reportes | en curso (3 de 9 tareas) |
+| 5 | Ranking y Reportes | en curso (4 de 9 tareas) |
 | 6 | Analítica del Estudiante | sin empezar |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
@@ -49,6 +49,8 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 5, tarea 4 completada en código y Jest. La proyección se persiste por simulacro con reemplazo transaccional y bloqueo por simulacro. Consume contratos paginados y conserva el puntaje definitivo y las dimensiones históricas. Pasaron 408 pruebas en 72 suites, con 88,29 % de líneas y 83,83 % de ramas globales.
+
 Módulo 5, subtarea 4c completada. Banco permite asignar o retirar docentes por curso como administrador general y expone la consulta interna de cursos asignados. TypeScript compiló y Jest aprobó 407 pruebas en 71 suites.
 
 Módulo 5, subtarea 4b completada en código y Jest. Rendición registra el cierre general, coordina nuevos intentos mediante bloqueos transaccionales de PostgreSQL, conserva las reanudaciones y confirma el cierre tras verificar las calificaciones por contrato público. Pasaron 406 pruebas en 70 suites, con 89,06 % de líneas y 83,98 % de ramas globales. Falta verificar la concurrencia en PostgreSQL real.
@@ -76,10 +78,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Tarea 4 en curso. Las migraciones 009 y 010 incorporan campos anulables sin reconstruir datos previos. El ranking general admite dimensiones históricas ausentes. Compose validó su configuración, pero Docker Desktop no expuso el motor Linux para ejecutar las migraciones y probar la persistencia. Integración real pendiente.
+La integración real queda pendiente. Compose validó su configuración, pero Docker Desktop no expuso el motor Linux para ejecutar las migraciones y comprobar la persistencia y concurrencia.
 
 ## Siguiente paso exacto
-Implementar la subtarea 4d de `specs/ranking-reportes/tasks.md`: persistir las proyecciones de ranking usando los contratos de Rendición y Resultados.
+Implementar la tarea 5 de `specs/ranking-reportes/tasks.md`: integrar el envío de las actualizaciones a RabbitMQ, el consumo idempotente y la recuperación de trabajos pendientes.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
