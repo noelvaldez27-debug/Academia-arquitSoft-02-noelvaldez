@@ -4,11 +4,12 @@ import { ErrorBancoPreguntas } from '../dominio/errores';
 const estados = { validacion: 400, acceso: 403, 'no-encontrado': 404, conflicto: 409 } as const;
 
 export function responder(
-  ejecutar: (req: Request) => Promise<unknown>, estado = 200,
+  ejecutar: (req: Request, res: Response) => Promise<unknown>, estado = 200,
 ): RequestHandler {
   return async (req: Request, res: Response) => {
     try {
-      res.status(estado).json(await ejecutar(req));
+      const datos = await ejecutar(req, res);
+      if (!res.headersSent) res.status(estado).json(datos);
     } catch (error) {
       if (error instanceof ErrorBancoPreguntas) {
         res.status(estados[error.tipo]).json({ error: error.message });

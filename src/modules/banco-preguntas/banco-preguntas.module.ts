@@ -1,3 +1,5 @@
+import { RevisarSeparataUseCase } from './aplicacion/revisar-separata.use-case';
+import { crearRutasRevision } from './presentacion/revision.routes';
 import { AlmacenArchivos } from '../../compartido/aplicacion/almacen-archivos';
 import { SubirSeparataUseCase } from './aplicacion/subir-separata.use-case';
 import { crearRutasSeparata } from './presentacion/separata.routes';
@@ -21,6 +23,7 @@ export class BancoPreguntasModule {
     };
     const { preguntas, separatas } = this.repositorios;
     this.rutas = crearRutasPreguntas(new GestionarPreguntasUseCase(preguntas, randomUUID), auth);
+    this.rutas.use(crearRutasRevision(new RevisarSeparataUseCase(separatas, () => new Date(), almacen)));
     this.rutas.use(crearRutasSeparata(new SubirSeparataUseCase(preguntas, separatas, almacen, randomUUID, maxBytes), maxBytes));
   }
 }

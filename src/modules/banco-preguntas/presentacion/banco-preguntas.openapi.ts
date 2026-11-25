@@ -41,7 +41,34 @@ const pregunta = {
   properties: { ...contenidoPregunta.properties, id: texto, cursoId: texto,
     habilitada: { type: 'boolean' }, propuestaId: { ...texto, nullable: true } },
 };
+const autorizacion = {
+  type: 'object',
+  required: ['estado'],
+  properties: {
+    estado: { ...texto, enum: ['AUTORIZADA', 'REVOCADA'] },
+    alcance: { type: 'array', items: { ...texto, enum: ['texto', 'adjunto'] } },
+    contenidoApto: { type: 'boolean', description: 'El administrador verificó permisos y ausencia de datos personales, credenciales y contenido confidencial.' },
+  },
+};
 export const rutasOpenApiBanco = {
+  '/api/banco-preguntas/separatas/{id}/archivo': {
+    get: operacionBanco('Descargar el original para verificar permisos y contenido', 200, ['id']),
+  },
+  '/api/banco-preguntas/separatas/{id}': {
+    get: operacionBanco('Consultar estado, motivo, autorización y propuestas de la separata', 200, ['id']),
+  },
+  '/api/banco-preguntas/separatas/{id}/autorizacion': {
+    put: operacionBanco('Autorizar o revocar la transferencia al proveedor externo', 200, ['id'], autorizacion),
+  },
+  '/api/banco-preguntas/propuestas/{id}': {
+    put: operacionBanco('Corregir propuesta y requerir una nueva validación docente', 200, ['id'], contenidoPregunta),
+  },
+  '/api/banco-preguntas/propuestas/{id}/aprobar': {
+    post: operacionBanco('Aprobar propuesta como docente responsable', 200, ['id']),
+  },
+  '/api/banco-preguntas/propuestas/{id}/descartar': {
+    post: operacionBanco('Descartar propuesta', 200, ['id']),
+  },
   '/api/banco-preguntas/cursos/{cursoId}/separatas': {
     post: {
       ...operacionBanco('Subir separata (DOCX, PDF, JPG, JPEG o PNG)', 202, ['cursoId'], undefined, {
