@@ -11,7 +11,7 @@ describe('ServicioIASimulado (Adaptador simulado de IA)', () => {
     expect(preguntas).toHaveLength(1);
     expect(preguntas[0].enunciado).toContain('Física');
     expect(preguntas[0].enunciado).toContain('Las leyes de Newton');
-    expect(preguntas[0].alternativas).toHaveLength(4);
+    expect(preguntas[0].alternativas).toHaveLength(5);
 
     const correctas = preguntas[0].alternativas.filter((a) => a.esCorrecta);
     expect(correctas).toHaveLength(1);

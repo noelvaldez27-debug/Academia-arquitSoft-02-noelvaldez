@@ -1,5 +1,6 @@
 import {
   ServicioIA,
+  AdjuntoLecturaIA,
   PreguntaPropuesta,
 } from '../aplicacion/servicio-ia';
 
@@ -24,6 +25,10 @@ export class ServicioIASimulado implements ServicioIA {
     }
   }
 
+  async leerAdjunto(_adjunto: AdjuntoLecturaIA): Promise<string> {
+    return 'Contenido académico sintético para la lectura de adjuntos.';
+  }
+
   async proponer(texto: string, curso: string): Promise<PreguntaPropuesta[]> {
     if (this.respuestasProponerPersonalizadas) {
       return this.respuestasProponerPersonalizadas;
@@ -39,6 +44,7 @@ export class ServicioIASimulado implements ServicioIA {
           { texto: `Distractor A de ${curso}`, esCorrecta: false },
           { texto: `Distractor B de ${curso}`, esCorrecta: false },
           { texto: `Distractor C de ${curso}`, esCorrecta: false },
+          { texto: `Distractor D de ${curso}`, esCorrecta: false },
         ],
         explicacion: `Explicación técnica simulada para la pregunta de ${curso}.`,
       },

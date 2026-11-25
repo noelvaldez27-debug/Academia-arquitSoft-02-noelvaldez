@@ -20,7 +20,13 @@ export interface PreguntaPropuesta {
  * Puerto compartido para el servicio de inteligencia artificial.
  * Referencia: ADR-010, ADR-011, DA11.
  */
+export interface AdjuntoLecturaIA {
+  mime: 'image/jpeg' | 'image/png' | 'application/pdf';
+  contenido: Uint8Array;
+}
+
 export interface ServicioIA {
+  leerAdjunto(adjunto: AdjuntoLecturaIA): Promise<string>;
   proponer(texto: string, curso: string): Promise<PreguntaPropuesta[]>;
   recomendar(cursosDebiles: string[]): Promise<string>;
 }
