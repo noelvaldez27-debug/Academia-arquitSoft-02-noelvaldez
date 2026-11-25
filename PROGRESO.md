@@ -14,7 +14,7 @@
 | 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
-| 5 | Ranking y Reportes | sin empezar |
+| 5 | Ranking y Reportes | en curso (1 de 9 tareas) |
 | 6 | Analítica del Estudiante | sin empezar |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
@@ -49,6 +49,10 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 5, tarea 1 completada. Se documentaron el alcance trazable, los contratos de integración, los criterios de aceptación y las decisiones pendientes en `specs/ranking-reportes/spec.md`.
+
+Regresión local del borrador con `npm.cmd run test:cov -- --runInBand`: 395 pruebas en 67 suites, 90,47 % de líneas y 84,60 % de ramas. Se ejecutó con acceso a localhost para Supertest. La validación de Ranking y Reportes con Docker Compose corresponde a la tarea 8.
+
 Módulo 4, tarea 9 completada. GitHub Actions compiló con Node.js 20 y ejecutó Jest con cobertura para `2ebedd2`. La validación local aprobó 395 pruebas en 67 suites, incluidas 13 pruebas de Resultados. El módulo alcanzó 82,39 % de líneas (117/142) y 94,44 % de ramas (68/72). Jest reportó 90,47 % de líneas y 84,60 % de ramas para el proyecto completo. [Ejecución 45541070460](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45541070460)
 
 En Docker Compose aislado, el recorrido normal registró 1,124 segundos desde el cierre hasta la primera lectura exitosa por sondeo, con PostgreSQL, Redis y RabbitMQ y sin inyectar duplicados durante esa medición. Fue una medición local de un solo flujo. El recorrido separado de duplicados conservó una sola calificación. La API protegió resultados ajenos y devolvió estado pendiente durante la caída de RabbitMQ. Al restaurar el broker, el evento pendiente llegó al worker y se obtuvo la calificación esperada. Las evidencias y el recorrido están en `specs/resultados/spec.md` y `pruebas/verificar-resultados-compose.cjs`.
@@ -62,10 +66,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Ninguna en Procesamiento de Resultados.
+Módulo 5, tarea 2 pendiente de aprobación. El borrador registra las decisiones sobre clasificación, ámbitos, participación, publicación, visibilidad, permisos y reportes.
 
 ## Siguiente paso exacto
-Esperar una indicación explícita antes de iniciar el Módulo 5.
+Incorporar las decisiones del usuario en `specs/ranking-reportes/spec.md` y aprobar la SDD antes de marcar la tarea 2 en `specs/ranking-reportes/tasks.md`.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
