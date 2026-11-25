@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 23 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 24 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -45,20 +45,17 @@
 Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que el usuario aún no confirmó. Si una tarea depende de alguno, preguntar antes de implementarla.
 - Los docentes los registra solo el Administrador general y no pertenecen a una sede (tarea 7)
 - La carrera es texto normalizado, no una lista cerrada (tareas 4 y 6)
-- No hay tope de alumnos por sede (tareas 6 y 21)
 - El nombre se guarda en un solo campo (tareas 3 y 4)
-- La carga masiva usa la cola de mensajes (tarea 21 y ADR-016)
-- Un DNI existente con nombre distinto en el Excel no se cambia y se informa (tarea 21)
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 23: un proyecto Docker Compose aislado arrancó con los cuatro servicios saludables. Desde el backend se aplicaron cuatro migraciones, se sembró el administrador general y se verificaron ambas sesiones, el registro en Hana, Urin y Central, el aislamiento de sedes, la publicación Swagger y la carga Excel con RabbitMQ real, incluyendo aviso, rechazo y reenvío. Prueba reproducible en pruebas/verificar-usuarios-compose.cjs para una base nueva.
+Tarea 24: se verificó la coincidencia entre las 13 operaciones de Express y OpenAPI, incluida la respuesta de autenticación de cada una, y se añadieron pruebas de consulta, transacciones y publicación fallida. El recorrido con Docker de la tarea 23 está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-(ninguna)
+Tarea 25: Jest reportó 314 pruebas aprobadas en 42 suites. Cobertura global: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Falta validar GitHub Actions en el commit actual, previa autorización de push.
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 24 de `specs/usuarios/tasks.md`: contrastar todas las rutas con OpenAPI y completar las pruebas unitarias pendientes.
+Módulo 1: Gestión de Usuarios. Completar la tarea 25 de `specs/usuarios/tasks.md`: obtener autorización para publicar los commits locales, verificar que GitHub Actions finalice correctamente para el SHA publicado y registrar el resultado.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
@@ -95,7 +92,7 @@ Módulo 1: Gestión de Usuarios. Ejecutar la tarea 24 de `specs/usuarios/tasks.m
   - `src/compartido/aplicacion/servicio-ia.ts` (`ServicioIA`, `PreguntaPropuesta`).
   - `src/compartido/infraestructura/almacen-archivos-local.ts` (`AlmacenArchivosLocal`, `obtenerRutaAlmacenLocalDesdeEnv`).
   - `src/compartido/infraestructura/servicio-ia-simulado.ts` (`ServicioIASimulado`).
-- Pruebas: 52 pruebas pasando con 100% de cobertura en Stmts, Branch, Funcs y Lines. Al ejecutarse en el sandbox de Antigravity en Windows, `supertest` requiere `BypassSandbox: true` porque enlaza un socket de loopback efímero para simular las peticiones HTTP.
+- En Codex para Windows, Supertest usa un socket local. Fue necesario ejecutar la suite completa fuera del sandbox para validar las rutas HTTP.
 - El `git add` y el `git commit` requieren `BypassSandbox: true` en Antigravity (el sandbox bloquea la escritura en `.git/`). Los demás comandos de lectura funcionan en sandbox normal.
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit`, `npm test` y `npm run test:cov` pasan sin errores.
 - TypeScript se mantiene en la serie 5 (`^5.9.3`). No actualizar a TypeScript 7+ ya que `ts-jest@29` no lo soporta.

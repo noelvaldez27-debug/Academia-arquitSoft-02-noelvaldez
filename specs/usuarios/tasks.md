@@ -34,7 +34,7 @@
 - [x] 21. Caso de uso: procesar la carga masiva en segundo plano y por lotes mediante la cola de mensajes, según ADR-016 (el diseño de la cola y de quien la consume se propone antes de escribir), reutilizando la operación de la tarea 6; los DNI existentes se omiten (también los desactivados, que no se reactivan), las filas inválidas o de otra sede se rechazan con su número y motivo, y una carga interrumpida se reanuda subiendo de nuevo el archivo (RF21, HU15, CA-U13)
 - [x] 22. Endpoints de la carga masiva: subir el archivo (responde de inmediato con un identificador) y consultar el estado y el resultado de la carga, con su documentación OpenAPI (CA-U13)
 - [x] 23. Verificar el módulo de punta a punta con docker compose up: aplicar las migraciones y crear el administrador general dentro del contenedor, crear un administrador de sede, iniciar sesión con ambos, registrar un estudiante en cada sede, comprobar que el administrador de sede no puede ver ni registrar estudiantes de otra sede, y probar los endpoints desde Swagger. Es la primera conexión real del backend con PostgreSQL
-- [ ] 24. Verificar que todos los endpoints del módulo aparecen en OpenAPI/Swagger y coinciden con lo que responde el servidor (CA-U07, ADR-008), y completar las pruebas unitarias con Jest de los casos de uso que no estén cubiertas
+- [x] 24. Verificar que todos los endpoints del módulo aparecen en OpenAPI/Swagger y coinciden con lo que responde el servidor (CA-U07, ADR-008), y completar las pruebas unitarias con Jest de los casos de uso que no estén cubiertas
 - [ ] 25. Verificar el reporte de cobertura de Jest y que las pruebas pasen en GitHub Actions
 
 ## Decisiones cerradas
@@ -47,7 +47,6 @@
 - La carga masiva acepta solo .xlsx con Nombre, DNI, Sede y Carrera, se procesa en segundo plano, y se puede repetir sin errores por cuentas ya existentes
 
 ## Pendiente de confirmar
-- Tope de alumnos por sede: no se asume ninguno. Si hay un máximo por sede, se agrega como requisito y cambian las tareas 6 y 21
 - Carrera como texto normalizado (lo asumido) o como lista cerrada de carreras mantenida por el administrador general
 - Si los docentes pertenecen a una sede (hoy no)
 - Si el administrador de sede puede desactivar y reactivar postulantes de su sede (hoy sí)

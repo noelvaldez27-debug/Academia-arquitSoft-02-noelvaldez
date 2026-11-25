@@ -205,6 +205,7 @@ export const especificacionOpenApi = {
           },
         },
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '201': {
             description: 'Estudiante registrado exitosamente',
             content: {
@@ -262,6 +263,7 @@ export const especificacionOpenApi = {
           },
         },
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '201': {
             description: 'Docente registrado exitosamente',
             content: {
@@ -317,6 +319,7 @@ export const especificacionOpenApi = {
           },
         },
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '200': {
             description: 'Contraseña actualizada exitosamente',
             content: {
@@ -361,6 +364,7 @@ export const especificacionOpenApi = {
           },
         },
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '200': {
             description: 'Correo actualizado exitosamente',
             content: {
@@ -418,6 +422,7 @@ export const especificacionOpenApi = {
           },
         ],
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '200': {
             description: 'Listado de usuarios obtenido exitosamente',
             content: {
@@ -473,6 +478,7 @@ export const especificacionOpenApi = {
           },
         ],
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '200': {
             description: 'Usuario desactivado exitosamente',
             content: {
@@ -514,6 +520,7 @@ export const especificacionOpenApi = {
           },
         ],
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '200': {
             description: 'Usuario reactivado exitosamente',
             content: {
@@ -560,6 +567,7 @@ export const especificacionOpenApi = {
           },
         },
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '201': {
             description: 'Administrador de sede creado exitosamente',
             content: {
@@ -592,6 +600,7 @@ export const especificacionOpenApi = {
         description: 'Permite a cualquier administrador autenticado (general o de sede) consultar la lista de sedes existentes.',
         security: [{ bearerAuth: [] }],
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '200': {
             description: 'Lista de sedes obtenida exitosamente',
             content: {
@@ -633,6 +642,7 @@ export const especificacionOpenApi = {
           },
         },
         responses: {
+          '500': { description: 'Error interno del servidor' },
           '201': {
             description: 'Sede creada exitosamente',
             content: {

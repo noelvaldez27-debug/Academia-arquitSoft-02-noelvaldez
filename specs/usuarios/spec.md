@@ -102,7 +102,7 @@ Formato: Dado / Cuando / Entonces.
 ### CA-U13 Registro masivo desde Excel (HU15, RF21, ADR-016)
 - Dado un administrador autenticado, cuando sube un archivo .xlsx con las columnas Nombre, DNI, Sede y Carrera, entonces el sistema lo acepta, responde de inmediato con un identificador de carga y procesa las filas en segundo plano.
 - Dada una carga en proceso o terminada, cuando se consulta con su identificador, entonces muestra el estado, el total de filas, cuántas se crearon, cuántas ya existían y cuántas se rechazaron, con el número de fila y el motivo de cada rechazo. Un administrador de sede solo ve las cargas de su sede.
-- Dado un DNI que ya existe, cuando aparece en el archivo, entonces la fila se omite y se cuenta como ya existente, sin error y sin cambios en esa cuenta, y sin revelar a qué sede pertenece. Si la cuenta está desactivada, tampoco se reactiva.
+- Dado un DNI que ya existe, cuando aparece en el archivo, entonces la fila se omite y se cuenta como ya existente, sin error y sin cambios en esa cuenta, y sin revelar a qué sede pertenece. Si la cuenta está desactivada, tampoco se reactiva. Si el nombre difiere, se añade un aviso con el número de fila sin revelar datos de la cuenta registrada.
 - Dada una fila con DNI inválido, nombre o carrera vacíos, sede inexistente o DNI repetido dentro del archivo, cuando se procesa, entonces esa fila se rechaza con su número y motivo, sin impedir que se creen las demás.
 - Dado un administrador de sede, cuando su archivo trae una fila de otra sede, entonces esa fila se rechaza con su motivo.
 - Dado un archivo que no es .xlsx, que supera el tamaño o el número máximo de filas, o que no tiene las columnas esperadas, cuando se sube, entonces el sistema lo rechaza sin crear ningún usuario.
@@ -125,17 +125,16 @@ Formato: Dado / Cuando / Entonces.
 - Redis: no se usa en este módulo.
 
 ## Limitaciones conocidas
+- El registro individual y la carga masiva se rigen por los requisitos documentados, que no establecen un tope de estudiantes por sede.
 - La contraseña inicial de postulantes y docentes es su DNI, que no es un dato secreto. Es consecuencia de RF02, RF19 y RC09, y de que el cambio de contraseña es opcional.
 - Cambiar la contraseña no cierra las sesiones ya abiertas: un JWT vigente sigue funcionando hasta que venza. Solo la desactivación del usuario se aplica de inmediato.
 - No hay recuperación de contraseña olvidada.
 - Comprobar en cada petición que el usuario siga activo implica una consulta a PostgreSQL por petición. Si afecta a las pruebas de carga, se puede guardar ese dato en Redis por un tiempo corto.
 
 ## Pendiente de confirmar
-- Tope de alumnos por sede: no se asume ninguno.
 - Carrera como texto normalizado (lo asumido) o como lista cerrada de carreras mantenida por el administrador general.
 - Si los docentes pertenecen a una sede (hoy no).
 - Si el administrador de sede puede desactivar y reactivar postulantes de su sede (hoy sí).
 - Si el nombre se guarda como un solo campo o separado en nombres y apellidos.
 - Tiempo de vida del JWT (propuesta: 8 horas, configurable) y largo mínimo de la contraseña (propuesta: 8 caracteres).
 - Si el administrador podrá restablecer la contraseña de un usuario que la olvidó (no incluido por ahora).
-- Qué ocurre si en una carga masiva un DNI existente trae un nombre distinto (propuesta: no se cambia y se informa en el resultado).

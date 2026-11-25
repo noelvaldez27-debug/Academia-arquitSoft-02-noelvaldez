@@ -51,3 +51,17 @@ describe('RabbitmqCargaMasivaWorker (ADR-016)', () => {
     expect(nack).toHaveBeenCalledWith(mensaje, false, false);
   });
 });
+
+it('mantiene el envío pendiente si RabbitMQ no confirma la publicación', async () => {
+  const query = jest.fn().mockResolvedValueOnce({
+    rows: [{ carga_id: 'carga', numero_lote: 1 }],
+  });
+  const canal = {
+    sendToQueue: jest.fn((_cola, _contenido, _opciones, confirmar) => confirmar(new Error('Canal cerrado'))),
+  } as unknown as ConfirmChannel;
+  const worker = new RabbitmqCargaMasivaWorker({ query } as unknown as Pool, {} as ProcesarCargaMasivaUseCase);
+
+  await expect(worker['publicarPendientes'](canal)).rejects.toThrow('Canal cerrado');
+  expect(query).toHaveBeenCalledTimes(1);
+  expect(query.mock.calls[0][0]).toContain('WHERE NOT publicado');
+});
