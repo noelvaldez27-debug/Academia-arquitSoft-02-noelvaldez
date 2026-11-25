@@ -15,7 +15,7 @@
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
 | 5 | Ranking y Reportes | terminado (9 de 9 tareas) |
-| 6 | Analítica del Estudiante | en curso (4 de 8 tareas) |
+| 6 | Analítica del Estudiante | en curso (5 de 8 tareas) |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
 
@@ -49,6 +49,8 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 6, tarea 5 completada. Prioridades deterministas, recomendaciones por huella y versión de reglas, bloqueo transaccional y alternativa local. La vigencia se deriva de la huella actual. TypeScript compiló y pasaron siete pruebas específicas.
+
 Módulo 6, tarea 4 completada. Historial cronológico y porcentajes ponderados con datos definitivos. Pasaron las dos pruebas específicas. La tarea 3 pasó 419 pruebas en 81 suites tras compilar.
 
 Módulo 6, tarea 2 completada. Aprobadas las reglas de desempeño, RF12, RF13, permisos, actualización y persistencia de recomendaciones.
@@ -94,10 +96,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Tarea 5 pendiente. La validación de PostgreSQL real se realizará en la tarea 8.
+Tarea 6 pendiente. La persistencia real se verifica en la tarea 8.
 
 ## Siguiente paso exacto
-Implementar la tarea 5 con selección de prioridades y persistencia de recomendaciones.
+Implementar tarea 6 de specs/analitica/tasks.md con rutas y autorizaciones personales.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

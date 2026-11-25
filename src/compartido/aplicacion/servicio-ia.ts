@@ -28,5 +28,5 @@ export interface AdjuntoLecturaIA {
 export interface ServicioIA {
   leerAdjunto(adjunto: AdjuntoLecturaIA): Promise<string>;
   proponer(texto: string, curso: string): Promise<PreguntaPropuesta[]>;
-  recomendar(cursosDebiles: string[]): Promise<string>;
+  recomendar(cursosDebiles: string[], contexto?: { desempeno: number; temas: string[] }[]): Promise<string>;
 }
