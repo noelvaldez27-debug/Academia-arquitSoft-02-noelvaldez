@@ -14,7 +14,7 @@
 | 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
 | 3 | Rendición de Examen | terminado (10 de 10 tareas) |
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
-| 5 | Ranking y Reportes | en curso (2 de 9 tareas) |
+| 5 | Ranking y Reportes | en curso (3 de 9 tareas) |
 | 6 | Analítica del Estudiante | sin empezar |
 | - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
 | - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
@@ -49,6 +49,8 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 5, tarea 3 completada. Se implementaron puestos de competición, orden estable y filtros de carrera y sede. Jest aprobó 400 pruebas en 68 suites, con 100 % de líneas y ramas en el dominio incorporado (9/9 y 11/11), y 90,51 % de líneas y 84,74 % de ramas en el proyecto.
+
 Módulo 5, tarea 2 completada. Se registraron las reglas aprobadas y las fuentes ausentes en la SDD.
 
 Módulo 5, tarea 1 completada. Se documentaron el alcance trazable, los contratos de integración, los criterios de aceptación y las decisiones pendientes en `specs/ranking-reportes/spec.md`.
@@ -71,7 +73,7 @@ Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el 
 Usuarios carece de condición de matrícula y Rendición carece de cierre general e inscripción al simulacro. Tampoco existe una fuente de asignaciones docentes. Véanse las dependencias verificadas en la SDD.
 
 ## Siguiente paso exacto
-Implementar y probar la clasificación aprobada en la tarea 3 de `specs/ranking-reportes/tasks.md`.
+Resolver la fuente de la condición y el tratamiento de intentos previos antes de adaptar los contratos y las migraciones históricas de la tarea 4 en `specs/ranking-reportes/tasks.md`. El cierre general y las asignaciones docentes requieren una fuente aprobada para sus flujos respectivos.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
