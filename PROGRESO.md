@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
 | 1 | Gestión de Usuarios | terminado (25 de 25 tareas) |
-| 2 | Banco de Preguntas | sin empezar |
+| 2 | Banco de Preguntas | en curso (SDD inicial, 1 de 12 tareas) |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
 | 5 | Ranking y Reportes | sin empezar |
