@@ -12,7 +12,7 @@
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
 | 1 | Gestión de Usuarios | terminado (25 de 25 tareas) |
 | 2 | Banco de Preguntas | terminado (12 de 12 tareas) |
-| 3 | Rendición de Examen | SDD aprobada (2 de 10 tareas) |
+| 3 | Rendición de Examen | en curso (3 de 10 tareas) |
 | 4 | Procesamiento de Resultados | sin empezar |
 | 5 | Ranking y Reportes | sin empezar |
 | 6 | Analítica del Estudiante | sin empezar |
@@ -54,10 +54,10 @@ Módulo 2, tarea 12: GitHub Actions compiló con Node.js 20 y ejecutó Jest con 
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Módulo 3, tarea 2 completada. Las cinco decisiones aprobadas figuran en specs/rendicion-examen/spec.md. La línea base previa al código pasó con 363 pruebas en 56 suites.
+Módulo 3, tarea 3 completada. Dominio, reloj y contrato de persistencia. Compilación y cuatro pruebas de dominio aprobadas.
 
 ## Siguiente paso exacto
-Módulo 3, tarea 3: implementar el dominio y sus contratos en src/modules/rendicion-examen/ con pruebas de vigencia, orden y propiedad.
+Módulo 3, tarea 4: crear migraciones y repositorio PostgreSQL de Rendición.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
