@@ -7,11 +7,16 @@ export interface ContenidoPregunta {
   enunciado: string;
   alternativas: Record<ClaveAlternativa, string>;
   correcta: ClaveAlternativa;
+  temaId?: string | null;
 }
 
 export function validarContenidoPregunta(contenido: ContenidoPregunta): ContenidoPregunta {
   const enunciado = typeof contenido?.enunciado === 'string' ? contenido.enunciado.trim() : '';
   const claves = Object.keys(contenido?.alternativas ?? {});
+  const temaId = contenido?.temaId;
+  if (temaId != null && (typeof temaId !== 'string' || !temaId.trim())) {
+    throw new ErrorBancoPreguntas('validacion', 'Identificador de tema no válido.');
+  }
   if (!enunciado || claves.length !== CLAVES_ALTERNATIVAS.length ||
       !CLAVES_ALTERNATIVAS.every(clave => typeof contenido.alternativas[clave] === 'string' &&
         contenido.alternativas[clave].trim()) || !CLAVES_ALTERNATIVAS.includes(contenido.correcta)) {
@@ -22,6 +27,7 @@ export function validarContenidoPregunta(contenido: ContenidoPregunta): Contenid
     alternativas: Object.fromEntries(CLAVES_ALTERNATIVAS.map(clave =>
       [clave, contenido.alternativas[clave].trim()])) as ContenidoPregunta['alternativas'],
     correcta: contenido.correcta,
+    ...(temaId !== undefined && { temaId }),
   };
 }
 

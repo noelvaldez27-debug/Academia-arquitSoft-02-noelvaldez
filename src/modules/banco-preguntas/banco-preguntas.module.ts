@@ -17,6 +17,9 @@ import { PostgresPreguntaRepository } from './infraestructura/postgres-pregunta-
 import { PostgresSeparataRepository } from './infraestructura/postgres-separata-repository';
 import { RepositoriosBanco } from './infraestructura/repositorios-banco';
 import { crearRutasPreguntas } from './presentacion/pregunta.routes';
+import { GestionarTemasUseCase } from './aplicacion/gestionar-temas.use-case';
+import { PostgresTemaRepository } from './infraestructura/postgres-tema-repository';
+import { crearRutasTemas } from './presentacion/tema.routes';
 
 export class BancoPreguntasModule {
   readonly rutas;
@@ -37,6 +40,9 @@ export class BancoPreguntasModule {
     this.rutas = crearRutasPreguntas(new GestionarPreguntasUseCase(preguntas, randomUUID), auth);
     const asignaciones = new PostgresAsignacionesDocentes(pool);
     this.cursosAsignados = id => asignaciones.porDocente(id);
+    this.rutas.use(crearRutasTemas(new GestionarTemasUseCase(
+      new PostgresTemaRepository(pool), async id => Boolean(await preguntas.curso(id)), this.cursosAsignados, randomUUID,
+    )));
     this.rutas.use(crearRutasAsignaciones(new GestionarAsignacionesUseCase(
       async id => {
         const usuario = await usuarios?.consultarPorId(id);

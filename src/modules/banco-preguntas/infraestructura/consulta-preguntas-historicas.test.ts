@@ -16,7 +16,7 @@ test('CA-AE05 distingue cambios de clave y solo entrega metadatos históricos', 
     alternativas: { A: 'Uno', B: 'Dos', C: 'Tres', D: 'Cuatro', E: 'Cinco' },
   };
   const query = jest.fn().mockResolvedValue({ rows: [
-    { id: 's1', preguntas: [{ ...pregunta, correcta: 'A' }] },
+    { id: 's1', preguntas: [{ ...pregunta, correcta: 'A', tema: { id: 't1', nombre: 'Nombre historico' } }] },
     { id: 's2', preguntas: [{ ...pregunta, correcta: 'B' }] },
   ] });
   const consultar = crearConsultaPreguntasHistoricas({ query });
@@ -26,5 +26,7 @@ test('CA-AE05 distingue cambios de clave y solo entrega metadatos históricos', 
   expect(primera).toMatchObject({ simulacroId: 's1', preguntaId: 'p1', cursoId: 'c1' });
   expect(primera).not.toHaveProperty('correcta');
   expect(primera).not.toHaveProperty('alternativas');
+  expect(primera.tema).toEqual({ id: 't1', nombre: 'Nombre historico' });
+  expect(segunda.tema).toBeNull();
   expect(primera.huellaInterna).not.toBe(segunda.huellaInterna);
 });

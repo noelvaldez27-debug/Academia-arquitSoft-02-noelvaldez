@@ -281,3 +281,9 @@ Hay un extractor por formato, y todos cumplen el mismo contrato `ExtractorDeText
 ## Reglas aprobadas de Rendición de Examen
 
 La [SDD de Rendición](../../specs/rendicion-examen/spec.md#decisiones-aprobadas) fija el intento único, el plazo del servidor, el cierre automático con respuestas confirmadas y la recuperación del estado vigente al reconectar (RF04–RF06, AC07). La modalidad impresa usa el número de pregunta de la versión congelada. El registro, cambio y borrado usan revisiones para protegerse frente a reintentos y concurrencia.
+
+## Temas académicos y versión congelada
+
+Banco de Preguntas gestiona temas por curso para RF12 y RF13. El administrador general puede crear, renombrar o desactivar temas. Los docentes asignados pueden consultar los temas activos del curso. Los flujos autorizados de registro, edición y revisión aceptan un tema opcional del mismo curso. Corregir una propuesta aprobada devuelve la propuesta a revisión según las reglas vigentes.
+
+Al congelar el simulacro, Banco incorpora el identificador y nombre del tema asociado en una copia histórica. Rendición conserva su contrato y Analítica consume metadatos congelados por un contrato interno sin claves de examen. Las versiones anteriores sin tema verificable permanecen no clasificadas.

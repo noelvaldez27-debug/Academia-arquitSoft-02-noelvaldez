@@ -4,7 +4,10 @@ import { ErrorBancoPreguntas } from '../dominio/errores';
 import { ClaveAlternativa } from '../dominio/pregunta';
 import { SimulacroParaRendicion } from '../aplicacion/gestionar-simulacros.use-case';
 
-type PreguntaCongelada = SimulacroParaRendicion['preguntas'][number] & { correcta: ClaveAlternativa };
+type PreguntaCongelada = SimulacroParaRendicion['preguntas'][number] & {
+  correcta: ClaveAlternativa;
+  tema?: { id: string; nombre: string } | null;
+};
 type Version = Omit<SimulacroParaRendicion, 'preguntas'> & { preguntas: PreguntaCongelada[] };
 
 export function crearConsultaNombresCursos(bd: Pick<Pool, 'query'>) {
@@ -25,11 +28,11 @@ export function crearConsultaPreguntasHistoricas(bd: Pick<Pool, 'query'>) {
       [ids],
     );
     return rows.flatMap(({ id: simulacroId, preguntas }) =>
-      preguntas.map(({ id: preguntaId, cursoId, enunciado, alternativas, correcta }) => {
+      preguntas.map(({ id: preguntaId, cursoId, enunciado, alternativas, correcta, tema }) => {
         const contenido = [enunciado, alternativas.A, alternativas.B, alternativas.C, alternativas.D,
           alternativas.E, correcta];
         return {
-          simulacroId, preguntaId, cursoId, enunciado,
+          simulacroId, preguntaId, cursoId, enunciado, tema: tema ?? null,
           // Incluye la clave para distinguir versiones. Solo se usa para agrupación interna.
           huellaInterna: createHash('sha256').update(JSON.stringify(contenido)).digest('hex'),
         };
@@ -60,10 +63,13 @@ export class PostgresVersionSimulacro {
          SELECT c.id, c.duracion_minutos,
            jsonb_agg(jsonb_build_object('id', p.id, 'cursoId', p.curso_id,
              'enunciado', p.contenido->'enunciado', 'alternativas', p.contenido->'alternativas',
-             'correcta', p.contenido->'correcta') ORDER BY q.orden)
+             'correcta', p.contenido->'correcta',
+             'tema', CASE WHEN t.id IS NOT NULL THEN jsonb_build_object('id', t.id, 'nombre', t.nombre) END
+           ) ORDER BY q.orden)
          FROM configuraciones_simulacro c
          CROSS JOIN LATERAL jsonb_array_elements_text(c.preguntas) WITH ORDINALITY q(id, orden)
          LEFT JOIN preguntas_banco p ON p.id = q.id AND p.habilitada
+         LEFT JOIN temas_banco t ON t.id = p.contenido->>'temaId' AND t.curso_id = p.curso_id
          WHERE c.id = $1 GROUP BY c.id
          HAVING count(*) = count(p.id)
          ON CONFLICT (id) DO NOTHING

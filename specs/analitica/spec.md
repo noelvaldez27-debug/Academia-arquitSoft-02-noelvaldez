@@ -36,6 +36,8 @@ Se reutilizan la nota de 0 a 1000, los conteos congelados y la regla de cero pun
 
 ## Criterios de aceptación
 
+El catálogo de temas pertenece al Banco. Cada tema tiene ID estable, curso, nombre único dentro del curso y estado activo. El administrador general gestiona el catálogo. La asignación es opcional y conserva los permisos y la revalidación de preguntas y propuestas. El congelamiento conserva el ID y nombre verificados en ese momento. Las versiones antiguas sin tema se informan como no clasificadas. RF13 puede utilizar los temas históricos disponibles como contexto académico complementario.
+
 - CA-AE01 (HU08, RF09, RF11). Con cero, uno o varios simulacros se devuelve el historial propio con orden y fechas verificables. Los puntajes coinciden con Resultados, incluidos 0 y 1000. Se pueden consumir las series desde el futuro frontend.
 - CA-AE02 (HU08, RF11). Los conteos y porcentajes por curso respetan las reglas aprobadas. Se prueban denominadores distintos, redondeo, ceros y cursos sin evaluación. Editar el Banco no altera estadísticas históricas.
 - CA-AE03 (HU09, RF13). Las debilidades y recomendaciones se ajustan a los criterios aprobados y funcionan con el adaptador simulado. Se comprueban el umbral, el mínimo de evidencia, los desempates, la ausencia de prioridades, la renovación, la concurrencia y el mecanismo alternativo.

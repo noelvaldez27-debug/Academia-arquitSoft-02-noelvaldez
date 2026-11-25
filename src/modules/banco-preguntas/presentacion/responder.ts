@@ -13,6 +13,8 @@ export function responder(
     } catch (error) {
       if (error instanceof ErrorBancoPreguntas) {
         res.status(estados[error.tipo]).json({ error: error.message });
+      } else if ((error as { constraint?: string })?.constraint === 'tema_banco_disponible') {
+        res.status(400).json({ error: 'El tema debe estar activo y pertenecer al curso de la pregunta.' });
       } else {
         res.status(500).json({ error: 'No se pudo completar la operación.' });
       }

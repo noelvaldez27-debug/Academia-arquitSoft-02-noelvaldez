@@ -8,7 +8,8 @@ const alternativas = {
 const contenidoPregunta = {
   type: 'object',
   required: ['enunciado', 'alternativas', 'correcta'],
-  properties: { enunciado: texto, alternativas, correcta: { ...texto, enum: alternativas.required } },
+  properties: { enunciado: texto, alternativas, correcta: { ...texto, enum: alternativas.required },
+    temaId: { ...texto, nullable: true, description: 'Tema activo del mismo curso. El valor null retira la clasificación.' } },
 };
 
 export function operacionBanco(
@@ -57,6 +58,16 @@ const configuracionSimulacro = {
     preguntas: { type: 'array', minItems: 1, uniqueItems: true, items: texto } },
 };
 export const rutasOpenApiBanco = {
+  '/api/banco-preguntas/cursos/{cursoId}/temas': {
+    get: operacionBanco('Listar temas activos del curso', 200, ['cursoId']),
+    post: operacionBanco('Crear un tema como administrador general', 201, ['cursoId'], curso),
+  },
+  '/api/banco-preguntas/temas/{id}': {
+    put: operacionBanco('Cambiar el nombre del tema como administrador general', 200, ['id'], curso),
+  },
+  '/api/banco-preguntas/temas/{id}/desactivar': {
+    patch: operacionBanco('Desactivar el tema como administrador general', 200, ['id']),
+  },
   '/api/banco-preguntas/cursos/{cursoId}/docentes/{docenteId}': {
     put: operacionBanco('Asignar un docente a un curso como administrador general', 200, ['cursoId', 'docenteId']),
     delete: operacionBanco('Retirar la asignación de un docente como administrador general', 200, ['cursoId', 'docenteId']),
