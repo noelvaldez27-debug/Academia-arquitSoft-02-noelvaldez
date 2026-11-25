@@ -192,3 +192,8 @@ El flujo completo se divide en dos diagramas: la finalización del simulacro (s�
 > **Nota:** Estas decisiones describen el diseño propuesto. Los detalles de implementación, manejo de errores y transacciones deberán completarse durante el desarrollo.
 
 ---
+### Contrato del cierre de Rendición en el Sprint 2
+
+El plazo empieza en el primer inicio registrado. La API y Redis verifican el vencimiento antes de aceptar modificaciones. El cliente sincroniza las marcas pendientes antes de solicitar el cierre manual. En la sincronización, envía la revisión base de la pregunta y un ID de operación estable para los reintentos. Al reconectar, puede recuperar el intento y sus revisiones confirmadas. Un barrido del backend cierra los intentos vencidos con las respuestas ya aceptadas.
+
+Rendición congela la copia temporal para el cierre y guarda las respuestas definitivas junto con la bandeja de salida en una transacción. El despachador envía a la cola durable `examen.finalizado` un evento `ExamenFinalizado` con `examenId` como identificador del mensaje, espera confirmación y reintenta en caso de falla. El cierre HTTP confirma la consolidación. La futura calificación permanece asíncrona y debe tolerar entregas repetidas. La API pública interna de Rendición devuelve el intento finalizado y sus respuestas, y el Banco entrega las claves congeladas por separado.

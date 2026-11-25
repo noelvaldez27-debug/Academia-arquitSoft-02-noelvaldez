@@ -220,3 +220,16 @@ $env:SEPARATAS_IA_PROVEEDOR = 'simulado'
 docker compose -p evalua-banco up -d --build --wait
 Get-Content pruebas/verificar-banco-compose.cjs -Raw | docker compose -p evalua-banco exec -T backend node
 ```
+
+## Validación de Rendición de Examen
+
+El servicio `migraciones` de Docker Compose aplica los SQL pendientes antes de arrancar la API y el worker de separatas. Para ejecutar el recorrido reproducible, usa un proyecto Compose de pruebas con PostgreSQL, Redis y RabbitMQ. Configura las tres variables `ADMIN_GENERAL_*` con valores de prueba y el proveedor de IA simulado.
+
+```powershell
+docker compose up -d --build --wait
+docker compose exec -T backend node dist/scripts/seed-admin.js
+Get-Content -Raw pruebas/verificar-rendicion-compose.cjs | docker compose exec -T backend node -
+npm.cmd run test:cov -- --runInBand
+```
+
+El recorrido crea datos sintéticos y comprueba JWT, aislamiento, orden y claves congeladas, reconexión, conflictos de revisión, cierres concurrentes, vencimiento, Swagger y entrega de eventos. Para comprobar la bandeja de salida durante una interrupción, detén la aplicación RabbitMQ dentro del proyecto aislado con `rabbitmqctl stop_app`, ejecuta el mismo recorrido pasando `-e RENDICION_BROKER_CAIDO=1` a `docker compose exec`, y restablece el broker con `rabbitmqctl start_app`. La API debe conservar los cierres y el publicador debe recuperarlos al volver el broker.
