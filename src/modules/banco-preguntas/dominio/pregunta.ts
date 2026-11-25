@@ -10,7 +10,7 @@ export interface ContenidoPregunta {
 }
 
 export function validarContenidoPregunta(contenido: ContenidoPregunta): ContenidoPregunta {
-  const enunciado = contenido?.enunciado?.trim();
+  const enunciado = typeof contenido?.enunciado === 'string' ? contenido.enunciado.trim() : '';
   const claves = Object.keys(contenido?.alternativas ?? {});
   if (!enunciado || claves.length !== CLAVES_ALTERNATIVAS.length ||
       !CLAVES_ALTERNATIVAS.every(clave => typeof contenido.alternativas[clave] === 'string' &&

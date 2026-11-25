@@ -1,3 +1,4 @@
+import { BancoPreguntasModule } from './modules/banco-preguntas';
 import { crearApp, crearPoolPostgres } from './compartido/infraestructura';
 import { UsuariosModule } from './modules/usuarios';
 
@@ -6,7 +7,8 @@ const usuariosModule = new UsuariosModule({ pool });
 
 void usuariosModule.consumidorCargaMasiva.ejecutar();
 
-const app = crearApp({ rutasUsuarios: usuariosModule.router });
+const bancoPreguntas = new BancoPreguntasModule(pool, usuariosModule.middlewareAutenticacion);
+const app = crearApp({ rutasUsuarios: usuariosModule.router, rutasBancoPreguntas: bancoPreguntas.rutas });
 const port = parseInt(process.env.PORT || '3000', 10);
 const host = '0.0.0.0';
 

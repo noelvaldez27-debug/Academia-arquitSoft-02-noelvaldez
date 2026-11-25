@@ -4,6 +4,7 @@ import { especificacionOpenApi } from './especificacion-openapi';
 
 export interface OpcionesServidor {
   rutasUsuarios?: Router;
+  rutasBancoPreguntas?: Router;
 }
 
 export function crearApp(opciones?: OpcionesServidor): Application {
@@ -21,6 +22,8 @@ export function crearApp(opciones?: OpcionesServidor): Application {
   if (opciones?.rutasUsuarios) {
     app.use('/api/usuarios', opciones.rutasUsuarios);
   }
+
+  if (opciones?.rutasBancoPreguntas) app.use('/api/banco-preguntas', opciones.rutasBancoPreguntas);
 
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(especificacionOpenApi));
 
