@@ -139,6 +139,17 @@ services:
       migraciones:
         condition: service_completed_successfully
 
+  worker-resultados:
+    build: *build-backend
+    command: ["node", "dist/worker-resultados.js"]
+    restart: unless-stopped
+    environment: *entorno-backend
+    depends_on:
+      migraciones:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+
   migraciones:
     build: *build-backend
     command: ["node", "dist/scripts/migrar.js"]

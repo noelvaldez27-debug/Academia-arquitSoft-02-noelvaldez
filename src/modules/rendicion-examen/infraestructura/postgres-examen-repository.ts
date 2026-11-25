@@ -14,6 +14,11 @@ interface FilaExamen {
 
 const columnas = 'id, postulante_id AS "postulanteId", simulacro_id AS "simulacroId", inicio, vence, cierre';
 
+export function crearConsultaExamenesFinalizados(bd: Pick<Pool, 'query'>) {
+  const examenes = new PostgresExamenRepository(bd);
+  return { consultar: (id: string) => examenes.consultarFinalizado(id) };
+}
+
 function cargar(fila: FilaExamen | undefined): Examen | null {
   return fila ? new Examen(fila.id, fila.postulanteId, fila.simulacroId, fila.inicio, fila.vence, fila.cierre) : null;
 }

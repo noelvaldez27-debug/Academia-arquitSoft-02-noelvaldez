@@ -12,3 +12,4 @@ export type {
   SimulacroParaRendicion,
 } from './aplicacion/gestionar-simulacros.use-case';
 export { ErrorBancoPreguntas } from './dominio/errores';
+export { crearConsultaClavesCongeladas } from './infraestructura/postgres-version-simulacro';

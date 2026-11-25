@@ -6,6 +6,11 @@ import { SimulacroParaRendicion } from '../aplicacion/gestionar-simulacros.use-c
 type PreguntaCongelada = SimulacroParaRendicion['preguntas'][number] & { correcta: ClaveAlternativa };
 type Version = Omit<SimulacroParaRendicion, 'preguntas'> & { preguntas: PreguntaCongelada[] };
 
+export function crearConsultaClavesCongeladas(bd: Pick<Pool, 'query'>) {
+  const versiones = new PostgresVersionSimulacro(bd);
+  return { clave: (id: string) => versiones.claveCongelada(id) };
+}
+
 export class PostgresVersionSimulacro {
   constructor(private readonly bd: Pick<Pool, 'query'>) {}
 
