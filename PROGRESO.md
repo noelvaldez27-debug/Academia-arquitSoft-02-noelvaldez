@@ -10,7 +10,7 @@
 | # | Módulo | Estado |
 | --- | --- | --- |
 | 0 | Base del proyecto (Dockerfile, docker-compose, .env.example, CI con Jest) | terminado |
-| 1 | Gestión de Usuarios | en curso (tareas 1 a 22 completadas) |
+| 1 | Gestión de Usuarios | en curso (tareas 1 a 23 completadas) |
 | 2 | Banco de Preguntas | sin empezar |
 | 3 | Rendición de Examen | sin empezar |
 | 4 | Procesamiento de Resultados | sin empezar |
@@ -52,13 +52,13 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
-Tarea 22: subida multipart de XLSX con respuesta 202 y consulta de estado, totales, rechazos y avisos protegida por rol y sede. Ambos endpoints están documentados en OpenAPI. TypeScript compiló y pasaron las 5 pruebas dirigidas de rutas y preparación.
+Tarea 23: un proyecto Docker Compose aislado arrancó con los cuatro servicios saludables. Desde el backend se aplicaron cuatro migraciones, se sembró el administrador general y se verificaron ambas sesiones, el registro en Hana, Urin y Central, el aislamiento de sedes, la publicación Swagger y la carga Excel con RabbitMQ real, incluyendo aviso, rechazo y reenvío. Prueba reproducible en pruebas/verificar-usuarios-compose.cjs para una base nueva.
 
 ## Tarea en curso / pendiente a medias
 (ninguna)
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Ejecutar la tarea 23 de `specs/usuarios/tasks.md`: validación de punta a punta con Docker Compose y Swagger.
+Módulo 1: Gestión de Usuarios. Ejecutar la tarea 24 de `specs/usuarios/tasks.md`: contrastar todas las rutas con OpenAPI y completar las pruebas unitarias pendientes.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.
