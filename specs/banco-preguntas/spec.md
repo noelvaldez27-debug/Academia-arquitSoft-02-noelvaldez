@@ -8,11 +8,11 @@ Gestionar el banco por curso y procesar las separatas subidas por docentes. La A
 
 ## Criterios de aceptación
 
-- **CA-BP01 · Banco por curso.** Un usuario autorizado puede cargar y editar preguntas por curso. Los permisos de edición y la estructura académica quedan pendientes de confirmación.
-- **CA-BP02 · Subida.** Un docente autenticado puede subir Word, PDF o imagen para un curso. Un formato no admitido o un archivo que supera el máximo se rechaza antes de guardarlo. El original se guarda mediante AlmacenArchivos y la solicitud se confirma antes de la extracción.
-- **CA-BP03 · Extracción.** El worker consume SeparataSubida desde RabbitMQ. Lee localmente Word y PDF con texto. Los archivos .doc antiguos requieren conversión a .docx según el diseño interno. Para imágenes y PDF escaneados solicita la lectura multimodal a ServicioIA según ADR-011. Una extracción fallida queda en ERROR_EXTRACCION y el docente recibe el aviso por el medio que se confirme.
+- **CA-BP01 · Banco por curso.** El administrador general puede cargar y editar preguntas directamente. Cada curso tiene identificador único y nombre. Cada pregunta tiene cinco alternativas, de A a E, y una sola correcta.
+- **CA-BP02 · Subida.** Un docente o encargado académico autorizado puede subir DOCX, PDF, JPG, JPEG o PNG para un curso. El máximo es configurable y su valor inicial es 20 MB por archivo. El docente convierte los archivos .doc antiguos a .docx antes de la subida. Un formato no admitido o un archivo que supera el máximo se rechaza antes de guardarlo. El original se guarda mediante AlmacenArchivos y la solicitud se confirma antes de la extracción.
+- **CA-BP03 · Extracción.** El worker consume SeparataSubida desde RabbitMQ. Lee localmente Word y PDF con texto. Para imágenes y PDF escaneados solicita la lectura multimodal a ServicioIA según ADR-011. Una extracción fallida queda en ERROR_EXTRACCION y el docente puede consultar su estado y motivo en el módulo.
 - **CA-BP04 · Propuestas.** El worker pide a ServicioIA preguntas con alternativas a partir del texto extraído. Guarda el resultado como propuestas y una entrega repetida no genera duplicados.
-- **CA-BP05 · Revisión.** Un docente autorizado puede revisar, corregir, aprobar o descartar una propuesta. Solo aprobarla incorpora la pregunta al banco. Descartarla conserva el estado RECHAZADA.
+- **CA-BP05 · Revisión.** Un docente o encargado académico autorizado puede revisar las propuestas de sus propias separatas. El administrador general puede revisar todas las separatas. La corrección, aprobación y descarte respetan RF18 y RC12. Solo aprobarla incorpora la pregunta al banco. Descartarla conserva el estado RECHAZADA.
 - **CA-BP06 · Aislamiento.** Banco de Preguntas usa autenticación y autorización de la API pública de Usuarios. Cada módulo consulta sus propias tablas. Los endpoints REST se documentan en OpenAPI. Las claves se entregan mediante el puerto interno de evaluación.
 
 ## Persistencia y estados
@@ -22,9 +22,12 @@ PostgreSQL conserva las preguntas, separatas, propuestas y su estado mediante mi
 - Separata: SUBIDA → EN_EXTRACCION → TEXTO_EXTRAIDO → PREGUNTAS_PROPUESTAS, con ERROR_EXTRACCION para la extracción fallida.
 - Propuesta: PROPUESTA → APROBADA o RECHAZADA.
 
+## Procesamiento externo
+
+Solo puede enviarse a Gemini contenido académico cuya transferencia esté autorizada. La regla cubre el texto extraído, las imágenes y los PDF escaneados. Se excluyen datos personales, credenciales e información confidencial. Las pruebas y CI usan el proveedor simulado.
+
 ## Pendiente de confirmación
 
-- HU03 y la tabla de actores asignan la gestión directa al administrador general. C4 N1 también se la asigna al docente o encargado académico. Confirmar quién carga y edita directamente y si la revisión de separatas se limita al docente que las subió.
-- Confirmar cómo se identifican los cursos, qué reglas rigen las alternativas y qué configuración de simulacros debe publicar el banco antes del Módulo 3.
-- Confirmar extensiones de imagen admitidas, tamaño máximo y cómo se avisa al docente de un fallo. El diseño exige conversión de .doc a .docx y queda por confirmar quién realiza esa conversión.
-- El C4 N1 deja pendiente qué contenido puede salir al proveedor de IA. Confirmar la autorización para enviar texto de separatas y adjuntos de imágenes o PDF escaneados a Gemini. Las pruebas usan el adaptador simulado.
+- **Simulacros (C4 N3, RF06).** Se conserva el contrato por API pública. Falta precisar los campos mínimos, quién crea la configuración y cómo se seleccionan las preguntas. La duración se desprende de RF06, pero el C4 no define el esquema de configuración.
+- **Autorización de transferencias (C4 N1, ADR-010 y ADR-011).** Falta definir quién autoriza cada separata y cómo se acredita que su contenido puede salir del sistema.
+- **Roles (HU03, RF18 y RC12).** La referencia del C4 a gestión docente se aplica a la revisión de propuestas propias. La aprobación que incorpora propuestas al banco requiere validación docente. Debe aclararse si encargado académico es una denominación del rol Docente existente o un permiso distinto, y si el alcance de revisión del administrador general comprende corregir o descartar propuestas.

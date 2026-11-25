@@ -52,10 +52,10 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el commit 9103120 ([ejecución 45526873308](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45526873308)). En local pasaron 314 pruebas en 42 suites, con código de salida 0. Cobertura global local: 92,34 % de sentencias, 85,29 % de ramas, 94,06 % de funciones y 92,87 % de líneas. Jest y CI no tienen mínimos numéricos configurados. El recorrido con Docker está en pruebas/verificar-usuarios-compose.cjs.
 
 ## Tarea en curso / pendiente a medias
-Ninguna en Gestión de Usuarios.
+Módulo 2, tarea 2: se documentaron permisos, reglas académicas, formatos, tamaño y restricciones de transferencia. Pendientes: contrato de simulacros, acreditación de la autorización externa y alcance de los permisos académicos.
 
 ## Siguiente paso exacto
-Módulo 1: Gestión de Usuarios. Completar la tarea 25 de `specs/usuarios/tasks.md`: obtener autorización para publicar los commits locales, verificar que GitHub Actions finalice correctamente para el SHA publicado y registrar el resultado.
+Cerrar la tarea 2 de specs/banco-preguntas/tasks.md con las confirmaciones pendientes de su spec.md y luego iniciar las entidades y puertos de la tarea 3.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

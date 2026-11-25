@@ -273,7 +273,7 @@ Hay un extractor por formato, y todos cumplen el mismo contrato `ExtractorDeText
 
 - La IA solo propone preguntas; ninguna entra al banco sin la aprobación del docente.
 - Se debe validar el formato y el tamaño del archivo antes de guardarlo.
-- Los archivos `.doc` antiguos deben convertirse a `.docx` antes de extraer el texto.
-- Si la extracción falla, la separata pasa a `ERROR_EXTRACCION` y se avisa al docente.
+- Se admiten DOCX, PDF, JPG, JPEG y PNG. El docente convierte los archivos `.doc` antiguos a `.docx` antes de subirlos. El tamaño máximo por archivo es configurable, con un valor inicial de 20 MB (RF15, CA-BP02).
+- Si la extracción falla, la separata pasa a `ERROR_EXTRACCION`. El docente consulta el estado y el motivo en el módulo (CA-BP03).
 - Conviene que el worker sea idempotente, para que un evento repetido no genere preguntas duplicadas.
-- El proveedor de IA, el motor de OCR y el almacenamiento de archivos están por definir y validar.
+- ADR-010 a ADR-012 establecen Gemini mediante ServicioIA para la lectura multimodal y AlmacenArchivos para los originales. Solo se transfiere contenido académico autorizado, excluyendo datos personales, credenciales e información confidencial.
