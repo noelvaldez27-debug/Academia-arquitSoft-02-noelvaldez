@@ -43,6 +43,22 @@ function operacion(summary: string, schema: object, conId: boolean, entrada?: ob
 
 const base = '/api/v1/examenes';
 export const rutasOpenApiRendicion = {
+  [base + '/simulacros/{id}/cierre']: {
+    post: {
+      ...operacion('Solicitar cierre general del simulacro', objeto({
+        administradorId: cadena, solicitadoEn: fecha, cerradoEn: { ...fecha, nullable: true },
+      }), true),
+      responses: {
+        200: { description: 'Cierre general completado' },
+        202: { description: 'Cierre registrado, pendiente de intentos o calificaciones' },
+        401: { description: 'Sesión inválida o cuenta inactiva' },
+        403: { description: 'Se requiere el administrador general' },
+        404: { description: 'Simulacro inexistente' },
+        409: { description: 'Configuración de simulacro no disponible' },
+        503: { description: 'Infraestructura temporalmente no disponible' },
+      },
+    },
+  },
   [base + '/iniciar']: { post: operacion('Iniciar o recuperar un intento vigente', examen, false, objeto({ simulacroId: cadena })) },
   [base + '/{id}']: { get: operacion('Recuperar las respuestas confirmadas y el tiempo restante', examen, true) },
   [base + '/{id}/respuestas']: {

@@ -21,8 +21,8 @@ const redis = crearClienteRedis({
 });
 const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModule.middlewareAutenticacion,
   usuariosModule.servicioConsultaUsuarios);
-rendicion.iniciarTrabajos();
 const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion);
+rendicion.iniciarTrabajos(resultados.consultas.contarCalificados);
 
 const app = crearApp({
   rutasUsuarios: usuariosModule.router,

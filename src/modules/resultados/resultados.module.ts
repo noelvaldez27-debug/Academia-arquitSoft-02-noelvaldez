@@ -9,6 +9,7 @@ import { crearRutasResultados } from './presentacion/resultado.routes';
 export interface ConsultaResultadosInterna {
   porSimulacro(id: string, despues?: string): Promise<Resultado[]>;
   porPostulante(id: string, despues?: string): Promise<Resultado[]>;
+  contarCalificados(ids: string[]): Promise<number>;
 }
 
 export class ResultadosModule {
@@ -22,6 +23,7 @@ export class ResultadosModule {
     this.consultas = {
       porSimulacro: (id, despues) => repo.listar('simulacro_id', id, despues),
       porPostulante: (id, despues) => repo.listar('postulante_id', id, despues),
+      contarCalificados: ids => repo.contarCalificados(ids),
     };
   }
 }

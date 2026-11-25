@@ -3,7 +3,7 @@ import { ExamenRepository } from '../dominio/examen-repository';
 import { IniciarExamenUseCase, consultarPropio } from './iniciar-examen.use-case';
 import { TransaccionExamen } from './transaccion-examen.port';
 
-function preparar(consultarDatos?: () => Promise<DatosInicialesPostulante>) {
+function preparar(consultarDatos?: () => Promise<DatosInicialesPostulante>, coordinarInicio?: () => Promise<boolean>) {
   let instante = new Date(0);
   let guardado: Examen | null = null;
   const inicializar = jest.fn();
@@ -16,12 +16,22 @@ function preparar(consultarDatos?: () => Promise<DatosInicialesPostulante>) {
     buscarVencidos: jest.fn(),
   };
   const simulacro = { id: 's', duracionMinutos: 1, preguntas: [] };
-  const transaccion: TransaccionExamen = operar => operar({ examenes, consultarSimulacro: async () => simulacro });
+  const transaccion: TransaccionExamen = operar => operar({ examenes, consultarSimulacro: async () => simulacro, coordinarInicio });
   return {
     transaccion, inicializar, avanzar: (ms: number) => { instante = new Date(ms); },
     iniciar: new IniciarExamenUseCase(transaccion, () => instante, () => 'e', inicializar, consultarDatos),
   };
 }
+
+it('CA-RR02 reanuda un intento activo y rechaza nuevos intentos durante el cierre', async () => {
+  const coordinar = jest.fn().mockResolvedValueOnce(false).mockResolvedValue(true);
+  const activo = preparar(undefined, coordinar);
+  const primero = await activo.iniciar.ejecutar('u', 's');
+  await expect(activo.iniciar.ejecutar('u', 's')).resolves.toEqual(primero);
+  const nuevo = preparar(undefined, coordinar);
+  await expect(nuevo.iniciar.ejecutar('otro', 's')).rejects.toMatchObject({ codigo: 'conflicto' });
+  expect(nuevo.inicializar).not.toHaveBeenCalled();
+});
 
 it('CA-RR01 conserva carrera, sede y condición al reanudar un intento', async () => {
   const consultar = jest.fn()

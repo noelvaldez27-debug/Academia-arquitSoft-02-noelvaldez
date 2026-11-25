@@ -49,6 +49,8 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Módulo 5, subtarea 4b completada en código y Jest. Rendición registra el cierre general, coordina nuevos intentos mediante bloqueos transaccionales de PostgreSQL, conserva las reanudaciones y confirma el cierre tras verificar las calificaciones por contrato público. Pasaron 406 pruebas en 70 suites, con 89,06 % de líneas y 83,98 % de ramas globales. Falta verificar la concurrencia en PostgreSQL real.
+
 Módulo 5, subtarea 4a completada. Usuarios exige condición en altas individuales y masivas y permite cambiarla por rol y sede. Rendición conserva la instantánea al iniciar el intento. TypeScript compiló y Jest aprobó 404 pruebas en 69 suites, con 90,12 % de líneas y 84,65 % de ramas globales.
 
 Módulo 5, tarea 3 completada. Se implementaron puestos de competición, orden estable y filtros de carrera y sede. Jest aprobó 400 pruebas en 68 suites, con 100 % de líneas y ramas en el dominio incorporado (9/9 y 11/11), y 90,51 % de líneas y 84,74 % de ramas en el proyecto.
@@ -75,7 +77,7 @@ Tarea 25: GitHub Actions completó la compilación y Jest con cobertura para el 
 Tarea 4 en curso. Las migraciones 009 y 010 incorporan campos anulables sin reconstruir datos previos. El ranking general admite dimensiones históricas ausentes. Compose validó su configuración, pero Docker Desktop no expuso el motor Linux para ejecutar las migraciones y probar la persistencia. Integración real pendiente.
 
 ## Siguiente paso exacto
-Implementar la subtarea 4b de `specs/ranking-reportes/tasks.md` en Rendición: persistir la solicitud autorizada de cierre y coordinarla con el inicio concurrente, consultando a Resultados por su contrato público para confirmar las calificaciones pendientes.
+Implementar la subtarea 4c de `specs/ranking-reportes/tasks.md`: gestionar asignaciones docentes en Banco utilizando el catálogo existente y la consulta pública de Usuarios. Luego implementar el repositorio de ranking en 4d.
 
 ## Notas para el siguiente editor
 - Tarea 18 completada: `src/modules/usuarios/index.ts` encapsula las capas internas y expone únicamente puertos y contratos públicos: autorización de rutas (`MiddlewareAutenticacion`), tipos de dominio autorizables (`RolUsuario`, `AlcanceAdministrador`), contrato de consulta (`ServicioConsultaUsuarios`, `UsuarioPublicoDTO`, `ConsultarUsuarioUseCase`) y raíz de composición (`UsuariosModule`, `ConfigModuloUsuarios`). Ningún otro módulo puede importar repositorios ni tablas del módulo de usuarios.

@@ -8,6 +8,13 @@ const columnas = `examen_id AS "examenId", postulante_id AS "postulanteId", simu
 export class PostgresResultadoRepository implements ResultadoRepository {
   constructor(private readonly bd: Pick<Pool, 'query'>) {}
 
+  async contarCalificados(ids: string[]): Promise<number> {
+    const { rows } = await this.bd.query<{ total: number }>(
+      'SELECT count(*)::int AS total FROM resultados_examen WHERE examen_id = ANY($1::text[])', [ids],
+    );
+    return rows[0].total;
+  }
+
   async existePorExamen(id: string): Promise<boolean> {
     const { rows } = await this.bd.query('SELECT 1 FROM resultados_examen WHERE examen_id = $1', [id]);
     return rows.length > 0;

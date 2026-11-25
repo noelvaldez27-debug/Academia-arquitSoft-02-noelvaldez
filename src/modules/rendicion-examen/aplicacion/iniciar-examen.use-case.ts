@@ -14,9 +14,11 @@ export class IniciarExamenUseCase {
   ) {}
 
   ejecutar(postulanteId: string, simulacroId: string) {
-    return this.transaccion(async ({ examenes, consultarSimulacro }) => {
+    return this.transaccion(async ({ examenes, consultarSimulacro, coordinarInicio }) => {
+      const enCierre = await coordinarInicio?.(simulacroId);
       const existente = await examenes.buscarIntento(postulanteId, simulacroId);
       existente?.verificarVigencia(this.reloj());
+      if (!existente && enCierre) throw new ErrorRendicion('conflicto', 'El simulacro no admite nuevos intentos.');
       const simulacro = await consultarSimulacro(simulacroId);
       if (existente) return { examen: existente, simulacro };
 

@@ -17,6 +17,9 @@ import { RedisRespuestasAdapter } from './infraestructura/redis-respuestas.adapt
 import { crearTransaccionExamen } from './infraestructura/transaccion-examen';
 import { ExamenController } from './presentacion/examen.controller';
 import { crearRutasExamen } from './presentacion/examen.routes';
+import { crearRutasCierreSimulacro } from './presentacion/cierre-simulacro.routes';
+import { PostgresCierreSimulacro } from './infraestructura/postgres-cierre-simulacro';
+import { CompletarCierreSimulacro } from './aplicacion/cerrar-simulacro.use-case';
 
 export class RendicionModule {
   readonly rutas;
@@ -24,11 +27,13 @@ export class RendicionModule {
   readonly consultasReportes;
   private readonly expirar: ExpirarExamenes;
   private readonly despachar: DespacharExamenes;
+  private readonly cierres: PostgresCierreSimulacro;
 
   constructor(pool: Pool, redis: Redis, banco: Pick<BancoPreguntasModule, 'consultasVersionadas'>,
     auth: MiddlewareAutenticacion, usuarios?: ServicioConsultaUsuarios) {
     const reloj = () => new Date();
     const examenes = new PostgresExamenRepository(pool);
+    this.cierres = new PostgresCierreSimulacro(pool);
     const temporales = new RedisRespuestasAdapter(redis);
     const transaccion = crearTransaccionExamen(pool, bd => {
       const consultas = banco.consultasVersionadas(bd);
@@ -53,18 +58,28 @@ export class RendicionModule {
       new RegistrarRespuestaUseCase(transaccion, temporales, reloj),
       finalizar,
     );
-    this.rutas = crearRutasExamen(controlador, auth.autenticar, auth.requerirRol(RolUsuario.Postulante));
+    this.rutas = crearRutasCierreSimulacro(auth, transaccion);
+    this.rutas.use(crearRutasExamen(controlador, auth.autenticar, auth.requerirRol(RolUsuario.Postulante)));
     this.examenesFinalizados = { consultar: (id: string) => examenes.consultarFinalizado(id) };
     this.consultasReportes = {
       porSimulacro: (id: string, despues?: string) => examenes.listarParaReportes(id, despues),
+      consultarCierre: (id: string) => this.cierres.consultar(id),
     };
     this.expirar = new ExpirarExamenes(examenes, finalizar, reloj, informarError);
     this.despachar = new DespacharExamenes(pool, new RabbitmqExamenAdapter(crearConexionRabbitMQ), temporales);
   }
 
-  iniciarTrabajos(): void {
+  iniciarTrabajos(contarCalificados: (ids: string[]) => Promise<number>): void {
     programar(() => this.expirar.ejecutar(100));
     programar(() => this.despachar.ejecutar(100));
+    const completar = new CompletarCierreSimulacro(
+      this.consultasReportes.porSimulacro, contarCalificados, id => this.cierres.completar(id),
+    );
+    programar(async () => {
+      for (const id of await this.cierres.pendientes()) {
+        await completar.ejecutar(id).catch(informarError);
+      }
+    });
   }
 }
 
