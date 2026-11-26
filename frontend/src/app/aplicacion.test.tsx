@@ -247,3 +247,28 @@ it('corrige una propuesta aprobada y deja el descarte sujeto a confirmación', a
     expect(await screen.findByText('Descartada', { exact: true })).toBeVisible();
   } finally { confirmar.mockRestore(); }
 });
+it('limita la gestión a su sede y conserva el historial ante un archivado rechazado', async () => {
+  const api = apiAdministrativa('2', ruta => {
+    if (ruta.endsWith('/sedes')) return [{ id: '2', nombre: 'Sede propia' }, { id: '3', nombre: 'Sede ajena' }];
+    if (ruta.endsWith('/ciclos')) return [];
+    if (ruta.includes('/api/usuarios?')) return { usuarios: [{ id: 'p1', nombre: 'Estudiante sintético', dni: null,
+      correo: 'estudiante@example.test', rol: 'POSTULANTE', activo: true, sedeId: '2', carrera: 'Ingeniería' }],
+    total: 1, pagina: 1, limite: 20 };
+  });
+  const confirmar = jest.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+  try {
+    montar('/acceso');
+    const usuario = await ingresar();
+    await usuario.click(within(await screen.findByRole('navigation')).getByRole('link', { name: /^Estudiantes$/ }));
+    const fila = await screen.findByRole('row', { name: /Estudiante sintético/ });
+    expect(fila).toHaveTextContent('Sede propia');
+    expect(screen.queryByText('Sede ajena')).not.toBeInTheDocument();
+    const archivar = within(fila).getByRole('button', { name: /^Archivar$/ });
+    await usuario.click(archivar);
+    expect(api.mock.calls.filter(([ruta]) => ruta.endsWith('/archivar'))).toHaveLength(0);
+    await usuario.click(archivar);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/no tiene acceso/);
+    expect(fila).toHaveTextContent('Activo');
+    expect(api.mock.calls.filter(([ruta]) => ruta.endsWith('/archivar'))).toHaveLength(1);
+  } finally { confirmar.mockRestore(); }
+});
