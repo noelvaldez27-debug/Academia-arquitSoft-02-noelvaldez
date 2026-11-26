@@ -203,3 +203,10 @@ Fase 6 publicada en b6717b0 por avance directo. Backend y frontend aprobaron [Gi
 Publicada la consolidación web hasta e0b4416 por avance directo. Ambos trabajos aprobaron en [GitHub Actions](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45910133664). Revalidación 8i acotada: humo de 3 VU conforme. A 50 VU REST habitual p95 3451,14 ms excedió 2000 ms. Registro, nota, ranking y errores cumplieron. Las 50 notas esperadas y el drenado de colas se verificaron. No se identificó una corrección de producción aislada. El Sprint 2 sigue abierto.
 
 Siguiente paso exacto tras autorización: aislar la demora de inicio de simulacro bajo solapamiento con autenticación en 8i, conservando los umbrales y el criterio de parada. Mantener AC06 y F6.2c pendientes hasta recibir resultados reales. No escalar mientras REST habitual siga fuera del límite.
+
+### Traspaso de las evaluaciones del Sprint 2
+
+El responsable del proyecto aprobó el desarrollo funcional del backend y del frontend de los seis módulos. Las evaluaciones de rendimiento, escalabilidad y usabilidad serán realizadas manualmente por el responsable. La actividad 8 y la tarea 8i siguen abiertas. AC06 y F6.2c esperan resultados reales de los voluntarios. Se conservan los incumplimientos históricos y los criterios de aceptación vigentes. El Sprint 2 queda abierto y el Sprint 3 pendiente.
+
+Siguiente paso: el responsable ejecutará las evaluaciones autorizadas y aportará las evidencias para revisar AC01–AC08 y decidir el cierre del Sprint 2. Los guiones están en pruebas/carga/ y el protocolo de usabilidad en specs/frontend/usabilidad-ac06.md.
+Los commits 117234a y 54801af se publicaron por avance directo. Backend y frontend aprobaron [GitHub Actions](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45911430031). Se verificó que main y origin/main coincidían en 54801af antes del registro local de este traspaso.
