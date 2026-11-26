@@ -41,7 +41,7 @@ function TablaEstadisticas({ filas, titulo }: { filas: Fila[]; titulo: string })
   if (!filas.length) return <Estado>No hay preguntas evaluadas para estos filtros.</Estado>;
   const limite = 20;
   return <div className="grid gap-3">
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={'Tabla desplazable ' + titulo.toLowerCase()}>
       <table className="w-full text-left text-sm">
         <caption className="mb-2 text-left font-semibold">{titulo}</caption>
         <thead><tr>

@@ -35,7 +35,7 @@ function Evolucion({ examenes }: { examenes: Examen[] }) {
       <polyline fill="none" stroke="#0f766e" strokeWidth="2" points={puntos.map(({ x, y }) => x + ',' + y).join(' ')} />
       {puntos.map(({ x, y }, i) => <circle key={i} cx={x} cy={y} r="3.5" fill="#0f766e" />)}
     </svg>
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Tabla desplazable de simulacros">
       <table className="w-full text-left text-sm">
         <caption className="mb-2 text-left font-semibold">Comparación de simulacros y distribución de respuestas</caption>
         <thead><tr>
@@ -62,7 +62,7 @@ function Rendimiento({ cursos }: { cursos: CursoEvaluado[] }) {
     <h2 id="titulo-rendimiento" className="text-xl font-bold">Rendimiento por curso</h2>
     {evaluados.length === 0 ? <Estado>No hay cursos evaluados en tu historial.</Estado> : <>
       <p className="text-sm">Se muestran los cursos con preguntas evaluadas.</p>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Tabla desplazable de rendimiento">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">Porcentajes y conteos por curso</caption>
           <thead><tr>

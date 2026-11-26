@@ -100,7 +100,7 @@ function DetalleNota({ id }: { id: string }) {
       <dl className="grid grid-cols-3 gap-2">
         {columnas.map(([clave, titulo]) => <div key={clave}><dt className="text-sm">{titulo}</dt><dd className="text-xl font-semibold">{nota[clave]}</dd></div>)}
       </dl>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Tabla desplazable de resultados por curso">
         <table className="w-full text-left text-sm">
           <caption className="mb-2 text-left font-semibold">Resultados por curso</caption>
           <thead><tr><th scope="col" className="pr-2">Curso</th>{columnas.map(([clave, titulo]) => <th scope="col" className="p-2" key={clave}>{titulo}</th>)}</tr></thead>

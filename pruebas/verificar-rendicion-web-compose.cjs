@@ -48,12 +48,25 @@ async function ejecutar() {
     crearPostulante(admin, sede.id, ciclo.id), crearPostulante(admin, sede.id),
   ]);
   const verificarAnalitica = process.env.EVALUA_VERIFICAR_ANALITICA === 'si';
+  const integral = verificarAnalitica && process.env.EVALUA_VERIFICAR_RANKING === 'si' && process.env.EVALUA_VERIFICAR_NOTA === 'si';
   const analitica = '/api/v1/analitica';
   if (verificarAnalitica) {
     assert.deepEqual(await json(analitica + '/mi-historial', 'GET', 200, propio.token), { historial: [], porCurso: [] });
     assert.equal((await json(analitica + '/mi-recomendacion', 'POST', 200, propio.token)).estado, 'evidencia_insuficiente');
   }
   const curso = await json(banco + '/cursos', 'POST', 201, admin, { nombre: 'Rendición sintética ' + randomUUID() });
+  const cuentas = [];
+  if (integral) {
+    const dni = String(randomInt(10_000_000, 100_000_000));
+    const docente = await json(usuarios + '/docentes', 'POST', 201, admin, { nombre: 'Docente sintético integral', dni });
+    await solicitar(banco + '/cursos/' + curso.id + '/docentes/' + docente.id, 'PUT', 200, admin);
+    cuentas.push({ correo: docente.correo, password: dni, rol: 'docente', enlace: 'Desempeño del grupo' });
+    const correo = randomUUID() + '@prueba.invalid';
+    const password = randomUUID();
+    await solicitar(usuarios + '/administradores-sede', 'POST', 201, admin,
+      { nombre: 'Sede sintética integral', correo, passwordInicial: password, sedeId: String(sede.id) });
+    cuentas.push({ correo, password, rol: 'sede', enlace: 'Reportes' });
+  }
   const preguntas = [];
   for (let i = 0; i < (verificarAnalitica ? 5 : 1); i++) {
     const pregunta = await json(banco + '/cursos/' + curso.id + '/preguntas', 'POST', 201, admin, {
@@ -73,6 +86,28 @@ async function ejecutar() {
 
   const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || undefined });
   try {
+    for (const cuenta of cuentas) {
+      const visita = await browser.newPage({ viewport: { width: 390, height: 844 } });
+      await visita.goto(new URL('/acceso', base).href);
+      await visita.getByLabel('Correo institucional').fill(cuenta.correo);
+      await visita.getByLabel('Contraseña').fill(cuenta.password);
+      await visita.getByRole('button', { name: 'Ingresar' }).click();
+      await visita.waitForURL('**/panel/' + cuenta.rol);
+      const nav = visita.getByRole('navigation');
+      await nav.getByRole('link', { name: cuenta.enlace }).click();
+      await visita.getByRole('heading', { name: cuenta.enlace, exact: true }).waitFor();
+      await visita.goto(new URL('/panel/general/usuarios', base).href);
+      // Una carga directa termina la sesión en memoria. El control de rol se prueba por API.
+      await visita.getByRole('heading', { name: 'Iniciar sesión' }).waitFor();
+      const sesion = await login(cuenta.correo, cuenta.password);
+      if (cuenta.rol === 'docente') {
+        await solicitar('/api/v1/rankings/' + sim.id, 'GET', 403, sesion.token);
+        await solicitar(analitica + '/estadisticas?cursoId=' + curso.id, 'GET', 200, sesion.token);
+      } else {
+        await solicitar(analitica + '/estadisticas?sedeId=fuera-del-ambito', 'GET', 403, sesion.token);
+      }
+      await visita.close();
+    }
     const contexto = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     let pagina = await contexto.newPage();
     await pagina.goto(new URL('/acceso', base).href);
@@ -186,7 +221,12 @@ async function ejecutar() {
     }
     if (process.env.EVALUA_VERIFICAR_NOTA === 'si') {
       const resultado = '/api/v1/resultados/' + referencia.intentoId;
-      await pagina.getByRole('link', { name: 'Ir a Mi nota' }).click();
+      if (integral) {
+        await pagina.getByRole('navigation').getByRole('link', { name: 'Mi nota' }).click();
+        await pagina.locator('#nota-simulacro').selectOption(referencia.intentoId);
+      } else {
+        await pagina.getByRole('link', { name: 'Ir a Mi nota' }).click();
+      }
       await pagina.getByRole('heading', { name: 'Calificación definitiva' }).waitFor();
       const tiempoVisible = Math.round(performance.now() - inicioCierre);
       await pagina.getByText(/^0\.00\s+\/ 1000 puntos$/).waitFor();
@@ -195,10 +235,10 @@ async function ejecutar() {
       const nota = await json(resultado, 'GET', 200, propio.token);
       assert.equal(nota.puntaje, 0);
       assert.equal(nota.simulacroId, sim.id);
-      assert.deepEqual([nota.correctas, nota.incorrectas, nota.omitidas], [0, 1, 0]);
+      assert.deepEqual([nota.correctas, nota.incorrectas, nota.omitidas], [0, 1, verificarAnalitica ? 4 : 0]);
       assert.equal(nota.porCurso.length, 1);
       const desglose = pagina.getByRole('table', { name: 'Resultados por curso' });
-      assert.deepEqual(await desglose.getByRole('cell').allTextContents(), ['0', '1', '0']);
+      assert.deepEqual(await desglose.getByRole('cell').allTextContents(), ['0', '1', verificarAnalitica ? '4' : '0']);
       await solicitar(resultado, 'GET', 404, externo.token);
       await solicitar(resultado, 'GET', 403, admin);
       await pagina.screenshot({ path: 'frontend/evidencias-locales/mi-nota-compose.png', fullPage: true });
@@ -251,8 +291,20 @@ async function ejecutar() {
         const siguiente = gestor.getByRole('button', { name: 'Siguiente' }).first();
         await siguiente.click();
       }
+      const cargaRanking = gestor.waitForResponse(res => new URL(res.url()).pathname === ranking);
+      const inicioRanking = performance.now();
       await selector.selectOption(sim.id);
       await gestor.getByRole('table', { name: 'Posiciones' }).waitFor();
+      const visibleRanking = Math.round(performance.now() - inicioRanking);
+      const rankingBytes = (await (await cargaRanking).body()).length;
+      if (integral) {
+        const navegacion = await gestor.evaluate(() => {
+          const entrada = performance.getEntriesByType('navigation')[0];
+          const recursos = performance.getEntriesByType('resource').filter(r => new URL(r.name).pathname.startsWith('/assets/'));
+          return { domMs: Math.round(entrada.domContentLoadedEventEnd), recursosTransferidos: recursos.reduce((n, r) => n + r.transferSize, 0) };
+        });
+        console.log(JSON.stringify({ ...navegacion, visibleRanking, rankingBytes }));
+      }
       await gestor.getByRole('button', { name: 'Participación', exact: true }).click();
       const informe = gestor.getByRole('region', { name: 'Informe del simulacro' });
       await informe.getByText('Inscritos en el padrón').waitFor();
@@ -271,6 +323,17 @@ async function ejecutar() {
       const libro = new Excel.Workbook();
       await libro.xlsx.readFile(await archivo.path());
       assert.ok(libro.worksheets[0].rowCount >= 2);
+      if (integral) {
+        await gestor.getByRole('navigation').getByRole('link', { name: 'Ciclos académicos' }).click();
+        const fila = gestor.getByRole('listitem').filter({ hasText: ciclo.nombre });
+        gestor.once('dialog', dialogo => dialogo.accept());
+        await fila.getByRole('button', { name: 'Cerrar ciclo' }).click();
+        await fila.getByText(/· Cerrado/).waitFor();
+        const posterior = await json(ranking, 'GET', 200, admin);
+        assert.equal(posterior.definitiva, true);
+        assert.equal(posterior.filas[0]?.puntaje, 0);
+        console.log('Ciclo cerrado desde nginx y ranking histórico conservado.');
+      }
       await gestor.close();
       console.log('Ranking web verificado con publicación provisional y definitiva, privacidad, padrón real y Excel legible.');
     }

@@ -28,6 +28,9 @@ test('compara resultados por tabla y solicita el refuerzo explícitamente', asyn
   await expect(tabla.getByRole('rowheader', { name: 'SIM-01' })).toBeVisible();
   await expect(tabla.getByRole('rowheader', { name: 'SIM-02' })).toBeVisible();
   await expect(tabla.getByText('400.00', { exact: true })).toBeVisible();
+  const region = page.getByRole('region', { name: 'Tabla desplazable de simulacros' });
+  await region.focus();
+  await expect(region).toBeFocused();
   await expect(page.getByRole('table', { name: 'Porcentajes y conteos por curso' })).toContainText('20.00 %');
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   const enlace = nav.getByRole('link', { name: 'Recomendación' });

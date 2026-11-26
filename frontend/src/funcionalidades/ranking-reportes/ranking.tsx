@@ -75,7 +75,7 @@ export function TablaPuestos({ filas, titulo, detalle = false }: {
   const actual = Math.min(pagina, Math.ceil(filas.length / limite));
   const columnas = ['Puesto', 'Referencia del postulante', 'Puntaje', ...(detalle ? ['Correctas', 'Incorrectas', 'Omitidas'] : [])];
   return <div className="grid gap-3">
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={'Tabla desplazable de ' + titulo.toLowerCase()}>
       <table className="w-full text-left text-sm">
         <caption className="mb-2 text-left font-semibold">{titulo}</caption>
         <thead><tr>{columnas.map(columna => <th scope="col" key={columna} className="p-2">{columna}</th>)}</tr></thead>
