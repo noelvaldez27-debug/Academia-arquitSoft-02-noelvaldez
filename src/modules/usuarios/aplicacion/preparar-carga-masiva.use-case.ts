@@ -1,6 +1,6 @@
 import { CargaMasiva, ErrorAccesoDenegado, ErrorValidacion, FilaCargaMasiva, RolUsuario, Sede, SedeRepository } from '../dominio';
 import { PersistenciaCargaMasiva } from './carga-masiva.port';
-import { leerYValidarExcel } from './leer-excel';
+import type { LectorExcel } from './lector-excel.port';
 
 const FILAS_POR_LOTE = 50;
 
@@ -10,6 +10,7 @@ export class PrepararCargaMasivaUseCase {
     private readonly sedes: SedeRepository,
     private readonly generarId: () => string,
     private readonly limites: { maxMb?: number; maxFilas?: number },
+    private readonly leerExcel: LectorExcel,
   ) {}
 
   async ejecutar(archivo: Buffer, administrador: { id: string; activo: boolean; rol: RolUsuario; sedeId: string | null },
@@ -26,7 +27,7 @@ export class PrepararCargaMasivaUseCase {
     if (sedeId && !sedeAdmin) {
       throw new ErrorAccesoDenegado('La sede del administrador no está disponible.');
     }
-    const lectura = await leerYValidarExcel(archivo, {
+    const lectura = await this.leerExcel(archivo, {
       ...this.limites, exigirColumnaSede: true, sedeAdminNombre: sedeAdmin?.nombre,
     });
     const carga = new CargaMasiva({

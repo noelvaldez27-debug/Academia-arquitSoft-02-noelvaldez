@@ -52,3 +52,9 @@ POST /api/usuarios/ciclos/{id}/cierre exige que todo simulacro habilitado del ci
 GET /api/v1/rankings/{simulacroId}/reportes/participacion incorpora inscritos, noParticipantes y porcentajeParticipacion, tanto en JSON como en Excel. Los filtros de sede, carrera y condición usan valores congelados cuando existen. Las fechas de intento delimitan los participantes observados; el denominador corresponde a la cohorte habilitada del ámbito. Padrón vacío conserva el cero y devuelve porcentaje null. Padrón histórico desconocido conserva inscritos, noParticipantes y porcentaje en null. El reporte usa la proyección existente para intentos y notas, que se actualiza asíncronamente.
 
 TypeScript y Jest aprobaron 439 pruebas en 89 suites. Compose verificó doble habilitación concurrente, padrón inalterado tras una matrícula posterior y archivado, cierre bloqueado hasta finalizar el simulacro y cierre idempotente del ciclo. Se usó el recorrido de credenciales con VERIFICAR_ARCHIVO=si y VERIFICAR_PADRON=si.
+
+### Conformidad y contratos
+
+La comprobación transversal identificó la dependencia directa de Aplicación hacia ExcelJS. Se movió la lectura de XLSX al adaptador de infraestructura, conservando la validación y conectando el puerto LectorExcel por inyección. El recorrido de arquitectura verifica capas, consumo de APIs públicas y ciclos entre módulos. Los contratos compartidos ServicioIA y AlmacenArchivos permanecen como puertos de Aplicación.
+
+La prueba transversal contrasta métodos y rutas Express con Swagger servido para los seis módulos y verifica los 401 sin sesión. Los recorridos Compose y las pruebas de las familias complementan la matriz con cuerpos, permisos, estados de conflicto y respuestas de negocio relevantes. Tarea 6 aprobada con 441 pruebas en 91 suites.

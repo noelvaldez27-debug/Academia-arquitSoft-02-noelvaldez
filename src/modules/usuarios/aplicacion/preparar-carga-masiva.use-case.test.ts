@@ -20,7 +20,7 @@ function preparar() {
   const sedes = {
     buscarPorId: async () => ({ id: '1', nombre: 'Hana' }),
   } as unknown as SedeRepository;
-  const caso = new PrepararCargaMasivaUseCase({ transaccion: operacion => operacion(contexto) }, sedes, () => 'id', {});
+  const caso = new PrepararCargaMasivaUseCase({ transaccion: operacion => operacion(contexto) }, sedes, () => 'id', {}, leerYValidarExcel);
   const admin = { id: '2', rol: RolUsuario.Administrador, activo: true, sedeId: '1' };
   return { caso, admin, guardar, guardarFilas, guardarEnvios };
 }
@@ -44,3 +44,4 @@ describe('PrepararCargaMasivaUseCase (CA-U13)', () => {
     expect(guardar).not.toHaveBeenCalled();
   });
 });
+import { leerYValidarExcel } from '../infraestructura/leer-excel';

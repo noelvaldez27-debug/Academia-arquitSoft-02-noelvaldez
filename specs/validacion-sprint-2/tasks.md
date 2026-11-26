@@ -7,6 +7,6 @@
   - [x] 4a. Validar versión de sesión, credenciales provisionales, entrega y archivado coordinado.
   - [ ] 4b. Recuperar por DNI y por Excel explícito, con vinculación al ciclo y conservación histórica.
 - [x] 5. Implementar y validar ciclo mínimo, padrón, HU11 y compatibilidad histórica (CA-VS02–04).
-- [ ] 6. Verificar arquitectura y contratos, corregir divergencias demostradas y consolidar evidencias API (CA-VS05).
+- [x] 6. Verificar arquitectura y contratos, corregir divergencias demostradas y consolidar evidencias API (CA-VS05).
 - [ ] 7. Ejecutar pruebas controladas de PostgreSQL, Redis y recuperación y actualizar AC01–AC08 (CA-VS05).
 - [ ] 8. Solicitar autorización separada para la campaña masiva y registrar las conclusiones tras su ejecución autorizada.

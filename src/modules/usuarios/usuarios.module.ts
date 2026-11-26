@@ -39,6 +39,7 @@ import { crearRutasArchivado } from './presentacion/archivado.routes';
 import { enTransaccionUsuarios, PostgresRegistroCiclo } from './infraestructura/postgres-registro-ciclo';
 import { PostgresCiclosAcademicos } from './infraestructura/postgres-ciclos-academicos';
 import { crearRutasCiclos } from './presentacion/ciclos.routes';
+import { leerYValidarExcel } from './infraestructura/leer-excel';
 
 export interface ConfigModuloUsuarios {
   pool: Pool;
@@ -88,7 +89,7 @@ export class UsuariosModule {
     this.prepararCargaMasiva = new PrepararCargaMasivaUseCase(persistenciaCarga, sedeRepo, randomUUID, {
       maxMb,
       maxFilas: Number(process.env.CARGA_MASIVA_MAX_FILAS) || 10000,
-    });
+    }, leerYValidarExcel);
     this.consumidorCargaMasiva = new RabbitmqCargaMasivaWorker(
       config.pool, new ProcesarCargaMasivaUseCase(persistenciaCarga),
     );

@@ -1,24 +1,11 @@
 import ExcelJS from 'exceljs';
 import { ErrorValidacion } from '../dominio/errores';
-import { esCondicionPostulante, type CondicionPostulante } from '../dominio/usuario';
+import { esCondicionPostulante } from '../dominio/usuario';
+import type { FilaExcelValidada, LectorExcel } from '../aplicacion/lector-excel.port';
 
 /** Límite de tamaño descomprimido en bytes para proteger contra zip bombs */
 const MAX_BYTES_DESCOMPRIMIDO_DEFAULT = 10 * 1024 * 1024; // 10 MB
 const MAX_FILAS_DEFAULT = 10_000;
-
-export interface FilaExcelValidada {
-  numeroFila: number;
-  nombre: string;
-  dni: string;
-  sede: string;
-  carrera: string;
-  condicion?: CondicionPostulante;
-}
-
-export interface ResultadoLecturaExcel {
-  filasValidas: FilaExcelValidada[];
-  filaRechazadas: Array<{ fila: number; motivo: string }>;
-}
 
 /**
  * Verifica que el buffer comience con la firma "PK" (ZIP/XLSX).
@@ -44,16 +31,7 @@ function verificarFirmaXlsx(buffer: Buffer | ArrayBuffer): void {
  * - Valida cada fila individualmente.
  * - Detecta DNI repetidos dentro del mismo archivo.
  */
-export async function leerYValidarExcel(
-  buffer: Buffer | ArrayBuffer,
-  opciones?: {
-    exigirColumnaSede?: boolean;
-    exigirCondicion?: boolean;
-    maxMb?: number;
-    maxFilas?: number;
-    sedeAdminNombre?: string | null; // si se indica, fuerza esa sede para las filas
-  }
-): Promise<ResultadoLecturaExcel> {
+export const leerYValidarExcel: LectorExcel = async (buffer, opciones) => {
   // Normalizar a Buffer para tener .length y acceso a bytes
   const buf: Buffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
   const maxBytes = (opciones?.maxMb ?? MAX_BYTES_DESCOMPRIMIDO_DEFAULT / (1024 * 1024)) * 1024 * 1024;
@@ -201,4 +179,4 @@ export async function leerYValidarExcel(
   }
 
   return { filasValidas, filaRechazadas };
-}
+};
