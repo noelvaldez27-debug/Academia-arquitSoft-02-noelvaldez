@@ -1,0 +1,8 @@
+services:
+  backend:
+    ports: !reset []
+  rabbitmq:
+    ports: !reset []
+networks:
+  default:
+    internal: true

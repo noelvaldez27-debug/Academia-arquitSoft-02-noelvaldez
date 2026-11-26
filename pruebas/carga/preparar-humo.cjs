@@ -3,7 +3,10 @@ const { randomInt, randomUUID } = require('node:crypto');
 const ExcelJS = require('/app/node_modules/exceljs');
 const base = 'http://127.0.0.1:3000';
 const cantidad = Number(process.env.VUS);
-assert.ok(Number.isInteger(cantidad) && cantidad >= 1 && cantidad <= 10);
+const escalones = [50, 100, 250, 500, 1000, 1500, 2000];
+assert.ok(Number.isInteger(cantidad) && (process.env.MODO_CAMPANA === 'si'
+  ? escalones.includes(cantidad)
+  : cantidad >= 1 && cantidad <= 10));
 async function api(ruta, esperado, datos, token, metodo = 'POST') {
   const headers = { 'content-type': 'application/json' };
   if (token) headers.authorization = 'Bearer ' + token;
@@ -19,7 +22,7 @@ async function preparar() {
     correo: process.env.ADMIN_GENERAL_CORREO, password: process.env.ADMIN_GENERAL_PASSWORD,
   });
   const ciclo = await api(usuarios + '/ciclos', 201, {
-    nombre: 'Humo k6 sintético', iniciaEl: '2026-01-01', terminaEl: '2027-12-31',
+    nombre: 'Ciclo k6 sintético', iniciaEl: '2026-01-01', terminaEl: '2027-12-31',
   }, token);
   const sedes = await api(usuarios + '/sedes', 200, undefined, token, 'GET');
   const cuentas = [];
