@@ -24,7 +24,8 @@ export class RankingReportesModule {
     this.repositorio = new PostgresRankingRepository(pool);
     this.rutas = crearRutasRanking(new ConsultarRankingUseCase(id => this.repositorio.consultar(id)), auth);
     this.rutas.use(crearRutasReportes(
-      new ConsultarReporteUseCase(id => this.repositorio.consultar(id), cursosAsignados), exportarReporteExcel, tipoExcel,
+      new ConsultarReporteUseCase(id => this.repositorio.consultar(id), cursosAsignados, rendicion.padron),
+      exportarReporteExcel, tipoExcel,
     ));
     this.actualizar = new ActualizarRankingUseCase({
       cerrado: async id => Boolean((await rendicion.consultarCierre(id))?.cerradoEn),

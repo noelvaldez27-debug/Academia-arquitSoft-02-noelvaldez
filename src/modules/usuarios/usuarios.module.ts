@@ -45,6 +45,7 @@ export interface ConfigModuloUsuarios {
   jwtSecret?: string;
   jwtDuracion?: string;
   consultarIntentosActivos?: ConsultarActivos;
+  consultarSimulacrosPorCerrar?: (bd: Pick<Pool, 'query'>, cicloId: string) => Promise<boolean>;
 }
 
 /**
@@ -150,7 +151,12 @@ export class UsuariosModule {
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);
     const ciclos = new PostgresCiclosAcademicos(config.pool);
     this.router.use(crearRutasCiclos(this.middlewareAutenticacion, () => ciclos.listar(),
-      datos => ciclos.crear(randomUUID(), datos.nombre, datos.iniciaEl, datos.terminaEl)));
+      datos => ciclos.crear(randomUUID(), datos.nombre, datos.iniciaEl, datos.terminaEl),
+      (id, actorId) => enTransaccionUsuarios(config.pool, async bd => {
+        if (!config.consultarIntentosActivos || !config.consultarSimulacrosPorCerrar) throw new Error('Cierre no disponible.');
+        return new PostgresCiclosAcademicos(bd).cerrar(id, actorId,
+          config.consultarSimulacrosPorCerrar, config.consultarIntentosActivos);
+      })));
     const entregas = new PostgresEntregaCredenciales(config.pool, provisionales);
     this.router.use(crearRutasEntregaCredenciales(this.middlewareAutenticacion, entregas.descargar.bind(entregas)));
     this.router.use(crearRutasArchivado(this.middlewareAutenticacion, archivado?.ejecutar.bind(archivado)));

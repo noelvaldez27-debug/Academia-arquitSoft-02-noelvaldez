@@ -36,7 +36,10 @@ export const rutasOpenApiRanking = {
     {
       ...jsonRanking({ simulacroId: texto, estado: { ...texto, enum: ['PROVISIONAL', 'DEFINITIVO'] },
         resumen: { type: 'object', properties: {
-          inscritos: { ...entero, nullable: true, description: 'Sin registro verificable de inscripción.' },
+          inscritos: { ...entero, nullable: true, description: 'Población habilitada en el padrón histórico o null cuando no existe.' },
+          noParticipantes: { ...entero, nullable: true },
+          porcentajeParticipacion: { type: 'number', nullable: true, minimum: 0, maximum: 100,
+            description: 'Null para un padrón desconocido o con cero inscritos.' },
           participantes: entero, enCurso: entero, finalizados: entero, calificados: entero,
         } },
         filas: { type: 'array', items: { type: 'object', properties: {

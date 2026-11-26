@@ -17,3 +17,4 @@ export {
   crearConsultaNombresCursos,
   crearConsultaPreguntasHistoricas,
 } from './infraestructura/postgres-version-simulacro';
+export { crearConsultaRequierePadron } from './infraestructura/consulta-requiere-padron';

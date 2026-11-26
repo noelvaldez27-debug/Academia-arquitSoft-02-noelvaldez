@@ -135,3 +135,7 @@ La autorización posterior confirmó la gestión mínima de ciclos, el padrón p
 ### Evidencia incremental de gestión de cuentas
 
 El seguimiento de CA-VS01–02 está en la [SDD de validación](../specs/validacion-sprint-2/spec.md). Las rutas de entrega y archivado incorporadas tienen contrato OpenAPI y recorrido local reproducible. La evidencia de este recorrido no acredita todavía la recuperación en nuevos ciclos ni el padrón de HU11.
+
+### HU11 y validación de cuentas
+
+Las tareas 4 y 5 implementaron y validaron la recuperación para ciclos y el padrón histórico de simulacros. Las migraciones 020–021 respetan datos existentes. Los simulacros nuevos requieren habilitación explícita y el reporte conserva como desconocidos los indicadores de padrón que no pueden verificarse en simulacros anteriores. Ver el recorrido Compose y los contratos en la [SDD de validación](../specs/validacion-sprint-2/spec.md).

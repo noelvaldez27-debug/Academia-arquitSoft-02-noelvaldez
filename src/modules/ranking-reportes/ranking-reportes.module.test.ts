@@ -24,6 +24,7 @@ it('CA-RR02 y CA-RR03 conectan las fuentes históricas, la transacción y la con
       carrera: null, sedeId: null, condicion: null,
     }],
     estados: async () => [],
+    padron: async () => null,
   }, {
     porSimulacro: async (_id, cursor) => cursor ? [] : [{
       examenId: 'e', simulacroId: 's', postulanteId: 'p', puntajeCentesimos: 100000,

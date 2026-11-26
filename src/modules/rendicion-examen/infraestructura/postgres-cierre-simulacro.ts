@@ -16,6 +16,11 @@ export class PostgresCierreSimulacro {
     return !!await this.consultar(id);
   }
 
+  async coordinarHabilitacion(id: string): Promise<boolean> {
+    await this.bloquear(id, false);
+    return !!await this.consultar(id);
+  }
+
   async solicitar(id: string, administradorId: string): Promise<CierreSimulacro> {
     await this.bloquear(id, false);
     await this.bd.query(

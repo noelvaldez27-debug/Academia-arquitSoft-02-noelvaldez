@@ -20,6 +20,7 @@ import { crearRutasExamen } from './presentacion/examen.routes';
 import { crearRutasCierreSimulacro } from './presentacion/cierre-simulacro.routes';
 import { PostgresCierreSimulacro } from './infraestructura/postgres-cierre-simulacro';
 import { CompletarCierreSimulacro } from './aplicacion/cerrar-simulacro.use-case';
+import { PostgresPadronSimulacro } from './infraestructura/postgres-padron-simulacro';
 
 export class RendicionModule {
   readonly rutas;
@@ -31,7 +32,7 @@ export class RendicionModule {
 
   constructor(pool: Pool, redis: Redis, banco: Pick<BancoPreguntasModule, 'consultasVersionadas' | 'existeSimulacro'>,
     auth: MiddlewareAutenticacion, usuarios?: ServicioConsultaUsuarios,
-    habilitar?: Parameters<typeof crearTransaccionExamen>[2]) {
+    habilitar?: Parameters<typeof crearTransaccionExamen>[2], fuentesPadron?: Parameters<typeof crearTransaccionExamen>[3]) {
     const reloj = () => new Date();
     const examenes = new PostgresExamenRepository(pool);
     this.cierres = new PostgresCierreSimulacro(pool);
@@ -48,7 +49,7 @@ export class RendicionModule {
           throw error;
         }
       };
-    }, habilitar);
+    }, habilitar, fuentesPadron);
     const finalizar = new FinalizarExamenUseCase(transaccion, temporales, reloj);
     const controlador = new ExamenController(
       new IniciarExamenUseCase(transaccion, reloj, randomUUID, id => temporales.inicializar(id), async id => {
@@ -66,6 +67,7 @@ export class RendicionModule {
       porSimulacro: (id: string, despues?: string) => examenes.listarParaReportes(id, despues),
       consultarCierre: (id: string) => this.cierres.consultar(id),
       estados: () => examenes.estadoParaReportes(),
+      padron: (id: string) => new PostgresPadronSimulacro(pool).listar(id),
     };
     this.expirar = new ExpirarExamenes(examenes, finalizar, reloj, informarError);
     this.despachar = new DespacharExamenes(pool, new RabbitmqExamenAdapter(crearConexionRabbitMQ), temporales);

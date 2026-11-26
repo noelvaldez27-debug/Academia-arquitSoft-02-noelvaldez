@@ -43,6 +43,24 @@ function operacion(summary: string, schema: object, conId: boolean, entrada?: ob
 
 const base = '/api/v1/examenes';
 export const rutasOpenApiRendicion = {
+  [base + '/simulacros/{id}/habilitar']: {
+    post: {
+      ...operacion('Consolidar el padrón y habilitar el simulacro como administrador general', objeto({
+        simulacroId: cadena, cicloId: { ...cadena, format: 'uuid' }, habilitadoEn: fecha,
+      }), true, objeto({ cicloId: { ...cadena, format: 'uuid' } })),
+      responses: {
+        200: { description: 'Padrón consolidado o habilitación existente', content: json(objeto({
+          simulacroId: cadena, cicloId: { ...cadena, format: 'uuid' }, habilitadoEn: fecha,
+        })) },
+        400: { description: 'Identificador inválido' },
+        401: { description: 'Sesión inválida o ausente' },
+        403: { description: 'Se requiere el administrador general' },
+        404: { description: 'Simulacro o ciclo inexistente' },
+        409: { description: 'Ciclo cerrado o simulacro incompatible con la habilitación' },
+        503: { description: 'Infraestructura temporalmente no disponible' },
+      },
+    },
+  },
   [base + '/simulacros/{id}/cierre']: {
     post: {
       ...operacion('Solicitar cierre general del simulacro', objeto({

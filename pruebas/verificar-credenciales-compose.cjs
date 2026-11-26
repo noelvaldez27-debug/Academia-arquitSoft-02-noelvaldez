@@ -35,9 +35,14 @@ async function verificar() {
   assert.ok(listo, 'La API local no responde.');
   const { token: admin } = await login(process.env.ADMIN_GENERAL_CORREO, process.env.ADMIN_GENERAL_PASSWORD);
   const [sede] = await (await esperar('GET', '/sedes', 200, admin)).json();
+  const comprobarPadron = process.env.VERIFICAR_PADRON === 'si';
+  const cicloInicial = comprobarPadron ? await (await esperar('POST', '/ciclos', 201, admin, {
+    nombre: 'Ciclo para el padrón', iniciaEl: '2026-01-01', terminaEl: '2026-12-31',
+  })).json() : null;
   const dni = String(randomInt(10_000_000, 100_000_000));
   const perfil = await (await esperar('POST', '/estudiantes', 201, admin, {
     nombre: 'Postulante sintético de credenciales', dni, sedeId: String(sede.id), carrera: 'MEDICINA',
+    ...(cicloInicial && { cicloId: cicloInicial.id }),
   })).json();
   assert.equal('password' in perfil || 'passwordHash' in perfil, false);
   const correo = dni + '@sofia.edu';
@@ -88,6 +93,32 @@ async function verificar() {
       enunciado: 'Pregunta sintética', correcta: 'A', alternativas: { A: 'a', B: 'b', C: 'c', D: 'd', E: 'e' },
     });
     const sim = await recurso(banco, '/simulacros', admin, { duracionMinutos: 2, preguntas: [pregunta.id] });
+    const reporte = async () => {
+      const res = await fetch('http://127.0.0.1:3000/api/v1/rankings/' + sim.id +
+        '/reportes/participacion?sedeId=' + sede.id + '&carrera=MEDICINA', {
+        headers: { authorization: 'Bearer ' + admin },
+      });
+      assert.equal(res.status, 200);
+      return (await res.json()).resumen;
+    };
+    let matriculaTardia;
+    if (cicloInicial) {
+      const previo = await fetch(rendicion + '/iniciar', { method: 'POST', headers: {
+        authorization: 'Bearer ' + sesion.token, 'content-type': 'application/json',
+      }, body: JSON.stringify({ simulacroId: sim.id }) });
+      assert.equal(previo.status, 409);
+      const habilitar = () => recurso(rendicion, '/simulacros/' + sim.id + '/habilitar', admin, { cicloId: cicloInicial.id });
+      const [primera, segunda] = await Promise.all([habilitar(), habilitar()]);
+      assert.deepEqual(primera, segunda);
+      assert.deepEqual(await reporte(), { inscritos: 1, participantes: 0, noParticipantes: 1,
+        porcentajeParticipacion: 0, enCurso: 0, finalizados: 0, calificados: 0 });
+      matriculaTardia = await (await esperar('POST', '/estudiantes', 201, admin, {
+        nombre: 'Postulante sintético posterior al padrón', dni: String(randomInt(10_000_000, 100_000_000)),
+        sedeId: String(sede.id), carrera: 'MEDICINA', cicloId: cicloInicial.id,
+      })).json();
+      assert.equal((await reporte()).inscritos, 1);
+      await esperar('POST', '/ciclos/' + cicloInicial.id + '/cierre', 409, admin);
+    }
     const intento = await recurso(rendicion, '/iniciar', sesion.token, { simulacroId: sim.id });
     const archivar = '/estudiantes/archivar';
     await esperar('POST', archivar, 409, admin, { ids: [perfil.id] });
@@ -98,6 +129,33 @@ async function verificar() {
     assert.deepEqual(await repetido.json(), { archivados: 0 });
     assert.equal((await consultaAcademica(sesion.token)).status, 401);
     await login(correo, nueva, 401);
+    if (cicloInicial) {
+      const cerrar = () => fetch(rendicion + '/simulacros/' + sim.id + '/cierre', {
+        method: 'POST', headers: { authorization: 'Bearer ' + admin },
+      });
+      let definitivo = false;
+      for (let i = 0; i < 70; i++) {
+        const respuestaCierre = await cerrar();
+        if (respuestaCierre.status === 200) { definitivo = true; break; }
+        assert.equal(respuestaCierre.status, 202);
+        await pausa(250);
+      }
+      assert.equal(definitivo, true);
+      const rutaCierre = '/ciclos/' + cicloInicial.id + '/cierre';
+      const cierre = await (await esperar('POST', rutaCierre, 200, admin)).json();
+      const cierreRepetido = await (await esperar('POST', rutaCierre, 200, admin)).json();
+      assert.deepEqual(cierre, cierreRepetido);
+      const cuentasCerradas = await (await esperar('GET', '/?archivados=true&limite=100', 200, admin)).json();
+      assert.ok(cuentasCerradas.usuarios.some(usuario => usuario.id === matriculaTardia.id));
+      let resumen;
+      for (let i = 0; i < 40; i++) {
+        resumen = await reporte();
+        if (resumen.calificados === 1) break;
+        await pausa(250);
+      }
+      assert.deepEqual(resumen, { inscritos: 1, participantes: 1, noParticipantes: 0,
+        porcentajeParticipacion: 100, enCurso: 0, finalizados: 1, calificados: 1 });
+    }
     const habituales = await (await esperar('GET', '/?rol=POSTULANTE&limite=100', 200, admin)).json();
     const archivados = await (await esperar('GET', '/?archivados=true&limite=100', 200, admin)).json();
     assert.ok(!habituales.usuarios.some(usuario => usuario.id === perfil.id));

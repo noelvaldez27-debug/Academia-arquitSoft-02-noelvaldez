@@ -35,3 +35,4 @@ export {
   ConfigModuloUsuarios,
 } from './usuarios.module';
 export { crearConsultaPostulanteHabilitado } from './infraestructura/postgres-archivar-postulantes';
+export { crearConsultasCicloParaRendicion } from './infraestructura/consultas-ciclo-rendicion';

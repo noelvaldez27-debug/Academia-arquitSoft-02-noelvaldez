@@ -6,6 +6,10 @@ export interface OperacionesExamen {
   consultarSimulacro(id: string): Promise<SimulacroVisible>;
   coordinarInicio?(id: string): Promise<boolean>;
   consultarPostulanteHabilitado?(id: string): Promise<DatosInicialesPostulante | null>;
+  verificarPadron?(simulacroId: string, postulanteId: string): Promise<DatosInicialesPostulante | null>;
+  habilitarSimulacro?(simulacroId: string, cicloId: string, administradorId: string): Promise<{
+    cicloId: string; habilitadoEn: Date;
+  }>;
   solicitarCierre?(id: string, administradorId: string): Promise<{
     administradorId: string; solicitadoEn: Date; cerradoEn: Date | null;
   }>;

@@ -1,15 +1,16 @@
-import { existenIntentosActivos, RendicionModule, rutasOpenApiRendicion } from './modules/rendicion-examen';
+import { existenIntentosActivos, RendicionModule, rutasOpenApiRendicion, tieneSimulacrosPorCerrar } from './modules/rendicion-examen';
 import { ResultadosModule, rutasOpenApiResultados } from './modules/resultados';
-import { BancoPreguntasModule, rutasOpenApiBanco } from './modules/banco-preguntas';
+import { BancoPreguntasModule, crearConsultaRequierePadron, rutasOpenApiBanco } from './modules/banco-preguntas';
 import { AlmacenArchivosLocal, crearApp, crearPoolPostgres, crearClienteRedis, obtenerConfiguracionRedisDesdeEnv } from './compartido/infraestructura';
-import { crearConsultaPostulanteHabilitado, UsuariosModule } from './modules/usuarios';
+import { crearConsultaPostulanteHabilitado, crearConsultasCicloParaRendicion, UsuariosModule } from './modules/usuarios';
 import { RankingReportesModule, rutasOpenApiRanking } from './modules/ranking-reportes';
 import { AnaliticaModule, rutasOpenApiAnalitica } from './modules/analitica';
 import { ServicioIAGemini } from './compartido/infraestructura/servicio-ia-gemini';
 import { ServicioIASimulado } from './compartido/infraestructura/servicio-ia-simulado';
 
 const pool = crearPoolPostgres();
-const usuariosModule = new UsuariosModule({ pool, consultarIntentosActivos: existenIntentosActivos });
+const usuariosModule = new UsuariosModule({ pool, consultarIntentosActivos: existenIntentosActivos,
+  consultarSimulacrosPorCerrar: tieneSimulacrosPorCerrar });
 
 void usuariosModule.consumidorCargaMasiva.ejecutar();
 
@@ -25,7 +26,8 @@ const redis = crearClienteRedis({
   autoResendUnfulfilledCommands: false,
 });
 const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModule.middlewareAutenticacion,
-  usuariosModule.servicioConsultaUsuarios, crearConsultaPostulanteHabilitado);
+  usuariosModule.servicioConsultaUsuarios, crearConsultaPostulanteHabilitado,
+  { requierePadron: crearConsultaRequierePadron, ciclos: crearConsultasCicloParaRendicion });
 const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion);
 rendicion.iniciarTrabajos(resultados.consultas.contarCalificados);
 const rankings = new RankingReportesModule(pool, rendicion.consultasReportes, resultados.consultas,

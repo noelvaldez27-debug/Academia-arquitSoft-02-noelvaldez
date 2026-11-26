@@ -53,6 +53,24 @@ export const especificacionOpenApi = {
     },
   },
   paths: {
+    '/api/usuarios/ciclos/{id}/cierre': {
+      post: {
+        summary: 'Cerrar ciclo, desactivar sus cuentas y conservar historial',
+        tags: ['Usuarios'], security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: {
+          200: { description: 'Cierre nuevo o existente', content: { 'application/json': { schema: {
+            type: 'object', properties: { id: { type: 'string', format: 'uuid' }, cerradoEn: { type: 'string', format: 'date-time' } },
+          } } } },
+          400: { description: 'Identificador inválido' },
+          401: { description: 'Sesión inválida o ausente' },
+          403: { description: 'Se requiere administrador general' },
+          404: { description: 'Ciclo inexistente' },
+          409: { description: 'Simulacros sin cierre o intentos activos' },
+          503: { description: 'Cierre temporalmente no disponible' },
+        },
+      },
+    },
     '/api/usuarios/ciclos': {
       get: {
         summary: 'Consultar ciclos abiertos e históricos',

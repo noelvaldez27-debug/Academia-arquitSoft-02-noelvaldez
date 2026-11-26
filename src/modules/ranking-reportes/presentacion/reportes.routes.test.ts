@@ -33,7 +33,8 @@ it('CA-RR03–CA-RR04 aplica los mismos filtros y permisos en JSON y Excel', asy
   const base = '/api/v1/rankings/s/reportes';
   const filtro = '?condicion=NO_DETERMINADA&desde=2026-11-25T07:00:00-05:00';
   const participacion = await http.get(base + '/participacion' + filtro).expect(200);
-  expect(participacion.body.resumen).toEqual({ inscritos: null, participantes: 2, enCurso: 1, finalizados: 1, calificados: 1 });
+  expect(participacion.body.resumen).toEqual({ inscritos: null, participantes: 2, enCurso: 1,
+    finalizados: 1, calificados: 1, noParticipantes: null, porcentajeParticipacion: null });
   const meritos = await http.get(base + '/meritos' + filtro).expect(200);
   expect(meritos.body.filas.map((fila: { postulanteId: string }) => fila.postulanteId)).toEqual(['1']);
   const archivo = await http.get(base + '/meritos' + filtro + '&formato=xlsx').buffer(true)

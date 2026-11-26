@@ -7,10 +7,12 @@ export const tipoExcel = 'application/vnd.openxmlformats-officedocument.spreadsh
 export async function exportarReporteExcel(reporte: Reporte): Promise<Buffer> {
   const libro = new ExcelJS.Workbook();
   const hoja = libro.addWorksheet('Reporte');
-  if (reporte.resumen) {
-    const { inscritos, participantes, enCurso, finalizados, calificados } = reporte.resumen;
-    hoja.addRow(['Simulacro', 'Estado', 'Inscritos', 'Participantes', 'En curso', 'Finalizados', 'Calificados']);
-    hoja.addRow([reporte.simulacroId, reporte.estado, inscritos ?? 'No disponible', participantes, enCurso, finalizados, calificados]);
+  if ('resumen' in reporte) {
+    const { inscritos, participantes, enCurso, finalizados, calificados, noParticipantes, porcentajeParticipacion } = reporte.resumen;
+    hoja.addRow(['Simulacro', 'Estado', 'Inscritos', 'Participantes', 'En curso', 'Finalizados', 'Calificados',
+      'No participantes', 'Porcentaje de participación']);
+    hoja.addRow([reporte.simulacroId, reporte.estado, inscritos ?? 'No disponible', participantes, enCurso, finalizados,
+      calificados, noParticipantes ?? 'No disponible', porcentajeParticipacion ?? 'No disponible']);
   } else {
     hoja.addRow(['Simulacro', 'Postulante', 'Carrera', 'Sede', 'Condición', 'Puntaje sobre 1000',
       'Correctas', 'Incorrectas', 'Omitidas', 'Puesto', 'Estado']);

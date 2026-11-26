@@ -9,15 +9,23 @@ export interface FiltrosReporte extends AmbitoRanking {
 }
 
 export type TipoReporte = 'participacion' | 'resultados' | 'meritos';
+interface MiembroPadron {
+  postulanteId: string;
+  sedeId: string;
+  carrera: string;
+  condicion: string | null;
+}
 
 export class ConsultarReporteUseCase {
   constructor(
     private readonly consultar: (id: string) => Promise<ProyeccionRanking | null>,
     private readonly cursosAsignados: (id: string) => Promise<string[]>,
+    private readonly consultarPadron: (id: string) => Promise<MiembroPadron[] | null> = async () => null,
   ) {}
 
   async administrativo(actor: ActorRanking, simulacroId: string, filtros: FiltrosReporte, tipo: TipoReporte) {
     const ambito = limitarAmbito(actor, { carrera: filtros.carrera, sedeId: filtros.sedeId });
+    if (tipo === 'participacion') return this.participacion(simulacroId, { ...filtros, ...ambito });
     const proyeccion = await this.obtener(simulacroId);
     const estado = proyeccion.definitiva ? 'DEFINITIVO' : 'PROVISIONAL';
     const intentos = this.intentosFiltrados(proyeccion, { ...filtros, ...ambito });
@@ -33,11 +41,30 @@ export class ConsultarReporteUseCase {
         correctas: nota.correctas, incorrectas: nota.incorrectas, omitidas: nota.omitidas, puesto: fila.puesto, estado,
       }];
     });
-    if (tipo !== 'participacion') return { simulacroId, estado, filas };
+    return { simulacroId, estado, filas };
+  }
+
+  private async participacion(simulacroId: string, filtros: FiltrosReporte) {
+    const [padron, proyeccion] = await Promise.all([this.consultarPadron(simulacroId), this.consultar(simulacroId)]);
+    if (!padron && !proyeccion) throw new ErrorConsultaRanking(404, 'Reporte no disponible.');
+    const sujetos = padron && new Set(padron.filter(fila =>
+      (!filtros.carrera || fila.carrera === filtros.carrera) &&
+      (!filtros.sedeId || fila.sedeId === filtros.sedeId) &&
+      (!filtros.condicion || (fila.condicion ?? 'NO_DETERMINADA') === filtros.condicion),
+    ).map(fila => fila.postulanteId));
+    const intentos = !proyeccion ? [] : sujetos
+      ? proyeccion.intentos.filter(fila => sujetos.has(fila.postulanteId) &&
+        (!filtros.desde || fila.inicio >= filtros.desde) && (!filtros.hasta || fila.inicio <= filtros.hasta))
+      : this.intentosFiltrados(proyeccion, filtros);
+    const inscritos = sujetos?.size ?? null;
+    const participantes = intentos.length;
     const finalizados = intentos.filter(intento => intento.cierre !== null).length;
-    return { simulacroId, estado, resumen: {
-      inscritos: null, participantes: intentos.length, enCurso: intentos.length - finalizados,
-      finalizados, calificados: filas.length,
+    const calificaciones = new Set(proyeccion?.calificaciones.map(nota => nota.examenId));
+    return { simulacroId, estado: proyeccion?.definitiva ? 'DEFINITIVO' : 'PROVISIONAL', resumen: {
+      inscritos, participantes, noParticipantes: inscritos === null ? null : inscritos - participantes,
+      porcentajeParticipacion: inscritos ? Math.round(participantes * 10000 / inscritos) / 100 : null,
+      enCurso: participantes - finalizados, finalizados,
+      calificados: intentos.filter(intento => calificaciones.has(intento.id)).length,
     } };
   }
 

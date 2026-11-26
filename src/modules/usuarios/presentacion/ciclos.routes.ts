@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AlcanceAdministrador, RolUsuario } from '../dominio';
+import { AlcanceAdministrador, ErrorAccesoDenegado, ErrorConflicto, ErrorNoEncontrado, RolUsuario } from '../dominio';
 import type { MiddlewareAutenticacion } from './autenticacion.middleware';
 
 export interface DatosCiclo {
@@ -9,7 +9,8 @@ export interface DatosCiclo {
 }
 
 export function crearRutasCiclos(auth: MiddlewareAutenticacion,
-  listar: () => Promise<unknown>, crear: (datos: DatosCiclo) => Promise<unknown>) {
+  listar: () => Promise<unknown>, crear: (datos: DatosCiclo) => Promise<unknown>,
+  cerrar: (id: string, actorId: string) => Promise<unknown>) {
   const router = Router();
   const admin = auth.requerirRol(RolUsuario.Administrador);
   router.get('/ciclos', auth.autenticar, admin, async (_req, res) => {
@@ -34,6 +35,25 @@ export function crearRutasCiclos(auth: MiddlewareAutenticacion,
       res.status(201).json(await crear({ nombre: nombre.trim(), iniciaEl, terminaEl }));
     } catch {
       res.status(503).json({ error: 'No se pudo crear el ciclo.' });
+    }
+  });
+  router.post('/ciclos/:id/cierre', auth.autenticar, admin, async (req, res) => {
+    if (req.usuario?.alcanceAdministrador !== AlcanceAdministrador.General) {
+      res.sendStatus(403);
+      return;
+    }
+    const id = String(req.params.id);
+    if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(id)) {
+      res.sendStatus(400);
+      return;
+    }
+    try {
+      res.json(await cerrar(id, req.usuario.id));
+    } catch (error) {
+      if (error instanceof ErrorAccesoDenegado) res.status(403).json({ error: error.message });
+      else if (error instanceof ErrorNoEncontrado) res.status(404).json({ error: error.message });
+      else if (error instanceof ErrorConflicto) res.status(409).json({ error: error.message });
+      else res.sendStatus(503);
     }
   });
   return router;
