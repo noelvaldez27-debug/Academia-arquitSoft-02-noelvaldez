@@ -2,16 +2,22 @@ import type { Pool } from 'pg';
 import { ErrorBancoPreguntas } from '../dominio/errores';
 import { Tema, TemaRepository } from '../dominio/tema-repository';
 
+import type { CacheConsultas } from '../../../compartido/aplicacion/cache-consultas.port';
+import { consultarCatalogo } from '../../../compartido/infraestructura/cache-catalogo';
+
 const columnas = 'id, curso_id AS "cursoId", nombre, activo';
 
 export class PostgresTemaRepository implements TemaRepository {
-  constructor(private readonly bd: Pick<Pool, 'query'>) {}
+  constructor(private readonly bd: Pick<Pool, 'query'>, private readonly cache?: CacheConsultas) {}
 
   async listar(cursoId: string) {
-    const { rows } = await this.bd.query<Tema>(
+    return consultarCatalogo(this.bd, this.cache, {
+      catalogo: 'temas', filtro: cursoId, ttl: 120,
+      validarFila: fila => typeof fila.id === 'string' && 'cursoId' in fila
+        && fila.cursoId === cursoId && 'activo' in fila && fila.activo === true,
+    }, async () => (await this.bd.query<Tema>(
       `SELECT ${columnas} FROM temas_banco WHERE curso_id = $1 AND activo ORDER BY nombre, id`, [cursoId],
-    );
-    return rows;
+    )).rows);
   }
 
   crear({ id, cursoId, nombre }: Tema) {

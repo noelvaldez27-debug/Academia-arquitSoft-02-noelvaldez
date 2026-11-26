@@ -11,20 +11,22 @@ import { GenerarRecomendacionUseCase } from './aplicacion/generar-recomendacion.
 import { PostgresRecomendacionRepository } from './infraestructura/postgres-recomendacion-repository';
 import { crearRutasAnalitica } from './presentacion/analitica.routes';
 
+import type { CacheConsultas } from '../../compartido/aplicacion/cache-consultas.port';
+
 export class AnaliticaModule {
   readonly rutas;
 
   constructor(pool: Pool, auth: MiddlewareAutenticacion,
     resultados: ConsultaResultadosInterna & { paraAnalitica: ConstructorParameters<typeof ConsultarEstadisticasUseCase>[0] },
     cursosAsignados: (id: string) => Promise<string[]>,
-    ia?: Pick<ServicioIA, 'recomendar'>) {
+    ia?: Pick<ServicioIA, 'recomendar'>, cacheConsultas?: CacheConsultas) {
     const intentos = crearConsultaIntentosCerrados(pool);
     const preguntas = crearConsultaPreguntasHistoricas(pool);
     const historial = new ConsultarHistorialUseCase(resultados.porPostulante, intentos);
     const recomendacion = new GenerarRecomendacionUseCase(
       historial, new PostgresRecomendacionRepository(pool),
       ids => createHash('sha256').update(JSON.stringify(ids)).digest('hex'),
-      crearConsultaNombresCursos(pool), preguntas,
+      crearConsultaNombresCursos(pool, cacheConsultas), preguntas,
       ia && (cursos => ia.recomendar(cursos.map(curso => curso.nombre),
         cursos.map(({ desempeno, temas }) => ({ desempeno, temas })))),
       () => console.error('Fallo del proveedor de recomendaciones de Analitica.'),

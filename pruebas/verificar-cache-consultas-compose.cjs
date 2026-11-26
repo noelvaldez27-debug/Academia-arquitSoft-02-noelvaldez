@@ -6,6 +6,9 @@ const { crearPoolPostgres, crearClienteRedis } = require('/app/dist/compartido/i
 const { RedisCacheConsultas } = require('/app/dist/compartido/infraestructura/redis-cache-consultas');
 const { consultarVersionVisible } = require('/app/dist/modules/banco-preguntas/infraestructura/cache-version-visible');
 const { PostgresVersionSimulacro } = require('/app/dist/modules/banco-preguntas/infraestructura/postgres-version-simulacro');
+const { PostgresSedeRepository } = require('/app/dist/modules/usuarios/infraestructura/postgres-sede-repository');
+const { PostgresTemaRepository } = require('/app/dist/modules/banco-preguntas/infraestructura/postgres-tema-repository');
+const { crearConsultaNombresCursos } = require('/app/dist/modules/banco-preguntas/infraestructura/postgres-version-simulacro');
 const { setTimeout: esperar } = require('node:timers/promises');
 
 async function http(metodo, ruta, estado, token, datos) {
@@ -102,6 +105,56 @@ async function main() {
     await http('POST', ruta + '/finalizar', 200, uno);
     const final = await (await http('GET', ruta, 200, uno)).json();
     assert.deepEqual(final.respuestas, recuperado.respuestas);
+    if (process.env.VERIFICAR_CATALOGOS === 'si') {
+      const sedes = new PostgresSedeRepository(bd, cache);
+      const temas = new PostgresTemaRepository(bd, cache);
+      const cursos = crearConsultaNombresCursos(bd, cache);
+      const sedeNueva = randomUUID();
+      const temaId = randomUUID();
+      const rutaTemas = b + '/cursos/' + curso.id + '/temas';
+      await http('GET', rutaTemas, 403, uno);
+      await sedes.listarTodas();
+      await temas.listar(curso.id);
+      assert.equal((await cursos([curso.id]))[0].nombre, curso.nombre);
+      const cliente = await bd.connect();
+      try {
+        await cliente.query('BEGIN');
+        await cliente.query('INSERT INTO sedes(nombre) VALUES ($1)', [sedeNueva]);
+        assert.ok(!(await sedes.listarTodas()).some(s => s.nombre === sedeNueva));
+        await cliente.query('ROLLBACK');
+      } finally {
+        cliente.release();
+      }
+      const nombreCurso = randomUUID();
+      await http('POST', u + '/sedes', 201, admin, { nombre: sedeNueva });
+      await http('POST', rutaTemas, 201, admin, { nombre: temaId });
+      await bd.query('UPDATE cursos_banco SET nombre = $2 WHERE id = $1', [curso.id, nombreCurso]);
+      await redis.client('PAUSE', 750, 'ALL');
+      assert.ok((await (await http('GET', u + '/sedes', 200, admin)).json()).some(s => s.nombre === sedeNueva));
+      await esperar(750);
+      assert.ok((await sedes.listarTodas()).some(s => s.nombre === sedeNueva));
+      const [nuevo] = await temas.listar(curso.id);
+      assert.equal(nuevo.nombre, temaId);
+      assert.equal((await cursos([curso.id]))[0].nombre, nombreCurso);
+      await http('PATCH', b + '/temas/' + nuevo.id + '/desactivar', 200, admin);
+      assert.deepEqual(await temas.listar(curso.id), []);
+      const lecturas = {};
+      const instrumentado = { query: (...args) => {
+        const tipo = args[0].includes('generaciones_cache_catalogo') ? 'generacion' : 'catalogo';
+        lecturas[tipo] = (lecturas[tipo] ?? 0) + 1;
+        return bd.query(...args);
+      } };
+      const caliente = new PostgresSedeRepository(instrumentado, cache);
+      const directa = new PostgresSedeRepository(instrumentado);
+      const medirCatalogo = async repositorio => {
+        lecturas.generacion = 0;
+        lecturas.catalogo = 0;
+        const inicio = performance.now();
+        for (let i = 0; i < 20; i++) assert.ok((await repositorio.listarTodas()).some(s => s.nombre === sedeNueva));
+        return { ...lecturas, ms: Math.round((performance.now() - inicio) * 100) / 100 };
+      };
+      console.log(JSON.stringify({ sedesSinCache: await medirCatalogo(directa), sedesCaliente: await medirCatalogo(caliente) }));
+    }
     console.log(JSON.stringify({ lecturasPorVariante: 20, sinCache, cacheFria, cacheCaliente, aislamiento: true }));
   } finally {
     redis.disconnect();

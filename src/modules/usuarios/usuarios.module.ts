@@ -41,7 +41,10 @@ import { PostgresCiclosAcademicos } from './infraestructura/postgres-ciclos-acad
 import { crearRutasCiclos } from './presentacion/ciclos.routes';
 import { leerYValidarExcel } from './infraestructura/leer-excel';
 
+import type { CacheConsultas } from '../../compartido/aplicacion/cache-consultas.port';
+
 export interface ConfigModuloUsuarios {
+  cacheConsultas?: CacheConsultas;
   pool: Pool;
   jwtSecret?: string;
   jwtDuracion?: string;
@@ -75,7 +78,7 @@ export class UsuariosModule {
 
   constructor(config: ConfigModuloUsuarios) {
     const usuarioRepo = new PostgresUsuarioRepository(config.pool);
-    const sedeRepo = new PostgresSedeRepository(config.pool);
+    const sedeRepo = new PostgresSedeRepository(config.pool, config.cacheConsultas);
     const hashAdapter = new BcryptjsHashAdapter();
     const tokenAdapter = new JsonWebTokenAdapter({
       secret: config.jwtSecret,

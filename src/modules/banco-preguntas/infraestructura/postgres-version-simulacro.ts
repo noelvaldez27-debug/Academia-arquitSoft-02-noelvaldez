@@ -4,19 +4,26 @@ import { ErrorBancoPreguntas } from '../dominio/errores';
 import { ClaveAlternativa } from '../dominio/pregunta';
 import { SimulacroParaRendicion } from '../aplicacion/gestionar-simulacros.use-case';
 
+import type { CacheConsultas } from '../../../compartido/aplicacion/cache-consultas.port';
+import { consultarCatalogo } from '../../../compartido/infraestructura/cache-catalogo';
+
 type PreguntaCongelada = SimulacroParaRendicion['preguntas'][number] & {
   correcta: ClaveAlternativa;
   tema?: { id: string; nombre: string } | null;
 };
 type Version = Omit<SimulacroParaRendicion, 'preguntas'> & { preguntas: PreguntaCongelada[] };
 
-export function crearConsultaNombresCursos(bd: Pick<Pool, 'query'>) {
+export function crearConsultaNombresCursos(bd: Pick<Pool, 'query'>, cache?: CacheConsultas) {
   return async (ids: string[]): Promise<{ id: string; nombre: string }[]> => {
     if (!ids.length) return [];
-    const { rows } = await bd.query<{ id: string; nombre: string }>(
+    const solicitados = new Set(ids);
+    const filtro = createHash('sha256').update(JSON.stringify([...solicitados].sort())).digest('hex');
+    return consultarCatalogo(bd, cache, {
+      catalogo: 'cursos', filtro, ttl: 300,
+      validarFila: fila => typeof fila.id === 'string' && solicitados.has(fila.id),
+    }, async () => (await bd.query<{ id: string; nombre: string }>(
       'SELECT id, nombre FROM cursos_banco WHERE id = ANY($1::text[])', [ids],
-    );
-    return rows;
+    )).rows);
   };
 }
 

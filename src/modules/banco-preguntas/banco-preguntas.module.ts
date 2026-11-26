@@ -44,7 +44,7 @@ export class BancoPreguntasModule {
     const asignaciones = new PostgresAsignacionesDocentes(pool);
     this.cursosAsignados = id => asignaciones.porDocente(id);
     this.rutas.use(crearRutasTemas(new GestionarTemasUseCase(
-      new PostgresTemaRepository(pool), async id => Boolean(await preguntas.curso(id)), this.cursosAsignados, randomUUID,
+      new PostgresTemaRepository(pool, this.cacheConsultas), async id => Boolean(await preguntas.curso(id)), this.cursosAsignados, randomUUID,
     )));
     this.rutas.use(crearRutasAsignaciones(new GestionarAsignacionesUseCase(
       async id => {

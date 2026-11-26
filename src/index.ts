@@ -17,7 +17,7 @@ if (!Number.isInteger(maxConexiones) || maxConexiones < 1 || maxConexiones > 50)
   throw new Error('DB_POOL_MAX_API debe ser un entero entre 1 y 50.');
 }
 const pool = crearPoolPostgres({ ...obtenerConfiguracionPostgresDesdeEnv(), max: maxConexiones });
-const usuariosModule = new UsuariosModule({ pool, consultarIntentosActivos: existenIntentosActivos,
+const usuariosModule = new UsuariosModule({ pool, cacheConsultas, consultarIntentosActivos: existenIntentosActivos,
   consultarSimulacrosPorCerrar: tieneSimulacrosPorCerrar });
 
 void usuariosModule.consumidorCargaMasiva.ejecutar();
@@ -54,7 +54,7 @@ function configurarIaAnalitica() {
 }
 const analitica = new AnaliticaModule(pool, usuariosModule.middlewareAutenticacion,
   { ...resultados.consultas, paraAnalitica: resultados.resultadosParaAnalitica },
-  bancoPreguntas.cursosAsignados, configurarIaAnalitica());
+  bancoPreguntas.cursosAsignados, configurarIaAnalitica(), cacheConsultas);
 
 const app = crearApp({
   rutasUsuarios: usuariosModule.router,
