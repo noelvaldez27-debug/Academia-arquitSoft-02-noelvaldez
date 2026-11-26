@@ -17,4 +17,5 @@
   - [x] 8e. Aplicar optimizaciones puntuales justificadas y ejecutar regresión.
   - [x] 8f. Revalidar humo y 50 VU; detener el escalado conforme a los umbrales.
   - [x] 8g. Comparar pools de 10 y 20 y perfilar la autenticación por separado.
-  - [ ] 8h. Revalidar la configuración elegida sin perfilado antes de escalar.
+  - [x] 8h. Revalidar la configuración elegida sin perfilado. Humo de 3 VU conforme y 50 VU fuera de los límites de REST y registro.
+  - [ ] 8i. Resolver el incumplimiento de AC01 y completar los escalones restantes con autorización. Conservar el criterio de parada en 50 VU.

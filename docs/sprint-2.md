@@ -259,3 +259,32 @@ Evidencias: [perfil anterior](evidencias/campana-k6/vu-50-20261125-222615/), [hu
 | AC08 | Parcial. Consumo local medido; costo, escalado y capacidad del despliegue pendientes. |
 
 Las actividades 1–7 conservan evidencia para el alcance local del backend. La actividad 8 y la tarea 8 siguen abiertas. El Sprint 2 permanece abierto.
+
+### Revalidación oficial con pool 10
+
+Se conserva la publicación por lotes y se fija el valor predeterminado de la API en 10 conexiones. En la comparación instrumentada, los pools de 10 y 20 tuvieron REST p95 de 3 717,60 y 3 705,02 ms, registro de 437,82 y 1 162,07 ms, y nota de 2 619,50 y 1 655,75 ms. La espera máxima de adquisición fue 2 568,52 y 2 950,39 ms. Docker muestreó máximos de CPU de 119,85 % y 143,67 % en la API y de 104,94 % y 69,28 % en k6. Los máximos de RSS de la API fueron 117,39 y 117,75 MiB. Una corrida por configuración no caracteriza la variabilidad. El [diagnóstico de la SDD](../specs/validacion-sprint-2/spec.md#comparación-de-pools-y-perfil-separado-de-autenticación) documenta esperas, colas, tiempos desde Node y autenticación.
+
+| Corrida sin perfil | REST p95 ≤ 2 000 ms | Registro p95 ≤ 1 000 ms | Nota p95 ≤ 5 000 ms | Ranking p95 ≤ 3 000 ms | Errores técnicos < 1 % |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Original, 50 VU | 3 643,08 | 417,68 | 5 910,30 | 21,60 | 0/670 |
+| Configuración final, 3 VU | 244,82 | 71,60 | 1 072,80 | 11,31 | 0/33 |
+| Configuración final, 50 VU | 7 898,74 | 1 056,23 | 4 873,20 | 235,84 | 0/540 |
+
+El humo aprobó 24 comprobaciones. La revalidación de 50 VU completó 353 de 353 comprobaciones y 50 de 50 iteraciones, incluida la conciliación de HU11 y las 50 notas esperadas en PostgreSQL. El cierre general convergió al ranking en 1 043 ms. Redis respondió PONG y RabbitMQ no dejó mensajes listos ni sin confirmar. Jest verificó el reintento simulado de un lote fallido y la conservación de la bandeja de salida. Docker acreditó el flujo normal y el drenado de colas. No se indujo una caída adicional del broker durante k6.
+
+La autenticación dedica CPU a bcrypt y el perfil detectó demora del event loop bajo concurrencia. Se midió espera de conexiones separada del tiempo de consulta observado desde Node. La muestra no establece cuánto del incumplimiento oficial corresponde a bcrypt, al pool, a SQL o a su interacción. La VM de Docker tuvo 8 CPU y 3,74 GiB. En el escalón oficial los máximos muestreados fueron 119,45 % de CPU y 57,19 MiB en la API y 34,88 % de CPU en el generador. Completó sus 50 iteraciones. La evidencia no demuestra saturación de memoria, un límite del generador ni que cambiar la infraestructura corrija el incumplimiento.
+
+TypeScript compiló. Pasaron 13 pruebas específicas en 4 suites y la regresión de 453 pruebas en 95 suites. Cobertura global de 85,20 % de líneas y 76,05 % de ramas. Las pruebas específicas forman parte de la regresión. No hubo migraciones ni cambios de contrato. Los proveedores de IA fueron simulados.
+
+| AC | Estado vigente |
+| --- | --- |
+| AC01 | Incumplido a 50 VU en REST habitual y registro. Cumplen nota, ranking y errores técnicos. |
+| AC02 | Parcial. Sin errores técnicos durante la corrida y con recuperación controlada previa. Disponibilidad operativa pendiente. |
+| AC03 | Pendiente. Máximo ejecutado de 50 VU y mayor ensayo conforme de 3 VU. Sin capacidad acreditada a 2 000 VU. |
+| AC04 | Parcial. Controles de acceso, sesiones y hash cubiertos. Cifrado en el despliegue pendiente. |
+| AC05 | Evidencia favorable del backend mediante contratos, capas, regresión y alta de sede. |
+| AC06 | Pendiente del frontend y evaluación con usuarios. |
+| AC07 | Parcial. Persistencia y recuperación controlada del backend. Sincronización en dispositivo pendiente. |
+| AC08 | Parcial. Consumo local medido. Costos y escalado en el entorno previsto pendientes. |
+
+Las actividades 1 a 7 conservan sus evidencias locales del backend. La actividad 8 queda parcial y la tarea 8 abierta. La campaña se detuvo con código 99 al incumplir dos umbrales. Evidencias de [humo sin perfil](evidencias/campana-k6/vu-3-20261125-224408/) y [revalidación de 50 VU sin perfil](evidencias/campana-k6/vu-50-20261125-224455/).

@@ -1,0 +1,12 @@
+Timeout: 60.0 seconds ...
+Listing queues for vhost / ...
+name	messages_ready	messages_unacknowledged
+usuarios.carga-masiva.fallidos	0	0
+usuarios.carga-masiva.reintentos	0	0
+ranking.actualizar	0	0
+examen.finalizado	0	0
+banco-preguntas.separata-subida.fallos	0	0
+examen.finalizado.fallos	0	0
+banco-preguntas.separata-subida	0	0
+usuarios.carga-masiva	0	0
+banco-preguntas.separata-subida.reintentos	0	0

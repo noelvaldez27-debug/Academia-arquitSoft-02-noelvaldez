@@ -150,3 +150,9 @@ La auditoría y los criterios técnicos fueron aprobados. La SDD de impacto y la
 - El proyecto está en `main`, rama activa. `npx tsc --noEmit`, `npm test` y `npm run test:cov` pasan sin errores.
 - TypeScript se mantiene en la serie 5 (`^5.9.3`). No actualizar a TypeScript 7+ ya que `ts-jest@29` no lo soporta.
 - Nunca crear ni comitear `.env` en el repositorio; cada desarrollador debe crearlo localmente copiando `.env.example`.
+
+### Revalidación oficial del Sprint 2
+
+Se completaron las subtareas 8g y 8h. La última tarea completa sigue siendo la 7. Se conservó la publicación por lotes y se seleccionó el pool API de 10 por su margen en el registro de respuestas durante la comparación instrumentada. TypeScript y Jest pasaron con 453 pruebas en 95 suites y cobertura global de 85,20 % de líneas y 76,05 % de ramas. El humo sin perfil aprobó con 3 VU. La revalidación de 50 VU conservó HU11 y las 50 notas esperadas, con cero errores técnicos, y falló REST habitual y registro. La matriz vigente y las evidencias se encuentran en [docs/sprint-2.md](docs/sprint-2.md#revalidación-oficial-con-pool-10).
+
+Quedan 7 de 8 tareas completas. La actividad 8 y el Sprint 2 siguen abiertos. El siguiente paso, sujeto a autorización, es retomar la subtarea 8i en [tasks.md](specs/validacion-sprint-2/tasks.md) y volver a aplicar el criterio de parada antes de escalar. La publicación de los commits requiere autorización separada.
