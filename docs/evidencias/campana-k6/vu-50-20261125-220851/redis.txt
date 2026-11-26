@@ -1,0 +1,3 @@
+PONG
+used_memory:1322320
+used_memory_peak:1369560

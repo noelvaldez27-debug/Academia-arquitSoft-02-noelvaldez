@@ -1,0 +1,7 @@
+state|count
+active|1
+idle|4
+(2 rows)
+xact_commit|xact_rollback|deadlocks|blks_read|blks_hit
+3511|0|0|398|72696
+(1 row)

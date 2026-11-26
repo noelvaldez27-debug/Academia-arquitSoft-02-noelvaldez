@@ -1,0 +1,6 @@
+/evalua-campana-k6-worker-separatas-1|0|false
+/evalua-campana-k6-worker-resultados-1|0|false
+/evalua-campana-k6-backend-1|0|false
+/evalua-campana-k6-postgres-1|0|false
+/evalua-campana-k6-rabbitmq-1|0|false
+/evalua-campana-k6-redis-1|0|false

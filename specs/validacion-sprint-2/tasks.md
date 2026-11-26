@@ -12,4 +12,5 @@
 - [ ] 8. Solicitar autorización separada para la campaña masiva y registrar las conclusiones tras su ejecución autorizada.
   - [x] 8a. Adaptar el guion y plan a los ciclos, la habilitación y la conciliación del padrón.
   - [x] 8b. Ejecutar humo autorizado y conservar evidencias.
-  - [ ] 8c. Ejecutar campaña escalonada con autorización separada.
+  - [x] 8c. Ejecutar y registrar el primer escalón de 50 VU conforme al criterio de parada.
+  - [ ] 8d. Perfilar los incumplimientos de AC01, verificar una corrección y retomar el escalado si se cumplen los criterios.

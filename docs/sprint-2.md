@@ -194,3 +194,34 @@ Las actividades 1 a 7 mantienen evidencia en el alcance local del backend. La ac
 **Plan definitivo sujeto a autorización.** Usar simulacro y ciclo sintéticos nuevos en cada escalón (50, 100, 250, 500, 1 000, 1 500 y 2 000 VU), un integrante por VU y cero intentos al inicio. Verificar padrón y fase de estabilización antes de avanzar. Usar los 8 CPU y 3,74 GiB de la VM Docker como línea base observada, no como capacidad garantizada. Registrar CPU, RAM, disco, red y capacidad efectiva del generador. Separar el generador en un equipo propio de pruebas si compite con la API; conservar acceso aislado al objetivo. No aumentar concurrencia si el generador satura o falla la conciliación.
 
 Conservar NDJSON, resumen, SHA, versiones, parámetros, recursos, latencias p50/p95/p99, solicitudes por segundo, códigos esperados y técnicos por separado, tiempos cierre–nota y cierre–ranking, pool y bloqueos PostgreSQL, memoria y latencia Redis y backlog de RabbitMQ. Los p95 aprobados son 2 s REST habitual, 1 s registro, 5 s nota y 3 s consultas de ranking. Errores técnicos inferiores al 1 %. Detener ante pérdida de integridad, reinicios, indisponibilidad sostenida o cola sin recuperación. Registrar el último escalón válido y la causa concreta de cualquier interrupción.
+
+### Campaña de carga. Primer escalón y detención
+
+Se ejecutó el primer escalón de 50 VU contra el proyecto Compose sintético evalua-campana-k6. El backend probó ec8ef9b con Docker Engine 29.5.3, 8 CPU, 4 015 656 960 bytes de memoria asignada y k6 1.0.0. El generador compartió el espacio de red del backend y usó loopback. La red era interna, no había puertos publicados y ambos proveedores de IA estaban simulados. [Evidencias originales](evidencias/campana-k6/vu-50-20261125-220851/)
+
+| Escalón | VU configurados / máximo observado | Iteraciones / HTTP / comprobaciones | REST p95 / registro p95 / nota p95 / ranking p95 | Errores técnicos | Cierre general a ranking | Resultado |
+| --- | --- | --- | --- | --- | --- | --- |
+| 50 | 50 / 50 | 50 / 670 / 353 de 353 | 3 643,08 / 417,68 / 5 910,30 / 21,60 ms | 0 de 670, 0,00 % | 2 040 ms, una observación | No cumple REST habitual (máximo 2 s) ni nota definitiva (máximo 5 s). k6: código 99. |
+
+Rendimiento observado: 40,93 solicitudes/s durante 16,4 s. PostgreSQL confirmó 50 inscritos, 50 intentos de 50 postulantes distintos, 50 finalizados y 50 calificados con 1000 puntos esperados. HU11 reconcilió 50 participantes, cero activos al cierre, cero no participantes y 100 % de participación. Redis respondió PONG. RabbitMQ respondió al ping y las colas reportaron cero mensajes listos y sin confirmar al final. No hubo reinicios ni OOM registrados. Las cifras reflejan un escenario sintético de una pregunta y una iteración por VU.
+
+Las muestras de CPU de Docker alcanzaron 97,17 % para el backend y 62,60 % para k6, con 46,89 y 25,71 MiB de memoria en esas muestras. PostgreSQL alcanzó 21,72 % de CPU y RabbitMQ 85,37 %. Redis registró un pico de memoria de 1 369 560 bytes. Son máximos de las muestras recolectadas, no de todo instante de ejecución. PostgreSQL reportó cero interbloqueos acumulados en el proyecto. Sin perfilado en el momento del pico, estas cifras no atribuyen causalidad ni descartan competencia por recursos en el host.
+
+En las muestras HTTP, por percentil de rango cercano, iniciar el examen alcanzó 4,03 s y consultar el intento 2,63 s. La autenticación alcanzó 6,18 s, observada aparte del umbral de REST habitual. Conviene medir espera de pool, retención de transacciones, tiempo de autenticación y cola de resultados durante un escalón equivalente antes de cambiar código. El uso de bcryptjs y los tiempos de inicio son puntos de investigación, no causas confirmadas. No se cambiaron backend, reglas, seguridad ni umbrales. La regresión vigente se mantiene en 451 pruebas y 95 suites.
+
+**Máximo ejecutado: 50 VU.** Ningún escalón de campaña cumplió todos los criterios. El mayor ensayo que los cumplió sigue siendo el humo de 3 VU, fuera de la campaña. Se omitieron 100, 250, 500, 1 000, 1 500 y 2 000 VU según el criterio de interrupción. La tarea 8 permanece abierta.
+
+Para reproducir bajo autorización, levantar Docker Compose con la sobreescritura `pruebas/carga/compose.aislado.yml`, proyecto `evalua-campana-k6`, credenciales sintéticas con dominio .invalid y ambos proveedores simulados. Sembrar el administrador y ejecutar `pruebas/carga/ejecutar-escalon.ps1 -Usuarios 50 -Autorizado` desde el repositorio. El guion prepara cohortes nuevas, conserva métricas crudas y revierte los archivos temporales de credenciales. Comparar cada intento posterior con el original y mantener el avance condicionado a los umbrales, integridad y estabilidad.
+
+| Atributo | Estado tras el escalón y criterio pendiente |
+| --- | --- |
+| AC01 Rendimiento | Incumplido a 50 VU para REST habitual y nota. Registro y consulta de ranking cumplieron en ese escalón. Investigar y repetir con los mismos criterios. |
+| AC02 Disponibilidad | Parcial. Sin errores técnicos en 16,4 s y con recuperación controlada previa. El objetivo de 99,9 % requiere una ventana representativa en el despliegue. |
+| AC03 Escalabilidad | Pendiente. Se observaron 50 VU y 50 intentos, con incumplimiento de dos umbrales. Capacidad de 2 000 VU y objetivo de 5 000 conexiones sin acreditar. |
+| AC04 Seguridad | Parcial. Roles, alcance por sede, credenciales de un uso, hash y JWT se mantienen. Cifrado del entorno desplegado requiere validación de su fase. |
+| AC05 Mantenibilidad | Evidencia favorable del backend. Regresión, reglas de dependencia y contratos públicos comprobados. |
+| AC06 Usabilidad | Pendiente del frontend y sus pruebas con usuarios. |
+| AC07 Resiliencia | Parcial. Persistencia y recuperación de una marca confirmada comprobadas en Docker. Falta persistencia y sincronización automática en el dispositivo. |
+| AC08 Eficiencia de costos | Parcial. Consumo local registrado. Falta perfil de picos superiores, costo y escalado en el entorno de despliegue. |
+
+Actividades del docente: 1–7 con evidencia local del backend; actividad 8 parcial. El Sprint 2 permanece abierto.

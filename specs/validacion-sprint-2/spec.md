@@ -72,3 +72,7 @@ Jest aprobó 451 pruebas en 95 suites. Global: 85,16 % líneas y 76,00 % ramas. 
 ### Humo de la tarea 8
 
 Paso de humo completado: 3 VU, 3 iteraciones, 35 solicitudes, 24 comprobaciones y cero errores técnicos. PostgreSQL, Redis y RabbitMQ quedaron operativos en la prueba. Ver [plan, matriz y resultados](../../docs/sprint-2.md#humo-k6-y-autorización-pendiente-de-la-campaña) y [evidencia original](../../docs/evidencias/humo-k6/). Los escalones superiores permanecen pendientes de autorización.
+
+### Resultado de la campaña autorizada
+
+El escalón de 50 VU reconcilió HU11 y procesó los 50 resultados sin duplicados, con 0/670 errores técnicos. Se detuvo el escalado por incumplir el p95 de REST habitual (3 643,08 ms) y cierre a nota (5 910,30 ms). No se modificó el backend. La tarea 8 sigue abierta para perfilado y validación de capacidad. [Resultados y matriz AC01–AC08](../../docs/sprint-2.md#campaña-de-carga-primer-escalón-y-detención).
