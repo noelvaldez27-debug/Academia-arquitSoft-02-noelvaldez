@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --color-marino: #14243a;
+  --color-accion: #1d4ed8;
+  --color-fondo: #f8fafc;
+  --color-tinta: #0f172a;
+  --color-correcto: #166534;
+  --color-aviso: #92400e;
+  --color-error: #b91c1c;
+}
+
+@layer base {
+  body { @apply bg-fondo text-tinta antialiased; }
+  :focus-visible { @apply outline-2 outline-offset-4 outline-accion; }
+  button:not(:disabled) { cursor: pointer; }
+}
+
+@layer components {
+  .marca-sello {
+    @apply grid size-11 shrink-0 place-items-center rounded-xl bg-accion text-lg font-bold text-white;
+  }
+}

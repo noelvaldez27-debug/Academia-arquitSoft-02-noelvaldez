@@ -53,3 +53,15 @@ El [inventario](inventario.md) asigna rol, módulo, RF, HU, operaciones, estados
 4. Evidencia: aprobar guion, muestra y metas AC06 y matriz de navegadores/dispositivos de prueba. Los umbrales de carga vigentes se conservan.
 
 El [plan por fases](tasks.md) comienza tras la aprobación expresa de la Fase 0.
+
+## Alcance ejecutable de la Fase 0
+
+La aprobación habilita la SPA y su infraestructura local. Las rutas por rol muestran un marco básico y destinos de navegación. Las pantallas operativas de los módulos se implementan en sus fases asignadas. La pantalla base puede probar el inicio de sesión con el contrato vigente. Para credencial provisional se reserva una ruta protegida. El formulario de cambio inicial y el resto de Gestión de Usuarios corresponden a Fase 1.
+
+### Referencias y endpoints faltantes
+
+- Cursos: existe POST y consultas de temas, preguntas y separatas por curso. Falta GET de catálogo navegable para los flujos que necesiten seleccionar un curso. ID devuelto al crear como referencia disponible.
+- Simulacros: Banco expone detalle administrativo por ID y Rendición inicia con simulacroId. Falta un listado de simulacros elegibles para el postulante. Conservar la referencia del flujo de configuración o del historial aplicable.
+- Separatas y cargas Excel: hay alta y estado por ID, sin listados de historial. Conservar la referencia devuelta durante el flujo activo y definir recuperación antes de ofrecer un historial.
+- Asignaciones docentes: hay alta y retiro por curso y docente; falta lectura pública del catálogo de asignaciones. Las comprobaciones de acceso existentes siguen en el backend.
+- Login devuelve rol, sedeId y cambioPasswordRequerido cuando aplica. Permite componer el menú en memoria. La base de Fase 0 no requiere endpoints nuevos.
