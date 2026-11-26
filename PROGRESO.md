@@ -187,3 +187,7 @@ F4.1 completada localmente. Mi nota permite seleccionar un intento finalizado o 
 
 Siguiente paso exacto tras autorización del usuario. Publicar la Fase 4 si se autoriza el push y empezar F5.1 en `specs/frontend/tasks.md` si se autoriza Ranking y Reportes. La consolidación general de cobertura queda para después de Fase 6.
 F4.C incorpora el nombre del curso desde el catálogo autorizado de Banco. El botón de reconsulta tras la pausa se verificó con el caso Jest existente.
+
+Fase 4 publicada por avance directo hasta ff16882 tras nueve pruebas específicas. Aprobaron backend y frontend en [GitHub Actions](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45882614157).
+
+F5.1 completada con posición propia y ranking administrativo, filtros combinados, estados y paginación local. Tres pruebas específicas aprobaron. Siguiente tarea F5.2 en specs/frontend/tasks.md.
