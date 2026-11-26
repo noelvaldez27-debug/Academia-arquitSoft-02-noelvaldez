@@ -65,3 +65,7 @@ La aprobación habilita la SPA y su infraestructura local. Las rutas por rol mue
 - Separatas y cargas Excel: hay alta y estado por ID, sin listados de historial. Conservar la referencia devuelta durante el flujo activo y definir recuperación antes de ofrecer un historial.
 - Asignaciones docentes: hay alta y retiro por curso y docente; falta lectura pública del catálogo de asignaciones. Las comprobaciones de acceso existentes siguen en el backend.
 - Login devuelve rol, sedeId y cambioPasswordRequerido cuando aplica. Permite componer el menú en memoria. La base de Fase 0 no requiere endpoints nuevos.
+
+### Evidencia de Fase 0
+
+Compilación local con TypeScript y Vite y compilación de imagen nginx sobre Node 20 aprobadas. Jest y Testing Library aprobaron 6 pruebas en 2 suites, con 92,00 % de líneas y 60,75 % de ramas. Playwright en Edge aprobó 4 recorridos, escritorio y emulación Pixel 7, con API simulada en navegador. Las capturas reales se escriben en frontend/test-results. En Compose aislado, nginx respondió 200 para una ruta SPA directa, POST de inicio de sesión y GET autenticado de sedes con PostgreSQL y el backend local. Las pantallas del panel muestran navegación de base y destinos reservados. Se mantiene pendiente la evaluación AC06 con usuarios y los flujos de las fases funcionales.

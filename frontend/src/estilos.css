@@ -21,3 +21,34 @@
     @apply grid size-11 shrink-0 place-items-center rounded-xl bg-accion text-lg font-bold text-white;
   }
 }
+
+@layer components {
+  .acceso { @apply grid min-h-svh md:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)]; }
+  .acceso-marca { @apply relative isolate flex min-h-64 flex-col justify-between gap-10 overflow-hidden px-7 py-7 sm:px-12 md:px-14 md:py-12; }
+  .acceso-titulo { @apply relative z-10 max-w-lg md:mb-24; }
+  .acceso-trama {
+    position: absolute;
+    z-index: -1;
+    inset: 32% -26% -44% 32%;
+    transform: rotate(-17deg);
+    border-radius: 42%;
+    background: radial-gradient(ellipse at center, #1d4ed855, transparent 70%),
+      repeating-radial-gradient(ellipse at center, transparent 0 25px, #93c5fd32 26px 27px);
+  }
+  .acceso-forma { @apply grid place-items-center bg-white px-7 py-12 sm:px-12; }
+  .boton { @apply min-h-11 rounded-lg bg-accion px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-65; }
+  .boton.boton-secundario { @apply border border-slate-300 bg-white text-marino hover:bg-slate-100; }
+  .campo { @apply min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2.5; }
+  .estado { @apply rounded-lg border px-4 py-3 text-sm leading-relaxed; }
+  .estado-info, .estado-carga { @apply border-blue-200 bg-blue-50 text-marino; }
+  .estado-error { @apply border-red-200 bg-red-50 text-error; }
+  .enlace { @apply font-semibold text-accion underline underline-offset-4; }
+  .panel { @apply grid min-h-svh md:grid-cols-[16rem_minmax(0,1fr)]; }
+  .panel-lateral { @apply bg-marino px-5 py-6 text-white; }
+  .panel-menu { @apply mt-6 flex flex-wrap gap-2 md:flex-col; }
+  .panel-menu a { @apply rounded-lg px-3 py-2.5 text-sm font-medium text-slate-100 hover:bg-slate-700 focus-visible:outline-blue-200; }
+  .panel-menu a[aria-current="page"] { @apply bg-accion text-white; }
+  .panel-encabezado { @apply flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-4 md:px-10; }
+  .panel-contenido { @apply mx-auto max-w-6xl px-6 py-8 md:px-10 md:py-12; }
+  .panel-acceso { @apply flex min-h-16 items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 font-semibold text-marino hover:border-accion hover:text-accion; }
+}

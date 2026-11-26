@@ -43,7 +43,7 @@ Los workers procesan eventos de forma asíncrona: uno calcula resultados y ranki
 
 | **Contenedor** | **Tecnología** | **Responsabilidad** | **Datos que maneja** |
 |---|---|---|---|
-| **Aplicación web** | SPA; framework por definir. | Proporciona las interfaces para rendir simulacros, gestionar preguntas y separatas, consultar resultados y administrar usuarios. | Estado de las pantallas y respuestas locales pendientes de sincronización. |
+| **Aplicación web** | SPA React, TypeScript y Tailwind CSS, servida por nginx (ADR-014). | Proporciona las interfaces para rendir simulacros, gestionar preguntas y separatas, consultar resultados y administrar usuarios. | Estado de las pantallas y respuestas locales pendientes de sincronización. |
 | **API EVALUA-NET** | Node.js + TypeScript (referencia). | Expone la API REST y ejecuta las reglas del negocio mediante un monolito modular. | Usuarios, preguntas, simulacros, respuestas, resultados y separatas. |
 | **Base de datos principal** | PostgreSQL. | Almacena de forma permanente la información académica y administrativa. | Usuarios, preguntas, simulacros, respuestas definitivas, resultados, rankings y preguntas propuestas. |
 | **Almacenamiento temporal de Rendición** | Redis con AOF. | Persiste temporalmente las marcas activas hasta su consolidación. | Marcas, revisiones y operaciones de idempotencia. |

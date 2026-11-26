@@ -7,7 +7,7 @@
 ## Fase 0 · Fundamentos
 
 - [x] F0.1. Registrar aprobación de la especificación y resolver el alcance de las referencias conocidas. Preparar SPA React/TypeScript/Tailwind, rutas base, estructura y compilación reproducible.
-- [ ] F0.2. Preparar marco accesible, componentes de formulario, carga/error/vacío, cliente REST, fixtures y ejecución local Compose/nginx. Verificar navegación directa, proxy y prueba de humo sin IA real.
+- [x] F0.2. Preparar marco accesible, componentes de formulario, carga/error/vacío, cliente REST, fixtures y ejecución local Compose/nginx. Verificar navegación directa, proxy y prueba de humo sin IA real.
 
 ## Fase 1 · Gestión de Usuarios (depende de F0)
 

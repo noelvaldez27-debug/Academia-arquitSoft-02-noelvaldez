@@ -313,3 +313,11 @@ $recorrido | docker compose exec -T -e VERIFICAR_ARCHIVO=si backend node -
 ```
 
 Los recorridos antiguos que iniciaban sesión con el DNI en altas nuevas deben obtener la entrega provisional y cambiar la contraseña antes de usar las rutas académicas. Sus resultados históricos se conservan vinculados al código anterior.
+
+## Aplicación web local · Fase 0
+
+Con la configuración local descrita en esta guía, ejecutar `docker compose up --build` y abrir `http://localhost:8080`. El puerto de nginx se configura con FRONTEND_PORT. nginx sirve la SPA y reenvía /api/ a backend:3000. Para probar un inicio de sesión se requiere un administrador inicial ya sembrado mediante el comando de esta guía, o una cuenta local de prueba vigente. Usar credenciales sintéticas y ANALITICA_IA=simulada para validación.
+
+Para desarrollar la SPA con el backend local en el puerto 3000, ejecutar `npm ci --prefix frontend` y `npm --prefix frontend run dev`. Vite reenvía /api/ al backend. Se puede definir FRONTEND_API_LOCAL para un destino local alternativo. Para una compilación, ejecutar `npm --prefix frontend run build`. Las pruebas de componentes se ejecutan con `npm --prefix frontend test -- --runInBand --coverage`. Tras compilar, ejecutar `npm --prefix frontend exec -- playwright install chromium` y `npm --prefix frontend run test:e2e`, o definir PLAYWRIGHT_CHANNEL=msedge si Edge está instalado.
+
+El acceso mantiene el JWT en memoria y una recarga devuelve al inicio de sesión. La interfaz reserva destinos por rol y deriva las contraseñas provisionales a una pantalla restringida. Los formularios de gestión de usuarios, incluido el cambio inicial, pertenecen a la Fase 1.
