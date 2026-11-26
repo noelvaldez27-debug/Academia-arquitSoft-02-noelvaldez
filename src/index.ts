@@ -9,6 +9,9 @@ import { ServicioIAGemini } from './compartido/infraestructura/servicio-ia-gemin
 import { ServicioIASimulado } from './compartido/infraestructura/servicio-ia-simulado';
 import { obtenerConfiguracionPostgresDesdeEnv } from './compartido/infraestructura/conexion-postgres';
 
+import { crearCacheConsultas } from './compartido/infraestructura/redis-cache-consultas';
+
+const cacheConsultas = crearCacheConsultas();
 const maxConexiones = Number(process.env.DB_POOL_MAX_API ?? '10');
 if (!Number.isInteger(maxConexiones) || maxConexiones < 1 || maxConexiones > 50) {
   throw new Error('DB_POOL_MAX_API debe ser un entero entre 1 y 50.');
@@ -25,7 +28,7 @@ if (!Number.isFinite(limiteSeparataMb) || limiteSeparataMb <= 0) {
   throw new Error('SEPARATA_MAX_MB debe ser positivo.');
 }
 const bancoPreguntas = new BancoPreguntasModule(pool, usuariosModule.middlewareAutenticacion, almacen,
-  Math.floor(limiteSeparataMb * 1024 * 1024), usuariosModule.servicioConsultaUsuarios);
+  Math.floor(limiteSeparataMb * 1024 * 1024), usuariosModule.servicioConsultaUsuarios, cacheConsultas);
 const redis = crearClienteRedis({
   ...obtenerConfiguracionRedisDesdeEnv(), enableOfflineQueue: false, maxRetriesPerRequest: 0, commandTimeout: 3000,
   autoResendUnfulfilledCommands: false,

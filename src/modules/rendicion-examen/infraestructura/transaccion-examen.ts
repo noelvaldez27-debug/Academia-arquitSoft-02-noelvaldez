@@ -15,17 +15,19 @@ export interface FuentesPadron {
 }
 
 export function crearTransaccionExamen(
-  pool: Pool, consultas: (bd: Pick<Pool, 'query'>) => OperacionesExamen['consultarSimulacro'],
+  pool: Pool, consultas: (bd: Pick<Pool, 'query'>,
+    despuesDeConfirmar: (accion: () => Promise<void>) => void) => OperacionesExamen['consultarSimulacro'],
   habilitar?: (bd: Pick<Pool, 'query'>) => OperacionesExamen['consultarPostulanteHabilitado'],
   fuentesPadron?: FuentesPadron,
 ): TransaccionExamen {
   return async operar => {
     const cliente = await pool.connect();
+    const pendientes: Array<() => Promise<void>> = [];
     try {
       await cliente.query('BEGIN');
       const cierres = new PostgresCierreSimulacro(cliente);
       const padrones = new PostgresPadronSimulacro(cliente);
-      const consultarSimulacro = consultas(cliente);
+      const consultarSimulacro = consultas(cliente, accion => pendientes.push(accion));
       const ciclos = fuentesPadron?.ciclos(cliente);
       const requierePadron = fuentesPadron?.requierePadron(cliente);
       const resultado = await operar({
@@ -68,6 +70,8 @@ export function crearTransaccionExamen(
         }),
       });
       await cliente.query('COMMIT');
+      // Tras confirmar PostgreSQL, las escrituras opcionales no prolongan la transacción.
+      for (const accion of pendientes) void accion().catch(() => undefined);
       return resultado;
     } catch (error) {
       await cliente.query('ROLLBACK');

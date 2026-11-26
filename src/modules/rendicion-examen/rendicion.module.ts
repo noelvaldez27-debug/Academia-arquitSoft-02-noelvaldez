@@ -37,8 +37,8 @@ export class RendicionModule {
     const examenes = new PostgresExamenRepository(pool);
     this.cierres = new PostgresCierreSimulacro(pool);
     const temporales = new RedisRespuestasAdapter(redis);
-    const transaccion = crearTransaccionExamen(pool, bd => {
-      const consultas = banco.consultasVersionadas(bd);
+    const transaccion = crearTransaccionExamen(pool, (bd, despuesDeConfirmar) => {
+      const consultas = banco.consultasVersionadas(bd, despuesDeConfirmar);
       return async id => {
         try {
           return await consultas.consultar(id);

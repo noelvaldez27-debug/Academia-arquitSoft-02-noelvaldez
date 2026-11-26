@@ -21,6 +21,9 @@ import { GestionarTemasUseCase } from './aplicacion/gestionar-temas.use-case';
 import { PostgresTemaRepository } from './infraestructura/postgres-tema-repository';
 import { crearRutasTemas } from './presentacion/tema.routes';
 
+import type { CacheConsultas } from '../../compartido/aplicacion/cache-consultas.port';
+import { consultarVersionVisible } from './infraestructura/cache-version-visible';
+
 export class BancoPreguntasModule {
   readonly rutas;
   readonly simulacros: ConsultaSimulacros;
@@ -30,7 +33,7 @@ export class BancoPreguntasModule {
   private readonly repositorios: RepositoriosBanco;
 
   constructor(pool: Pool, auth: MiddlewareAutenticacion, almacen: AlmacenArchivos, maxBytes: number,
-    usuarios?: ServicioConsultaUsuarios) {
+    usuarios?: ServicioConsultaUsuarios, private readonly cacheConsultas?: CacheConsultas) {
     this.repositorios = {
       preguntas: new PostgresPreguntaRepository(pool),
       separatas: new PostgresSeparataRepository(pool),
@@ -60,8 +63,9 @@ export class BancoPreguntasModule {
     this.rutas.use(crearRutasSeparata(new SubirSeparataUseCase(preguntas, separatas, almacen, randomUUID, maxBytes), maxBytes));
   }
 
-  consultasVersionadas(transaccion: Pick<Pool, 'query'>): ConsultaSimulacros {
+  consultasVersionadas(transaccion: Pick<Pool, 'query'>,
+    despuesDeConfirmar?: (accion: () => Promise<void>) => void): ConsultaSimulacros {
     const versiones = new PostgresVersionSimulacro(transaccion);
-    return { consultar: id => versiones.congelar(id) };
+    return { consultar: id => consultarVersionVisible(id, () => versiones.congelar(id), this.cacheConsultas, despuesDeConfirmar) };
   }
 }
