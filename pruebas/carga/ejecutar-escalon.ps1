@@ -34,8 +34,9 @@ $datos=$fixture | ConvertFrom-Json
 $env:CICLO_ID=$datos.cicloId
 $env:SIMULACRO_ID=$datos.simulacroId
 $sub="docs/evidencias/campana-k6/vu-$Usuarios-"+(Get-Date -Format 'yyyyMMdd-HHmmss')
-$e=(New-Item -ItemType Directory -Force $sub).FullName
-$f=(New-Item -ItemType Directory ('.campana-fixture-'+[Guid]::NewGuid().ToString('N'))).FullName
+$idTemporal=[Guid]::NewGuid().ToString('N')
+$e=(New-Item -ItemType Directory (Join-Path ([IO.Path]::GetTempPath()) "evalua-evidencia-$idTemporal")).FullName
+$f=(New-Item -ItemType Directory (Join-Path ([IO.Path]::GetTempPath()) "evalua-fixture-$idTemporal")).FullName
 $g=(Resolve-Path 'pruebas/carga').Path
 $trabajo=$null
 try {
@@ -55,7 +56,7 @@ try {
     }
   }
   $PSNativeCommandUseErrorActionPreference=$false
-  docker run --rm --name evalua-campana-k6-generador --network "container:$b" --user 0 --mount "type=bind,source=$g,target=/guion,readonly" --mount "type=bind,source=$f,target=/fixture,readonly" --mount "type=bind,source=$e,target=/evidencia" -e VUS -e MARCA_SEGUNDOS -e MODO_HUMO -e API_LOCAL -e AUTORIZAR_CARGA -e USUARIOS_SINTETICOS -e ADMIN_SINTETICO_CORREO -e ADMIN_SINTETICO_PASSWORD -e CICLO_ID -e SIMULACRO_ID grafana/k6:1.0.0 run --out json=/evidencia/metricas.ndjson --summary-export=/evidencia/resumen.json /guion/simulacro.k6.js
+  docker run --rm --name evalua-campana-k6-generador --network "container:$b" --user 0 --mount "type=bind,source=$g,target=/guion,readonly" --mount "type=bind,source=$f,target=/fixture,readonly" --mount "type=bind,source=$e,target=/evidencia" -e VUS -e MARCA_SEGUNDOS -e MODO_HUMO -e API_LOCAL -e AUTORIZAR_CARGA -e USUARIOS_SINTETICOS -e ADMIN_SINTETICO_CORREO -e ADMIN_SINTETICO_PASSWORD -e CICLO_ID -e SIMULACRO_ID grafana/k6:1.0.0 run --out json=/evidencia/metricas.ndjson /guion/simulacro.k6.js
   $codigo=$LASTEXITCODE
   "k6_exit=$codigo" | Set-Content (Join-Path $e 'salida.txt')
   docker ps --filter label=com.docker.compose.project=evalua-campana-k6 --format '{{.Names}}|{{.Status}}|{{.Ports}}' | Set-Content (Join-Path $e 'servicios.txt')
@@ -83,10 +84,24 @@ const { crearClienteRedis, obtenerConfiguracionRedisDesdeEnv } = require('/app/d
   } finally { await cliente.quit(); }
 })().catch(error => { console.error(error.name); process.exitCode = 1; });
 '@ | docker exec -i $b node - | Set-Content (Join-Path $e 'redis.txt')
+  Stop-Job $trabajo
+  Remove-Job $trabajo
+  $trabajo=$null
+  if (!(Test-Path -LiteralPath (Join-Path $e 'resumen.json') -PathType Leaf) -or
+      !(Test-Path -LiteralPath (Join-Path $e 'metricas.ndjson') -PathType Leaf)) {
+    throw 'k6 no generó las evidencias requeridas.'
+  }
+  node (Join-Path $g 'verificar-evidencia.mjs') $e
+  if ($LASTEXITCODE) { throw 'La evidencia no superó la verificación.' }
+  Move-Item -LiteralPath $e -Destination $sub
   "evidencia=$sub codigo=$codigo"
   exit $codigo
 } finally {
   if ($trabajo) { Stop-Job $trabajo; Remove-Job $trabajo }
   Remove-Item -LiteralPath (Join-Path $f 'cuentas.json') -ErrorAction SilentlyContinue
   Remove-Item -LiteralPath $f -ErrorAction SilentlyContinue
+  if (Test-Path -LiteralPath $e) {
+    Get-ChildItem -LiteralPath $e -File | Remove-Item
+    Remove-Item -LiteralPath $e
+  }
 }

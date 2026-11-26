@@ -3,6 +3,7 @@ import { check, sleep } from 'k6';
 import { vu } from 'k6/execution';
 import { Rate, Trend } from 'k6/metrics';
 import { SharedArray } from 'k6/data';
+import { exportarResumen } from './evidencia-segura.mjs';
 
 const cantidad = Number(__ENV.VUS || '0');
 const origen = __ENV.API_LOCAL || '';
@@ -57,6 +58,8 @@ function enviar(metodo, ruta, familia, token, cuerpo) {
 
 const rutaExamenes = '/api/v1/examenes/simulacros/' + encodeURIComponent(simulacroId);
 const rutaRanking = '/api/v1/rankings/' + encodeURIComponent(simulacroId);
+
+export const handleSummary = exportarResumen;
 
 export function setup() {
   const ingreso = enviar('POST', '/api/usuarios/login', 'preparacion', null, { correo: adminCorreo, password: adminPassword });

@@ -288,3 +288,9 @@ TypeScript compiló. Pasaron 13 pruebas específicas en 4 suites y la regresión
 | AC08 | Parcial. Consumo local medido. Costos y escalado en el entorno previsto pendientes. |
 
 Las actividades 1 a 7 conservan sus evidencias locales del backend. La actividad 8 queda parcial y la tarea 8 abierta. La campaña se detuvo con código 99 al incumplir dos umbrales. Evidencias de [humo sin perfil](evidencias/campana-k6/vu-3-20261125-224408/) y [revalidación de 50 VU sin perfil](evidencias/campana-k6/vu-50-20261125-224455/).
+
+### Protección de las evidencias de carga
+
+La exportación de nueve resúmenes históricos incluía datos de autenticación del entorno sintético. Se redactaron esos valores en el historial local antes de publicar. Se conservaron las métricas, comprobaciones, fechas y resultados. Las claves de firma de los dos entornos de prueba se rotaron y se verificó que las nuevas claves rechazan las firmas anteriores.
+
+El guion k6 exporta únicamente métricas, comprobaciones y metadatos de la ejecución. El lanzador guarda los artefactos en un directorio temporal y los mueve al repositorio solo después de comprobar que no exponen credenciales. El workflow CI ejecuta las pruebas sintéticas del exportador. La validación de esta corrección no requirió solicitudes HTTP ni una campaña de carga.

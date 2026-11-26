@@ -31,5 +31,8 @@ jobs:
       - name: Compilar proyecto
         run: npm run build
 
+      - name: Verificar el exportador seguro de k6
+        run: node --test pruebas/carga/evidencia-segura.test.mjs
+
       - name: Ejecutar pruebas con cobertura
         run: npm run test:cov
