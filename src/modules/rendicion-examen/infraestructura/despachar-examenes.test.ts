@@ -33,3 +33,28 @@ it('CA-RE05 publica un mensaje persistente y espera confirmación del broker', a
   expect(canal.waitForConfirms).toHaveBeenCalled();
   expect(conexion.close).toHaveBeenCalled();
 });
+
+it('CA-RE05 un lote fallido conserva todas las filas y no limpia Redis', async () => {
+  const query = jest.fn().mockResolvedValue({ rows: [{ id: 'e1', publicado: false }, { id: 'e2', publicado: false }] });
+  const publicarLote = jest.fn().mockRejectedValueOnce(new Error('Confirmación incompleta'));
+  const limpiar = jest.fn().mockResolvedValue(undefined);
+  const tarea = new DespacharExamenes({ query } as unknown as Pool, { publicarLote, publicar: jest.fn() },
+    { limpiar } as unknown as RespuestasTemporales);
+  await expect(tarea.ejecutar(10)).rejects.toThrow('Confirmación incompleta');
+  expect(query).toHaveBeenCalledTimes(1);
+  expect(limpiar).not.toHaveBeenCalled();
+  await tarea.ejecutar(10);
+  expect(publicarLote.mock.calls).toEqual([[['e1', 'e2']], [['e1', 'e2']]]);
+  expect(query).toHaveBeenCalledWith(expect.stringContaining('= ANY($1::text[])'), [['e1', 'e2']]);
+  expect(limpiar.mock.calls).toEqual([['e1'], ['e2']]);
+});
+
+it('CA-RE05 comparte conexión, canal y confirmación para publicar varios cierres', async () => {
+  const canal = { on: jest.fn(), assertQueue: jest.fn(), sendToQueue: jest.fn(), waitForConfirms: jest.fn() };
+  const conexion = { on: jest.fn(), close: jest.fn().mockResolvedValue(undefined), createConfirmChannel: async () => canal };
+  const conectar = jest.fn().mockResolvedValue(conexion);
+  await new RabbitmqExamenAdapter(conectar).publicarLote(['e1', 'e2']);
+  expect(conectar).toHaveBeenCalledTimes(1);
+  expect(canal.sendToQueue).toHaveBeenCalledTimes(2);
+  expect(canal.waitForConfirms).toHaveBeenCalledTimes(1);
+});

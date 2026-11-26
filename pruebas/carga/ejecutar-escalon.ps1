@@ -1,5 +1,5 @@
 param(
-  [Parameter(Mandatory)][ValidateSet(50,100,250,500,1000,1500,2000)][int]$Usuarios,
+  [Parameter(Mandatory)][ValidateSet(3,50,100,250,500,1000,1500,2000)][int]$Usuarios,
   [switch]$Autorizado
 )
 $ErrorActionPreference='Stop'
@@ -8,7 +8,13 @@ $b='evalua-campana-k6-backend-1'
 $pg='evalua-campana-k6-postgres-1'
 $mq='evalua-campana-k6-rabbitmq-1'
 $env:VUS=[string]$Usuarios
-$env:MODO_CAMPANA='si'
+if ($Usuarios -eq 3) {
+  $env:MODO_HUMO='si'
+  $env:MODO_CAMPANA='no'
+} else {
+  $env:MODO_HUMO='no'
+  $env:MODO_CAMPANA='si'
+}
 $env:AUTORIZAR_CARGA='si'
 $env:API_LOCAL='http://127.0.0.1:3000'
 $env:MARCA_SEGUNDOS='1'
@@ -49,7 +55,7 @@ try {
     }
   }
   $PSNativeCommandUseErrorActionPreference=$false
-  docker run --rm --name evalua-campana-k6-generador --network "container:$b" --user 0 --mount "type=bind,source=$g,target=/guion,readonly" --mount "type=bind,source=$f,target=/fixture,readonly" --mount "type=bind,source=$e,target=/evidencia" -e VUS -e MARCA_SEGUNDOS -e API_LOCAL -e AUTORIZAR_CARGA -e USUARIOS_SINTETICOS -e ADMIN_SINTETICO_CORREO -e ADMIN_SINTETICO_PASSWORD -e CICLO_ID -e SIMULACRO_ID grafana/k6:1.0.0 run --out json=/evidencia/metricas.ndjson --summary-export=/evidencia/resumen.json /guion/simulacro.k6.js
+  docker run --rm --name evalua-campana-k6-generador --network "container:$b" --user 0 --mount "type=bind,source=$g,target=/guion,readonly" --mount "type=bind,source=$f,target=/fixture,readonly" --mount "type=bind,source=$e,target=/evidencia" -e VUS -e MARCA_SEGUNDOS -e MODO_HUMO -e API_LOCAL -e AUTORIZAR_CARGA -e USUARIOS_SINTETICOS -e ADMIN_SINTETICO_CORREO -e ADMIN_SINTETICO_PASSWORD -e CICLO_ID -e SIMULACRO_ID grafana/k6:1.0.0 run --out json=/evidencia/metricas.ndjson --summary-export=/evidencia/resumen.json /guion/simulacro.k6.js
   $codigo=$LASTEXITCODE
   "k6_exit=$codigo" | Set-Content (Join-Path $e 'salida.txt')
   docker ps --filter label=com.docker.compose.project=evalua-campana-k6 --format '{{.Names}}|{{.Status}}|{{.Ports}}' | Set-Content (Join-Path $e 'servicios.txt')

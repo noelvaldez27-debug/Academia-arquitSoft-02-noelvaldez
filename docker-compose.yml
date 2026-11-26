@@ -78,6 +78,7 @@ services:
 
       # PostgreSQL — el backend se conecta por nombre de servicio, no por localhost
       DB_HOST:     postgres
+      DB_POOL_MAX_API: ${DB_POOL_MAX_API:-20}
       DB_PORT:     ${DB_PORT:-5432}
       DB_NAME:     ${POSTGRES_DB:-evalua_net}
       DB_USER:     ${POSTGRES_USER:-evalua_user}

@@ -14,5 +14,5 @@
   - [x] 8b. Ejecutar humo autorizado y conservar evidencias.
   - [x] 8c. Ejecutar y registrar el primer escalón de 50 VU conforme al criterio de parada.
   - [x] 8d. Perfilar los incumplimientos de AC01 en condiciones comparables.
-  - [ ] 8e. Aplicar optimizaciones puntuales justificadas y ejecutar regresión.
+  - [x] 8e. Aplicar optimizaciones puntuales justificadas y ejecutar regresión.
   - [ ] 8f. Revalidar humo y 50 VU; retomar el escalado solo si se cumplen los criterios.

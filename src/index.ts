@@ -7,8 +7,13 @@ import { RankingReportesModule, rutasOpenApiRanking } from './modules/ranking-re
 import { AnaliticaModule, rutasOpenApiAnalitica } from './modules/analitica';
 import { ServicioIAGemini } from './compartido/infraestructura/servicio-ia-gemini';
 import { ServicioIASimulado } from './compartido/infraestructura/servicio-ia-simulado';
+import { obtenerConfiguracionPostgresDesdeEnv } from './compartido/infraestructura/conexion-postgres';
 
-const pool = crearPoolPostgres();
+const maxConexiones = Number(process.env.DB_POOL_MAX_API ?? '20');
+if (!Number.isInteger(maxConexiones) || maxConexiones < 1 || maxConexiones > 50) {
+  throw new Error('DB_POOL_MAX_API debe ser un entero entre 1 y 50.');
+}
+const pool = crearPoolPostgres({ ...obtenerConfiguracionPostgresDesdeEnv(), max: maxConexiones });
 const usuariosModule = new UsuariosModule({ pool, consultarIntentosActivos: existenIntentosActivos,
   consultarSimulacrosPorCerrar: tieneSimulacrosPorCerrar });
 
