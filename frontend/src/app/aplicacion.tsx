@@ -1,4 +1,5 @@
 import { Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom';
+import { FormularioCuenta } from './cuenta';
 import { Acceso } from './acceso';
 import { navegacion, nombresPerfil } from './navegacion';
 import { ProveedorSesion, usarSesion } from './sesion';
@@ -22,9 +23,15 @@ function ClaveInicial() {
   const { sesion, salir } = usarSesion();
   if (!sesion) return <Navigate to="/acceso" replace />;
   if (!sesion.cambioInicial) return <Navigate to={`/panel/${sesion.perfil}`} replace />;
-  return <VistaMensaje titulo="Cambia tu contraseña provisional"
-    detalle="El cambio de contraseña es obligatorio para acceder al panel. El formulario se incorporará en Gestión de Usuarios."
-    salir={salir} />;
+  return (
+    <main className="mx-auto grid max-w-xl gap-6 px-6 py-12">
+      <Marca />
+      <h1 className="text-3xl font-bold">Cambia tu contraseña provisional</h1>
+      <Estado>El cambio es obligatorio para acceder al panel.</Estado>
+      <FormularioCuenta inicial />
+      <Boton className="boton-secundario" onClick={salir}>Cerrar sesión</Boton>
+    </main>
+  );
 }
 
 function Panel() {
@@ -35,7 +42,7 @@ function Panel() {
   if (perfil !== sesion.perfil) {
     return <VistaMensaje titulo="Acceso restringido" detalle="Tu perfil no tiene acceso a esta área." />;
   }
-  const items = navegacion[sesion.perfil];
+  const items = [...navegacion[sesion.perfil], { ruta: "cuenta", titulo: "Mi cuenta" }];
   const base = `/panel/${sesion.perfil}`;
   const activa = items.find(item => item.ruta === seccion);
   if (seccion && !activa) return <VistaMensaje titulo="Página no disponible" detalle="Esta sección no está disponible para tu perfil." />;
@@ -60,7 +67,14 @@ function Panel() {
         </header>
         <main className="panel-contenido" id="contenido">
           <h1 className="text-3xl font-bold tracking-tight">{activa?.titulo ?? 'Inicio'}</h1>
-          {activa ? <div className="mt-6"><Estado>Esta sección se habilitará en su fase de desarrollo.</Estado></div> : (
+          {seccion === 'cuenta' ? (
+            <div className="mt-6 grid gap-8">
+              <section className="grid gap-4"><h2 className="text-lg font-semibold">Contraseña</h2><FormularioCuenta /></section>
+              {(perfil === 'general' || perfil === 'sede') && (
+                <section className="grid gap-4"><h2 className="text-lg font-semibold">Correo</h2><FormularioCuenta correo /></section>
+              )}
+            </div>
+          ) : activa ? <div className="mt-6"><Estado>Esta sección se habilitará en su fase de desarrollo.</Estado></div> : (
             <>
               <p className="mt-2 text-slate-600">Selecciona una sección de tu área de trabajo.</p>
               <ul className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

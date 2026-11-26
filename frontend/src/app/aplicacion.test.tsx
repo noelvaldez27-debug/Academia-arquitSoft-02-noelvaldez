@@ -61,3 +61,16 @@ it('muestra un error comprensible ante credenciales rechazadas', async () => {
   await ingresar();
   expect(await screen.findByRole('alert')).toHaveTextContent('Verifica tu correo');
 });
+
+it('cambia la contraseña provisional y vuelve al acceso', async () => {
+  const api = simularAcceso(true);
+  api.mockResolvedValueOnce(await api()).mockResolvedValue({ status: 204, ok: true });
+  montar('/acceso');
+  const usuario = await ingresar();
+  await usuario.type(await screen.findByLabelText('Contraseña provisional'), 'clave local de prueba');
+  await usuario.type(screen.getByLabelText('Nueva contraseña', { exact: true }), 'otra clave de prueba');
+  await usuario.type(screen.getByLabelText('Confirmar nueva contraseña'), 'otra clave de prueba');
+  await usuario.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
+  expect(await screen.findByText('Contraseña actualizada. Vuelve a ingresar.')).toBeVisible();
+  expect(api).toHaveBeenLastCalledWith('/api/usuarios/password', expect.objectContaining({ method: 'PATCH' }));
+});

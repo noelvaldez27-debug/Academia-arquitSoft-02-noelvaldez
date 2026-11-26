@@ -162,3 +162,7 @@ Se completaron las subtareas 8g y 8h. La última tarea completa sigue siendo la 
 Quedan 7 de 8 tareas completas. La actividad 8 y el Sprint 2 siguen abiertos. El siguiente paso, sujeto a autorización, es retomar la subtarea 8i en [tasks.md](specs/validacion-sprint-2/tasks.md) y volver a aplicar el criterio de parada antes de escalar.
 
 Los 21 commits pendientes y la protección del exportador k6 se publicaron por avance directo hasta `aed5518`. Se conservan los seis módulos y las 73 tareas funcionales originales. El saneamiento protegió nueve resúmenes sin alterar sus métricas. La compilación, Jest con cobertura y la comprobación sintética del exportador aprobaron en [GitHub Actions](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45752880302).
+
+### Gestión de Usuarios web
+
+F1.1 completada con cambio inicial, cuenta y descarte de sesión autenticada ante 401. Siguiente paso: F1.2 en specs/frontend/tasks.md para implementar estudiantes, docentes, administradores de sede, sedes y ciclos con la API real. F1.3 requiere recuperar el historial de cargas dentro del alcance autorizado.

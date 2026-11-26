@@ -69,3 +69,5 @@ La aprobación habilita la SPA y su infraestructura local. Las rutas por rol mue
 ### Evidencia de Fase 0
 
 Compilación local con TypeScript y Vite y compilación de imagen nginx sobre Node 20 aprobadas. Jest y Testing Library aprobaron 6 pruebas en 2 suites, con 92,00 % de líneas y 60,75 % de ramas. Playwright en Edge aprobó 4 recorridos, escritorio y emulación Pixel 7, con API simulada en navegador. Las capturas reales se escriben en frontend/test-results. En Compose aislado, nginx respondió 200 para una ruta SPA directa, POST de inicio de sesión y GET autenticado de sedes con PostgreSQL y el backend local. Las pantallas del panel muestran navegación de base y destinos reservados. Se mantiene pendiente la evaluación AC06 con usuarios y los flujos de las fases funcionales.
+
+F1.1 conecta la cuenta a PATCH /api/usuarios/password y PATCH /api/usuarios/correo. Tras un cambio exitoso se vuelve al acceso. Un 401 de una consulta privada descarta el JWT correspondiente. El panel y la cuenta se restringen mientras el backend informe cambio provisional.

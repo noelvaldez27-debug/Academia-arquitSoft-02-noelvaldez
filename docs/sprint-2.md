@@ -307,3 +307,7 @@ Compilación de TypeScript aprobada. Jest aprobó 456 pruebas en 98 suites, con 
 ## Fundamentos de la aplicación web
 
 Fase 0 implementada con React, TypeScript, Tailwind, Vite, React Router y nginx. Se verificaron rutas protegidas, menú por rol, sesión en memoria, errores de acceso y recarga. Jest/Testing Library aprobó 6 pruebas y Playwright 4 recorridos de escritorio y móvil emulado. nginx sirvió una ruta directa y pasó las consultas de login y sedes contra el backend local de Compose. AC06 continúa pendiente de flujos funcionales y evaluación con usuarios. La Fase 1 espera autorización. Véase la [SDD](../specs/frontend/spec.md).
+
+### Fase 1 · Acceso y cuenta
+
+F1.1 incorporó el cambio de contraseña inicial y voluntario, cambio de correo administrativo y descarte de la sesión ante 401 autenticado. Jest del frontend: 7 pruebas, 88,95 % de líneas y 57,66 % de ramas. Evidencia de esta ejecución con respuestas simuladas.

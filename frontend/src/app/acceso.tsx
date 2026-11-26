@@ -5,7 +5,7 @@ import { Marca } from '../compartido/marca';
 import { usarSesion } from './sesion';
 
 export function Acceso() {
-  const { sesion, vencida, ingresar } = usarSesion();
+  const { sesion, vencida, aviso, ingresar } = usarSesion();
   const [error, guardarError] = useState('');
   const [ocupado, ocupar] = useState(false);
   const solicitud = useRef<AbortController | null>(null);
@@ -46,6 +46,7 @@ export function Acceso() {
           <h2 id="titulo-acceso" className="text-3xl font-bold tracking-tight">Iniciar sesión</h2>
           <p className="mt-3 text-slate-600">Usa el correo y la contraseña que te asignó la academia.</p>
           <form className="mt-8 grid gap-5" onSubmit={enviar} aria-busy={ocupado}>
+            {aviso && <Estado>{aviso}</Estado>}
             {vencida && <Estado>Tu sesión terminó. Vuelve a ingresar.</Estado>}
             {error && <Estado tipo="error">{error}</Estado>}
             <Campo etiqueta="Correo institucional" id="correo" name="correo" type="email" autoComplete="username" required />

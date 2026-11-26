@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ErrorApi, solicitarApi } from '../compartido/cliente-rest';
 import type { Perfil } from './navegacion';
 
@@ -19,6 +19,9 @@ interface Sesion {
 interface EstadoSesion {
   sesion: Sesion | null;
   vencida: boolean;
+  aviso: string;
+  solicitar<T>(ruta: string, opciones?: Omit<Parameters<typeof solicitarApi>[1] & object, 'sesion'>): Promise<T>;
+  completarCambio(mensaje: string): void;
   ingresar(correo: string, password: string, signal: AbortSignal): Promise<void>;
   salir(): void;
 }
@@ -45,6 +48,8 @@ function perfilDe(usuario: RespuestaAcceso['usuario']): Perfil {
 
 export function ProveedorSesion({ children }: { children: ReactNode }) {
   const [sesion, guardar] = useState<Sesion | null>(null);
+  const [aviso, avisar] = useState('');
+  const tokenActivo = useRef<string | null>(null);
   const [vencida, avisarVencimiento] = useState(false);
   useEffect(() => {
     if (!sesion) return;
@@ -52,6 +57,7 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
     const revisar = () => {
       const restante = sesion.vence - Date.now();
       if (restante <= 0) {
+        tokenActivo.current = null;
         guardar(null);
         avisarVencimiento(true);
         return;
@@ -69,12 +75,32 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
     if (signal.aborted) return;
     const vence = vencimiento(token);
     if (vence <= Date.now()) throw new ErrorApi(401, 'La sesión no está disponible. Vuelve a ingresar.');
-    guardar({ token, nombre: usuario.nombre, perfil: perfilDe(usuario), vence, cambioInicial: Boolean(cambioPasswordRequerido) });
+    const perfil = perfilDe(usuario);
+    tokenActivo.current = token;
+    avisar('');
+    guardar({ token, nombre: usuario.nombre, perfil, vence, cambioInicial: Boolean(cambioPasswordRequerido) });
     avisarVencimiento(false);
   }
 
   return <Contexto.Provider value={{
-    sesion, vencida, ingresar, salir: () => { guardar(null); avisarVencimiento(false); },
+    sesion, vencida, aviso, ingresar,
+    salir: () => { tokenActivo.current = null; guardar(null); avisar(''); avisarVencimiento(false); },
+    completarCambio: mensaje => {
+      tokenActivo.current = null;
+      guardar(null);
+      avisar(mensaje + ' Vuelve a ingresar.');
+      avisarVencimiento(false);
+    },
+    solicitar: async (ruta, opciones) => {
+      if (!sesion) throw new ErrorApi(401, 'Tu sesión terminó. Vuelve a ingresar.');
+      const { token } = sesion;
+      return solicitarApi(ruta, { ...opciones, sesion: { token, alVencer: () => {
+        if (tokenActivo.current !== token) return;
+        tokenActivo.current = null;
+        guardar(null);
+        avisarVencimiento(true);
+      } } });
+    },
   }}>{children}</Contexto.Provider>;
 }
 
