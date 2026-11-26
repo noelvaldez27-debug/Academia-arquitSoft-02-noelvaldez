@@ -15,4 +15,5 @@
   - [x] 8c. Ejecutar y registrar el primer escalón de 50 VU conforme al criterio de parada.
   - [x] 8d. Perfilar los incumplimientos de AC01 en condiciones comparables.
   - [x] 8e. Aplicar optimizaciones puntuales justificadas y ejecutar regresión.
-  - [ ] 8f. Revalidar humo y 50 VU; retomar el escalado solo si se cumplen los criterios.
+  - [x] 8f. Revalidar humo y 50 VU; detener el escalado conforme a los umbrales.
+  - [ ] 8g. Resolver la latencia restante y retomar capacidad tras decisión sobre una nueva intervención.

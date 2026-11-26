@@ -1,0 +1,13 @@
+2026-11-26T03:29:56.9928300Z|evalua-campana-k6-generador|1.83%|11.69MiB / 3.74GiB|13|96.8kB / 106kB|0B / 0B
+2026-11-26T03:29:56.9928300Z|evalua-campana-k6-backend-1|13.81%|39.5MiB / 3.74GiB|11|101kB / 110kB|73.7kB / 0B
+2026-11-26T03:29:56.9928300Z|evalua-campana-k6-worker-resultados-1|0.29%|51.79MiB / 3.74GiB|11|3.03kB / 1.67kB|0B / 0B
+2026-11-26T03:29:56.9928300Z|evalua-campana-k6-worker-separatas-1|0.28%|55.51MiB / 3.74GiB|19|13.5kB / 18kB|24.6kB / 0B
+2026-11-26T03:29:56.9928300Z|evalua-campana-k6-postgres-1|0.89%|33.6MiB / 3.74GiB|10|2.33MB / 3.63MB|1.37MB / 1.01MB
+2026-11-26T03:29:56.9928300Z|evalua-campana-k6-rabbitmq-1|0.16%|120.5MiB / 3.74GiB|40|107kB / 115kB|65.5kB / 434kB
+2026-11-26T03:29:56.9928300Z|evalua-campana-k6-redis-1|1.48%|6.934MiB / 3.74GiB|6|134kB / 60kB|2.33MB / 614kB
+2026-11-26T03:30:00.3303451Z|evalua-campana-k6-backend-1|5.38%|39.24MiB / 3.74GiB|11|136kB / 148kB|73.7kB / 0B
+2026-11-26T03:30:00.3303451Z|evalua-campana-k6-worker-resultados-1|0.37%|52.07MiB / 3.74GiB|11|10.1kB / 8.62kB|0B / 0B
+2026-11-26T03:30:00.3303451Z|evalua-campana-k6-worker-separatas-1|0.13%|55.58MiB / 3.74GiB|19|14.7kB / 20kB|24.6kB / 0B
+2026-11-26T03:30:00.3303451Z|evalua-campana-k6-postgres-1|0.65%|38.16MiB / 3.74GiB|13|2.38MB / 3.68MB|1.37MB / 1.13MB
+2026-11-26T03:30:00.3303451Z|evalua-campana-k6-rabbitmq-1|43.90%|158.5MiB / 3.74GiB|74|110kB / 119kB|69.6kB / 463kB
+2026-11-26T03:30:00.3303451Z|evalua-campana-k6-redis-1|0.62%|6.441MiB / 3.74GiB|6|136kB / 61.3kB|2.33MB / 639kB

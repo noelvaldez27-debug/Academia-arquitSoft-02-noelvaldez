@@ -1,0 +1,3 @@
+inscritos|intentos|finalizados|calificados|postulantes_distintos|notas_esperadas
+50|50|50|50|50|50
+(1 row)

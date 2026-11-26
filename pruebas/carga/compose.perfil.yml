@@ -1,0 +1,11 @@
+services:
+  backend:
+    environment:
+      NODE_OPTIONS: --require=/perfil/perfil-local.cjs
+    volumes:
+      - ./pruebas/carga:/perfil:ro
+  worker-resultados:
+    environment:
+      NODE_OPTIONS: --require=/perfil/perfil-local.cjs
+    volumes:
+      - ./pruebas/carga:/perfil:ro

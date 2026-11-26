@@ -225,3 +225,37 @@ Para reproducir bajo autorización, levantar Docker Compose con la sobreescritur
 | AC08 Eficiencia de costos | Parcial. Consumo local registrado. Falta perfil de picos superiores, costo y escalado en el entorno de despliegue. |
 
 Actividades del docente: 1–7 con evidencia local del backend; actividad 8 parcial. El Sprint 2 permanece abierto.
+
+### Optimización y revalidación de AC01
+
+Se reutilizó la VM Docker de 8 CPU y 3,74 GiB, la red interna sin publicar puertos, k6 1.0.0, datos sintéticos, una pregunta, una iteración por VU y ambos proveedores simulados. Las dos repeticiones de 50 VU con el perfil activo sirven para comparar el mismo método de instrumentación. La línea base sin perfil se conserva por separado.
+
+| Ejecución | VU | REST p95 | Marca p95 | Nota p95 | Ranking p95 | Cierre general a ranking | HTTP / s | Error técnico | Aceptación |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Original sin perfil | 50 | 3 643,08 ms | 417,68 ms | 5 910,30 ms | 21,60 ms | 2 040 ms | 40,93 | 0/670 | Falla REST y nota |
+| Diagnóstico sin optimizar, con perfil | 50 | 2 963,13 ms | 295,59 ms | 7 339,55 ms | 68,75 ms | 2 046 ms | 47,15 | 0/771 | Falla REST y nota |
+| Humo optimizado, con perfil | 3 | 96,60 ms | 71,78 ms | 560,60 ms | 5,36 ms | 2 044 ms | 7,14 | 0/31 | Cumple |
+| Optimizado, con perfil | 50 | 4 849,45 ms | 1 017,69 ms | 1 853,50 ms | 149,62 ms | 3 078 ms | 28,43 | 0/470 | Falla REST y marca |
+
+Se publican lotes de eventos de cierre por un único canal con confirmación del broker antes de marcar las filas. Si falla la confirmación, las filas permanecen disponibles para reintento. El consumidor conserva deduplicación. En 50 VU las conexiones de publicación bajaron de 50 a 2; el máximo medido por conexión pasó de 373,87 a 64,95 ms. La nota pasó a cumplir. El cierre general a ranking es una medición individual por escalón. Las solicitudes por segundo incluyen el sondeo; al cambiar el número de consultas a Resultados, esa cifra no mide únicamente la capacidad de la API.
+
+DB_POOL_MAX_API amplió el pool de la API de 10 a 20; los workers mantienen su configuración anterior. El total de adquisiciones bajó de 2 176 a 1 217 en las ventanas observadas, con menos sondeos. El máximo de espera observado subió de 1 762,57 a 3 613,46 ms; esta prueba conjunta no demuestra un beneficio del ajuste de pool ni aísla su efecto. El máximo de demora del event loop subió de 477,10 a 900,73 ms. El máximo de bcrypt medido desde Node subió de 826,72 a 2 190,52 ms. Son motivos para perfilar CPU y superposición entre autenticación e inicio antes de cambiar el mecanismo de hash o la topología. Los tiempos del worker para lectura y escritura de resultado no mostraron una demora comparable. El máximo de Redis desde la API fue de 691,95 ms en la repetición; esa cifra incluye planificación del event loop.
+
+En las muestras de CPU con perfil, la API alcanzó 102,13 % antes y 100,64 % después, y k6 27,60 % y 13,38 %. RSS máxima observada de la API: 117,50 y 103,90 MiB. Redis siguió respondiendo y el broker quedó sin mensajes listos ni sin confirmar. Las tres ejecuciones de 50 VU conservaron 50 notas esperadas, 50 intentos finalizados y 50 postulantes distintos. La optimización no modifica calificación, padrón, protección de credenciales ni contratos REST. TypeScript y Jest pasaron con 453 pruebas en 95 suites, global 85,20 % líneas y 76,05 % ramas, Rendición 81,84 % y 74,49 %. No hubo migración ni cambio de OpenAPI.
+
+Evidencias: [perfil anterior](evidencias/campana-k6/vu-50-20261125-222615/), [humo optimizado](evidencias/campana-k6/vu-3-20261125-222955/) y [50 VU optimizados](evidencias/campana-k6/vu-50-20261125-223032/). Para reproducir el perfil, añadir `pruebas/carga/compose.perfil.yml` al Compose aislado. Las muestras por segundo reportan duración desde el proceso y no equivalen a tiempo de ejecución del servidor SQL o Redis.
+
+**Decisión de parada.** Ningún escalón de campaña aprobó todos los umbrales. Máximo ejecutado y observado: 50 VU. El mayor ensayo válido sigue siendo el humo de 3 VU. La intervención acotada terminó sin escalar más allá de 50. Para otra intervención, proponer medir el coste de bcrypt y la concurrencia de inicio con el pool en 10 y 20 por separado, manteniendo las rondas, el control de acceso y el diseño modular.
+
+| AC | Estado tras revalidar |
+| --- | --- |
+| AC01 | Incumplido a 50 VU para REST y registro, aunque el p95 de nota y consulta de ranking cumple. |
+| AC02 | Parcial. Sin errores técnicos en la muestra; falta observar disponibilidad prolongada en el despliegue. |
+| AC03 | Pendiente. Se observaron 50 VU, con dos umbrales incumplidos. No se validó capacidad hasta 2 000 VU. |
+| AC04 | Parcial. Controles existentes y regresión conservados; cifrado del despliegue pendiente. |
+| AC05 | Evidencia favorable del backend. El ajuste conserva los puertos, la separación modular y los contratos. |
+| AC06 | Pendiente del frontend y de pruebas con usuarios. |
+| AC07 | Parcial. Evidencia de persistencia de backend y recuperación previa; falta el flujo offline del dispositivo. |
+| AC08 | Parcial. Consumo local medido; costo, escalado y capacidad del despliegue pendientes. |
+
+Las actividades 1–7 conservan evidencia para el alcance local del backend. La actividad 8 y la tarea 8 siguen abiertas. El Sprint 2 permanece abierto.
