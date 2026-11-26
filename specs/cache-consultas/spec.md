@@ -1,0 +1,32 @@
+# SDD · Caché de consultas
+
+Estado: propuesta de arquitectura pendiente de aprobación. Sprint 2. Referencias: [ADR-003 y decisiones vigentes](../../docs/01-analisis-de-sistema/07-decisiones-arquitectonicas.md), [RC05 y RC07](../../docs/01-analisis-de-sistema/05-restricciones.md), [C4 nivel 2](../../docs/04-modelo-c4/Nivel2-Diagrama-de-Contenedores.md), [Rendición](../rendicion-examen/spec.md), [Usuarios](../usuarios/spec.md) y [Banco](../banco-preguntas/spec.md).
+
+## Decisión solicitada
+
+Añadir en Compose una instancia Redis de consultas con proceso, servicio, cliente y presupuesto de memoria propios. Propuesta inicial local: 32 MiB de maxmemory, política allkeys-lru, límite de contenedor de 96 MiB sujeto a verificación, sin AOF, sin snapshots y sin puerto publicado. Configurar un plazo corto para operaciones de caché y evitar cola offline. La API puede arrancar y atender con PostgreSQL si el servicio de consultas falta. Reutilizar ioredis. El Redis existente conserva AOF, volumen y el ciclo autoritativo de Rendición. Las dos instancias siguen compartiendo el host local.
+
+Los prefijos y las bases lógicas comparten memoria, política de expulsión y proceso. La instancia separada permite expulsar entradas derivadas con un presupuesto acotado sin aplicar dicha política a respuestas pendientes. El costo es otro proceso, configuración y consumo de memoria local. Documentar como decisión complementaria de ADR-003 y reflejarla en C4 al aprobar e implementar la separación.
+
+## Alcance propuesto y TTL
+
+- **Simulacro congelado · 60 minutos.** Prioridad de implementación por la lectura SQL repetida al registrar marcas. Cache-Aside para la proyección visible por ID de versión persistida y versión del formato de caché. En el esquema actual el ID de la fila congelada coincide con el ID del simulacro y se materializa una sola vez. Una ausencia consulta PostgreSQL. El camino que crea la versión conserva la transacción y las verificaciones actuales. El llenado se realiza solo con una versión confirmada, nunca desde una transacción que aún pueda revertirse. El DTO incluye duración, orden, enunciados y alternativas visibles. Las claves correctas y sus contratos internos siguen fuera de esta caché.
+- **Temas por curso · 2 minutos.** Evaluar el listado existente de Banco. Aplicar autorizaciones antes de leer la caché. Invalidar tras alta, cambio de nombre o desactivación confirmados, incluidos otros caminos de escritura si los hubiera.
+- **Nombres de cursos · 5 minutos.** Evaluar la lectura interna por IDs que consume Analítica, sin añadir un endpoint de catálogo. Conservar la consulta por lote para los IDs faltantes si se adopta. Invalidar por curso tras el alta o cambio confirmado que afecte su nombre.
+- **Sedes · 5 minutos.** Evaluar la lista administrativa existente. Cachear únicamente el DTO público del listado y preservar las reglas del llamador. Invalidar tras alta confirmada. Las lecturas usadas para autorizar o modificar datos siguen leyendo la fuente vigente.
+- **Carreras.** Son texto normalizado en Usuarios y un filtro histórico en Ranking. No se encontró un catálogo autónomo que cachear. No crear uno en esta intervención.
+- **Nota definitiva, ranking publicado y estadísticas.** Diferidos. Ya existe una proyección SQL de ranking y Analítica lee por lotes con reutilización por consulta. Falta evidencia de lecturas repetidas suficiente para justificar otra copia y su invalidación. Si se reconsidera la nota, excluir respuestas pendientes.
+
+## Consistencia y arquitectura
+
+Introducir un puerto de caché de consultas en infraestructura compartida con adaptador Redis, y mantener el ensamblado en las raíces de composición. Cada módulo define las claves, DTO y política de sus datos. La caché opera sobre lecturas autorizadas. La autoridad de la sesión, propietario, vigencia, padrón, roles, sedes y asignaciones sigue en los contratos existentes. Excluir JWT, credenciales, datos personales innecesarios y claves correctas.
+
+Ante ausencia, expulsión, valor inválido, timeout o servicio indisponible, servir la lectura PostgreSQL. Los errores de PostgreSQL conservan su tratamiento. Para los catálogos mutables, proponer generación durable por catálogo o entidad, actualizada en la misma transacción que el dato. Leer la generación vigente desde PostgreSQL y usarla en la clave. El llenado debe observar dato y generación consistentes, mediante una lectura conjunta o una verificación de generación antes de publicar. Una lectura anterior a una escritura concurrente no puede rellenar la generación vigente. Tras el commit, intentar borrar la entrada de la generación previa. Si Redis falla al invalidar, la generación nueva evita servir la copia anterior al recuperar Redis, y el TTL elimina la copia inaccesible. Este mecanismo requiere una lectura SQL ligera y, si se adopta, una migración local al módulo. Implementar cada catálogo solo si la comparación demuestra beneficio o si existe una justificación concreta de reducir trabajo SQL, con evidencia explícita de los viajes adicionales.
+
+## Criterios de aceptación y evidencia
+
+- CA-CC01. Acierto, ausencia, expulsión, expiración y valor inválido. Una versión confirmada se reutiliza según su ID, sin exponer claves. El primer inicio concurrente conserva una versión y un intento de acuerdo con las reglas vigentes.
+- CA-CC02. Una modificación confirmada se refleja en la siguiente lectura. Probar lector concurrente, rollback e invalidación durante una desconexión seguida de recuperación. Tras un fallo de la caché, PostgreSQL recupera los datos y permisos vigentes.
+- CA-CC03. Verificar autenticación, propietario, vigencia, padrón, rol, curso y sede en aciertos y ausencias cuando apliquen. Revisar que el hash de Rendición siga disponible al detener, reiniciar o llenar solo la caché de consultas. Confirmar recuperación de la marca y cierre real.
+- CA-CC04. Medir en Compose aislado el mismo recorrido con caché deshabilitada, fría y caliente. Separar SELECT de versiones, consultas de catálogo, validación de generación y total SQL por operación. Comparar payload, cantidad de consultas y latencias descriptivas bajo el mismo conjunto sintético. Registrar configuración y SHA sin inferir capacidad de carga. Usar IA simulada.
+- CA-CC05. Ejecutar compilación, regresión Jest y cobertura. Registrar resultados, fallos y limitaciones en Sprint 2 y PROGRESO. Los umbrales de carga vigentes se conservan.

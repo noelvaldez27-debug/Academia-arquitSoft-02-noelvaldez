@@ -296,3 +296,7 @@ La exportación de nueve resúmenes históricos incluía datos de autenticación
 El guion k6 exporta únicamente métricas, comprobaciones y metadatos de la ejecución. El lanzador guarda los artefactos en un directorio temporal y los mueve al repositorio solo después de comprobar que no exponen credenciales. El workflow CI ejecuta las pruebas sintéticas del exportador. La validación de esta corrección no requirió solicitudes HTTP ni una campaña de carga.
 
 GitHub Actions validó en `aed5518` la instalación reproducible con Node.js 20, la compilación de TypeScript, la comprobación del exportador y Jest con cobertura. La medición local de referencia permanece en 453 pruebas de 95 suites y 85,20 % de líneas y 76,05 % de ramas. Se mantienen los resultados de carga y la matriz AC01–AC08. [Ejecución de CI](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45752880302).
+
+## Propuesta de caché de consultas
+
+La [SDD de caché de consultas](../specs/cache-consultas/spec.md) propone Cache-Aside con una instancia Redis independiente y descartable, comenzando por la versión visible congelada. La decisión de infraestructura requiere aprobación antes de implementar. Las mediciones comparativas, la justificación de los catálogos mutables y la evidencia de integración están pendientes. Se conservan los resultados de carga y el estado de la tarea 8.
