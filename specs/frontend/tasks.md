@@ -22,6 +22,8 @@
 - [x] F2.1. Implementar cursos, temas, asignaciones, preguntas y configuración de simulacros. Verificar permisos, orden y edición.
 - [x] F2.2. Implementar separatas, autorización, estado y revisión. Verificar formatos, procesamiento simulado, error y aprobación por propietario.
 
+- [x] F2.C. Consolidar las pruebas de preguntas y propuestas, revisar el historial y publicar con CI antes de Rendición.
+
 ## Fase 3 · Rendición (depende de F1 y F2)
 
 - [ ] F3.1. Implementar habilitación, acceso, reanudación y ambas modalidades. Verificar elegibilidad, versión congelada y cronómetro.

@@ -174,3 +174,5 @@ F1.C verificada localmente: búsqueda literal parametrizada por nombre, DNI y co
 La consolidación se publicó por avance directo hasta 4d474c5. CI 45823085433 aprobó backend y frontend. F2.1 completada: catálogos autorizados y paginados, gestión de preguntas, temas, asignaciones y configuración de simulacros. Se comprobaron permisos y orden sin claves contra Compose aislado. F2.2 añadió listado histórico y revisión de separatas.
 
 Validación final de Fase 2: backend 461 pruebas, 84,59 % de líneas y 74,86 % de ramas. Frontend 15 pruebas, 63,14 % de líneas y 50,99 % de ramas globales. Playwright 12 recorridos simulados. Compose comprobó PDF e imagen mediante IA simulada y nginx mostró Banco y Separatas con datos sintéticos. Siguiente paso exacto: esperar autorización e iniciar F3.1 en specs/frontend/tasks.md.
+
+F2.C consolidada localmente. Siguiente paso: publicar Fase 2 y comprobar ambos trabajos de CI antes de F3.1.

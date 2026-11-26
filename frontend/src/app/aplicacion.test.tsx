@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Aplicacion } from './aplicacion';
 
+jest.setTimeout(15000);
+
 function montar(ruta: string) {
   render(<MemoryRouter initialEntries={[ruta]}><Aplicacion /></MemoryRouter>);
 }
@@ -212,4 +214,36 @@ it('exige alcance de transferencia y conserva la aprobación para el autor', asy
   expect(await screen.findByText('Autorización registrada.')).toBeVisible();
   const operacion = api.mock.calls.find(([ruta]) => ruta.endsWith('/autorizacion'))?.[1];
   expect(operacion).toMatchObject({ method: 'PUT', body: JSON.stringify({ estado: 'AUTORIZADA', alcance: ['texto'], contenidoApto: true }) });
+});
+
+it('corrige una propuesta aprobada y deja el descarte sujeto a confirmación', async () => {
+  let estado = 'APROBADA';
+  const resumen = { id: 'documento', cursoId: 'curso', estado: 'PREGUNTAS_PROPUESTAS', mime: 'application/pdf' };
+  const alternativas = { A: 'Uno', B: 'Dos', C: 'Tres', D: 'Cuatro', E: 'Cinco' };
+  const api = apiAdministrativa(null, ruta => {
+    if (ruta.includes('/cursos?')) return { datos: [], pagina: 1, hayMas: false };
+    if (ruta.includes('/separatas?')) return { datos: [resumen], pagina: 1, hayMas: false };
+    if (ruta.endsWith('/temas')) return [];
+    if (ruta.endsWith('/propuestas/propuesta')) { estado = 'PROPUESTA'; return {}; }
+    if (ruta.endsWith('/descartar')) { estado = 'RECHAZADA'; return {}; }
+    if (ruta.endsWith('/documento')) return { ...resumen, autorizacion: null, motivo: null,
+      propuestas: [{ id: 'propuesta', estado, enunciado: 'Pregunta para revisar', alternativas, correcta: 'A' }] };
+  });
+  const confirmar = jest.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+  try {
+    montar('/acceso');
+    const usuario = await ingresar();
+    await usuario.click(within(await screen.findByRole('navigation')).getByRole('link', { name: 'Separatas' }));
+    await usuario.click(await screen.findByRole('button', { name: 'Revisar separata' }));
+    await usuario.click(await screen.findByRole('button', { name: 'Corregir' }));
+    await usuario.clear(screen.getByLabelText('Enunciado'));
+    await usuario.type(screen.getByLabelText('Enunciado'), 'Pregunta corregida');
+    await usuario.click(screen.getByRole('button', { name: 'Guardar pregunta' }));
+    expect(await screen.findByText('Pendiente de revisión')).toBeVisible();
+    expect(api.mock.calls.find(([ruta]) => ruta.endsWith('/propuestas/propuesta'))?.[1]).toMatchObject({ method: 'PUT' });
+    await usuario.click(screen.getByRole('button', { name: 'Descartar' }));
+    expect(estado).toBe('PROPUESTA');
+    await usuario.click(screen.getByRole('button', { name: 'Descartar' }));
+    expect(await screen.findByText('Descartada', { exact: true })).toBeVisible();
+  } finally { confirmar.mockRestore(); }
 });

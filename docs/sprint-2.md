@@ -325,3 +325,7 @@ La consolidación de Fase 1 quedó publicada por avance directo en 4d474c5. Los 
 ### Fase 2 · Banco de Preguntas web
 
 F2.1 y F2.2 completadas localmente. Se incorporaron catálogos paginados de cursos, simulacros y asignaciones, e historial de separatas con filtros y alcance por autor. Se verificó el editor de cinco alternativas, orden de preguntas, configuración, autorización de material, revisión y aprobación por el docente responsable. La regresión aprobó 461 pruebas de backend y 15 de frontend. Playwright aprobó 12 recorridos simulados. Compose aislado verificó PostgreSQL, RabbitMQ, PDF e imagen con IA simulada. Las pantallas de Banco y Separatas se verificaron en navegador por nginx. La [SDD](../specs/frontend/spec.md) registra coberturas y limitaciones. Los commits de Fase 2 quedan locales y Fase 3 espera autorización.
+
+### Consolidación de Banco de Preguntas
+
+Jest backend 461 pruebas y frontend 17. Cobertura web global 64,42 % de líneas y 52,80 % de ramas. Compilación web y 12 recorridos Playwright aprobados.
