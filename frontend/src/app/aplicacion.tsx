@@ -1,4 +1,7 @@
 import { Rendicion } from '../funcionalidades/rendicion/rendicion';
+import { MiHistorial } from '../funcionalidades/analitica/historial';
+import { MiRecomendacion } from '../funcionalidades/analitica/recomendacion';
+import { EstadisticasAcademicas } from '../funcionalidades/analitica/estadisticas';
 import { MiNota } from '../funcionalidades/resultados/mi-nota';
 import { MiPosicion } from '../funcionalidades/ranking-reportes/ranking';
 import { DesempenoDocente, PanelRanking } from '../funcionalidades/ranking-reportes/reportes';
@@ -77,8 +80,11 @@ function Panel() {
         <main className="panel-contenido" id="contenido">
           <h1 className="text-3xl font-bold tracking-tight">{activa?.titulo ?? 'Inicio'}</h1>
           {seccion === 'ranking' && perfil === 'postulante' ? <MiPosicion />
+            : seccion === 'historial' && perfil === 'postulante' ? <MiHistorial />
+            : seccion === 'recomendacion' && perfil === 'postulante' ? <MiRecomendacion />
+            : seccion === 'analitica' && (perfil === 'general' || perfil === 'sede') ? <EstadisticasAcademicas perfil={perfil} />
             : seccion === 'reportes' && (perfil === 'general' || perfil === 'sede') ? <PanelRanking general={perfil === 'general'} />
-            : seccion === 'desempeno' && perfil === 'docente' ? <DesempenoDocente />
+            : seccion === 'desempeno' && perfil === 'docente' ? <><DesempenoDocente /><EstadisticasAcademicas perfil="docente" /></>
             : seccion === 'cuenta' ? (
             <div className="mt-6 grid gap-8">
               <section className="grid gap-4"><h2 className="text-lg font-semibold">Contraseña</h2><FormularioCuenta /></section>

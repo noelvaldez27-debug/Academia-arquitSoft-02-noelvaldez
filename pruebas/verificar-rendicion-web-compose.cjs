@@ -47,11 +47,22 @@ async function ejecutar() {
   const [propio, externo] = await Promise.all([
     crearPostulante(admin, sede.id, ciclo.id), crearPostulante(admin, sede.id),
   ]);
+  const verificarAnalitica = process.env.EVALUA_VERIFICAR_ANALITICA === 'si';
+  const analitica = '/api/v1/analitica';
+  if (verificarAnalitica) {
+    assert.deepEqual(await json(analitica + '/mi-historial', 'GET', 200, propio.token), { historial: [], porCurso: [] });
+    assert.equal((await json(analitica + '/mi-recomendacion', 'POST', 200, propio.token)).estado, 'evidencia_insuficiente');
+  }
   const curso = await json(banco + '/cursos', 'POST', 201, admin, { nombre: 'Rendición sintética ' + randomUUID() });
-  const pregunta = await json(banco + '/cursos/' + curso.id + '/preguntas', 'POST', 201, admin, {
-    enunciado: 'Pregunta sintética de Rendición', alternativas: { A: 'Uno', B: 'Dos', C: 'Tres', D: 'Cuatro', E: 'Cinco' }, correcta: 'A',
-  });
-  const sim = await json(banco + '/simulacros', 'POST', 201, admin, { duracionMinutos: 15, preguntas: [pregunta.id] });
+  const preguntas = [];
+  for (let i = 0; i < (verificarAnalitica ? 5 : 1); i++) {
+    const pregunta = await json(banco + '/cursos/' + curso.id + '/preguntas', 'POST', 201, admin, {
+      enunciado: 'Pregunta sintética de Rendición' + (i ? ' ' + (i + 1) : ''),
+      alternativas: { A: 'Uno', B: 'Dos', C: 'Tres', D: 'Cuatro', E: 'Cinco' }, correcta: 'A',
+    });
+    preguntas.push(pregunta.id);
+  }
+  const sim = await json(banco + '/simulacros', 'POST', 201, admin, { duracionMinutos: 15, preguntas });
   const listado = token => json(rendicion + '/simulacros', 'GET', 200, token);
   assert.ok(!(await listado(propio.token)).some(s => s.simulacroId === sim.id));
   await solicitar(rendicion + '/simulacros/' + sim.id + '/habilitar', 'POST', 200, admin, { cicloId: ciclo.id });
@@ -114,6 +125,65 @@ async function ejecutar() {
     await solicitar(ruta + '/respuestas', 'PUT', 409, propio.token,
       { numero: 1, alternativa: 'C', revisionBase: 2, operacionId: randomUUID() });
     console.log('Rendición web verificada con nginx, API real, padrón, IndexedDB, reconexión, Redis y cierre PostgreSQL.');
+    if (verificarAnalitica) {
+      let datos;
+      for (let i = 0; i < 80; i++) {
+        datos = await json(analitica + '/mi-historial', 'GET', 200, propio.token);
+        if (datos.historial.some(fila => fila.simulacroId === sim.id)) break;
+        await esperar(250);
+      }
+      assert.equal(datos.historial[0]?.puntaje, 0);
+      assert.deepEqual(datos.porCurso[0], { cursoId: curso.id, correctas: 0, incorrectas: 1, omitidas: 4, total: 5, desempeno: 0 });
+      await solicitar(analitica + '/estadisticas', 'GET', 403, propio.token);
+      await solicitar(analitica + '/mi-historial', 'GET', 403, admin);
+      assert.deepEqual((await json(analitica + '/mi-historial', 'GET', 200, externo.token)).historial, []);
+      const nav = pagina.getByRole('navigation');
+      await nav.getByRole('link', { name: 'Mi historial' }).click();
+      const historial = pagina.getByRole('table', { name: 'Comparación de simulacros y distribución de respuestas' });
+      await historial.getByText('0.00', { exact: true }).waitFor();
+      await pagina.getByRole('table', { name: 'Porcentajes y conteos por curso' }).getByText('0.00 %', { exact: true }).waitFor();
+      await pagina.screenshot({ path: 'frontend/evidencias-locales/historial-compose.png', fullPage: true });
+
+      const ruta = analitica + '/mi-recomendacion';
+      await nav.getByRole('link', { name: 'Recomendación' }).click();
+      const esperaIA = pagina.waitForResponse(res => new URL(res.url()).pathname === ruta && res.request().method() === 'POST');
+      await pagina.getByRole('button', { name: 'Consultar recomendación' }).click();
+      const generada = await (await esperaIA).json();
+      assert.equal(generada.estado, 'vigente');
+      assert.equal(generada.origen, 'ia');
+      assert.deepEqual(generada.cursos, [curso.id]);
+      assert.deepEqual(await json(ruta, 'POST', 200, propio.token), generada);
+      await pagina.getByText('Origen: asistencia de IA').waitFor();
+      await pagina.screenshot({ path: 'frontend/evidencias-locales/recomendacion-compose.png', fullPage: true });
+
+      const gestor = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+      await gestor.goto(new URL('/acceso', base).href);
+      await gestor.getByLabel('Correo institucional').fill(process.env.EVALUA_ADMIN_SINTETICO_CORREO);
+      await gestor.getByLabel('Contraseña').fill(process.env.EVALUA_ADMIN_SINTETICO_PASSWORD);
+      await gestor.getByRole('button', { name: 'Ingresar' }).click();
+      await gestor.getByRole('navigation').getByRole('link', { name: 'Analítica' }).click();
+      await gestor.getByLabel('Referencia del simulacro').fill(sim.id);
+      await gestor.getByLabel('Referencia del curso').fill(curso.id);
+      await gestor.getByLabel('Referencia del tema').fill('sin-clasificar');
+      const esperaEstadisticas = gestor.waitForResponse(res => new URL(res.url()).searchParams.get('simulacroId') === sim.id
+        && new URL(res.url()).pathname === analitica + '/estadisticas');
+      await gestor.getByRole('button', { name: 'Aplicar filtros' }).click();
+      const filtrada = await esperaEstadisticas;
+      assert.equal(filtrada.status(), 200);
+      assert.equal((await filtrada.json()).porPregunta.length, 5);
+      await gestor.getByRole('button', { name: 'Por pregunta' }).click();
+      const tabla = gestor.getByRole('table', { name: 'Por pregunta' });
+      await tabla.getByRole('rowheader', { name: /^Pregunta sintética de Rendición / }).first().waitFor();
+      assert.equal(await tabla.locator('tbody tr').count(), 5);
+      const stats = await json(analitica + '/estadisticas?' + new URLSearchParams({
+        simulacroId: sim.id, cursoId: curso.id, sedeId: String(sede.id),
+      }), 'GET', 200, admin);
+      assert.equal(stats.porCurso[0].tasaOmisiones, 80);
+      assert.ok(stats.porPregunta.every(fila => !Object.hasOwn(fila, 'correcta') && !Object.hasOwn(fila, 'postulanteId')));
+      await gestor.screenshot({ path: 'frontend/evidencias-locales/estadisticas-compose.png', fullPage: true });
+      await gestor.close();
+      console.log('Analítica web verificada con nginx, API real, historial, estadísticas, permisos e IA simulada reutilizada.');
+    }
     if (process.env.EVALUA_VERIFICAR_NOTA === 'si') {
       const resultado = '/api/v1/resultados/' + referencia.intentoId;
       await pagina.getByRole('link', { name: 'Ir a Mi nota' }).click();

@@ -193,3 +193,7 @@ Fase 4 publicada por avance directo hasta ff16882 tras nueve pruebas específica
 F5.1 completada con posición propia y ranking administrativo, filtros combinados, estados y paginación local. Tres pruebas específicas aprobaron. Siguiente tarea F5.2 en specs/frontend/tasks.md.
 
 F5.2 completada localmente con participación HU11, resultados, cuadro de mérito, descarga Excel y agregados docentes. Regresión aprobada con 462 pruebas backend, 34 frontend y 20 recorridos Playwright. Compose sintético verificó publicación, privacidad, padrón y Excel. La Fase 5 queda local. Siguiente paso exacto tras autorización del usuario: publicar la Fase 5 si autoriza el push e iniciar F6.1 en specs/frontend/tasks.md si aprueba Analítica del Estudiante.
+
+Fase 5 publicada por avance directo hasta 0457f00. Backend y frontend aprobaron en [GitHub Actions](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45886284707). La limitación de paginación local quedó registrada para la validación integral.
+
+F6.1 completada localmente con historial, recomendación y estadísticas RF12 por rol. Aprobaron 462 pruebas backend, 41 frontend y 22 recorridos Playwright. En Compose aislado se verificaron historial, filtros, permisos y reutilización con IA simulada. Siguiente paso exacto tras autorización del usuario: retomar F6.2 en specs/frontend/tasks.md para los recorridos integrales y AC06, consolidar cobertura y continuar las tareas pendientes del Sprint 2 según su planificación.
