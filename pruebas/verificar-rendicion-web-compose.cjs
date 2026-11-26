@@ -104,6 +104,7 @@ async function ejecutar() {
     const repetido = await json(rendicion + '/iniciar', 'POST', 200, propio.token, { simulacroId: sim.id });
     assert.equal(repetido.id, referencia.intentoId);
     pagina.once('dialog', dialogo => dialogo.accept());
+    const inicioCierre = performance.now();
     await pagina.getByRole('button', { name: 'Finalizar intento' }).click();
     await pagina.getByRole('link', { name: 'Ir a Mi nota' }).waitFor();
     const cerrado = await json(ruta, 'GET', 200, propio.token);
@@ -112,6 +113,26 @@ async function ejecutar() {
     await solicitar(ruta + '/respuestas', 'PUT', 409, propio.token,
       { numero: 1, alternativa: 'C', revisionBase: 2, operacionId: randomUUID() });
     console.log('Rendición web verificada con nginx, API real, padrón, IndexedDB, reconexión, Redis y cierre PostgreSQL.');
+    if (process.env.EVALUA_VERIFICAR_NOTA === 'si') {
+      const resultado = '/api/v1/resultados/' + referencia.intentoId;
+      await pagina.getByRole('link', { name: 'Ir a Mi nota' }).click();
+      await pagina.getByRole('heading', { name: 'Calificación definitiva' }).waitFor();
+      const tiempoVisible = Math.round(performance.now() - inicioCierre);
+      await pagina.getByText(/^0\.00\s+\/ 1000 puntos$/).waitFor();
+      await pagina.locator('time').waitFor();
+      assert.equal(await pagina.locator('time').getAttribute('datetime'), cerrado.inicio);
+      const nota = await json(resultado, 'GET', 200, propio.token);
+      assert.equal(nota.puntaje, 0);
+      assert.equal(nota.simulacroId, sim.id);
+      assert.deepEqual([nota.correctas, nota.incorrectas, nota.omitidas], [0, 1, 0]);
+      assert.equal(nota.porCurso.length, 1);
+      const desglose = pagina.getByRole('table', { name: 'Resultados por curso' });
+      assert.deepEqual(await desglose.getByRole('cell').allTextContents(), ['0', '1', '0']);
+      await solicitar(resultado, 'GET', 404, externo.token);
+      await solicitar(resultado, 'GET', 403, admin);
+      await pagina.screenshot({ path: 'frontend/evidencias-locales/mi-nota-compose.png', fullPage: true });
+      console.log('Mi nota verificada con nginx, API, RabbitMQ y worker real. Cierre a nota visible: ' + tiempoVisible + ' ms.');
+    }
   } finally { await browser.close(); }
 }
 

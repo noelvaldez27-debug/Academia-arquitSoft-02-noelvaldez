@@ -8,6 +8,7 @@ interface Solicitud extends Omit<RequestInit, 'body'> {
   datos?: unknown;
   sesion?: { token: string; alVencer: () => void };
   formato?: 'json' | 'archivo';
+  recibirCabeceras?: (cabeceras: Headers) => void;
 }
 
 const mensajes: Record<number, string> = {
@@ -23,7 +24,7 @@ const mensajes: Record<number, string> = {
 
 export async function solicitarApi<T>(ruta: string, opciones: Solicitud = {}): Promise<T> {
   if (!ruta.startsWith('/api/') || ruta.includes('\\')) throw new Error('Ruta REST inválida.');
-  const { datos, sesion, formato = 'json', ...init } = opciones;
+  const { datos, sesion, formato = 'json', recibirCabeceras, ...init } = opciones;
   const headers = new Headers(init.headers);
   if (sesion) headers.set('Authorization', 'Bearer ' + sesion.token);
   const formulario = datos instanceof FormData;
@@ -45,6 +46,7 @@ export async function solicitarApi<T>(ruta: string, opciones: Solicitud = {}): P
       ? 'Tu sesión terminó. Vuelve a ingresar.'
       : mensajes[respuesta.status] ?? 'El servicio no está disponible en este momento.');
   }
+  recibirCabeceras?.(respuesta.headers);
   if (respuesta.status === 204) return undefined as T;
   if (formato === 'archivo') return await respuesta.blob() as T;
   try {

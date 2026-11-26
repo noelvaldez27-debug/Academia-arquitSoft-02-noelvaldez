@@ -179,4 +179,10 @@ F2.C consolidada localmente. Siguiente paso: publicar Fase 2 y comprobar ambos t
 
 Fase 2 publicada hasta 0e7c8e0. La primera CI falló en el selector Playwright al cambiar de vista, se acotó al editor y CI 45872738322 aprobó ambos trabajos. F3.1 lista elegibilidad y permite iniciar/reanudar en ambas modalidades. F3.2 completó IndexedDB, sincronización por revisión, cierre y validación real.
 
-Fase 3 validada: 462 pruebas backend, 84,65 % de líneas y 74,93 % de ramas. Frontend 21 pruebas, 51,56 % de líneas y 42,14 % de ramas globales, y 20 recorridos Playwright de regresión. En Compose se comprobó reanudación tras conservar las respuestas sin red y cierre con marcas definitivas. Siguiente paso exacto: esperar autorización para F4.1 o publicación de los dos commits locales de Rendición.
+Fase 3 validada con 462 pruebas backend, 84,65 % de líneas y 74,93 % de ramas. Frontend 21 pruebas, 51,56 % de líneas y 42,14 % de ramas globales, y 20 recorridos Playwright de regresión. En Compose se comprobó reanudación tras conservar las respuestas sin red y cierre con marcas definitivas. Los commits `f7ee052` y `ea2420c` se publicaron por avance directo después de revisar el contenido y repetir los ocho recorridos críticos. Los dos trabajos de [GitHub Actions 45880719042](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45880719042) aprobaron y main coincidió con origin/main en `ea2420c` antes de Fase 4.
+
+### Fase 4 · Procesamiento de Resultados web
+
+F4.1 completada localmente. Mi nota permite seleccionar un intento finalizado o llegar desde el cierre. Muestra el resultado definitivo, la fecha y el desglose por curso. El sondeo respeta Retry-After y se pausa a los 60 segundos. La regresión aprobó 462 pruebas backend, 28 frontend y 20 recorridos Playwright. En Compose aislado se comprobó el cero definitivo, fecha, desglose y permisos, con 2855 ms de cierre a nota visible en una ejecución. Véase la [SDD](specs/frontend/spec.md#fase-4--mi-nota).
+
+Siguiente paso exacto tras autorización del usuario. Publicar la Fase 4 si se autoriza el push y empezar F5.1 en `specs/frontend/tasks.md` si se autoriza Ranking y Reportes. La consolidación general de cobertura queda para después de Fase 6.

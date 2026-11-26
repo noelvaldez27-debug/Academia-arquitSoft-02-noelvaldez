@@ -31,7 +31,7 @@
 
 ## Fase 4 · Procesamiento de Resultados (depende de F3)
 
-- [ ] F4.1. Implementar nota propia y sondeo controlado. Verificar pendiente, puntaje cero, desglose, autorización y tiempo visible local.
+- [x] F4.1. Implementar nota propia y sondeo controlado. Verificar pendiente, puntaje cero, desglose, autorización y tiempo visible local.
 
 ## Fase 5 · Ranking y Reportes (depende de F2–F4)
 
