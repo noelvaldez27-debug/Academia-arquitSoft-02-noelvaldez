@@ -305,3 +305,13 @@ describe('PostgresUsuarioRepository (Pool simulado)', () => {
     expect(resultado.usuarios[0].sedeId).toBe('1');
   });
 });
+
+  it('aplica el mismo término literal y alcance a total y resultados antes de paginar', async () => {
+    const query = jest.fn().mockResolvedValueOnce({ rows: [{ total: '1' }] }).mockResolvedValueOnce({ rows: [] });
+    const repo = new PostgresUsuarioRepository({ query });
+    await repo.listar({ q: "O'Connor%_", rol: RolUsuario.Postulante, sedeId: '2', soloArchivados: true, pagina: 2, limite: 10 });
+    expect(query).toHaveBeenNthCalledWith(1, expect.stringContaining('strpos(LOWER(nombre), LOWER($3::text))'), ['POSTULANTE', 2, "O'Connor%_"]);
+    expect(query).toHaveBeenNthCalledWith(2, expect.stringContaining('LIMIT $4 OFFSET $5'), ['POSTULANTE', 2, "O'Connor%_", 10, 10]);
+    expect(query.mock.calls[1][0]).toContain("AND rol = 'POSTULANTE' AND NOT activo");
+    expect(query.mock.calls[1][0]).not.toContain("O'Connor");
+  });

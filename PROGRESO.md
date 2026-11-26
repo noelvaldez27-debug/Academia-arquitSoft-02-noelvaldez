@@ -166,3 +166,7 @@ Los 21 commits pendientes y la protección del exportador k6 se publicaron por a
 ### Gestión de Usuarios web
 
 F1.3 completada con importación normal y por ciclo, historial paginado por alcance, estados reales y descargas de un solo uso. Backend: 458 pruebas, 84,98 % de líneas y 75,58 % de ramas. Frontend: 9 pruebas Jest, 66,32 % de líneas y 39,16 % de ramas globales, y 8 recorridos Playwright con respuestas simuladas. El recorrido real de nginx confirmó acceso, historial y detalle de carga, alta y cierre de ciclo y salida. La cobertura frontend queda por debajo del objetivo recomendado. Siguiente paso exacto: esperar autorización e iniciar F2.1 en specs/frontend/tasks.md.
+
+### Consolidación de Fase 1
+
+F1.C verificada localmente: búsqueda literal parametrizada por nombre, DNI y correo, filtros autorizados y paginación PostgreSQL; espera de 300 ms en la web. Jest backend 459 pruebas, frontend 13 y Playwright 8. Siguiente paso exacto: verificar el resultado de CI del avance directo y después iniciar F2.1 en specs/frontend/tasks.md.

@@ -40,11 +40,25 @@ async function verificar() {
     nombre: 'Ciclo para el padrón', iniciaEl: '2026-01-01', terminaEl: '2026-12-31',
   })).json() : null;
   const dni = String(randomInt(10_000_000, 100_000_000));
+  await esperar('POST', '/estudiantes', 201, admin, {
+    nombre: 'Fila sintética anterior a la búsqueda',
+    dni: String(randomInt(10_000_000, 100_000_000)), sedeId: String(sede.id), carrera: 'MEDICINA',
+  });
   const perfil = await (await esperar('POST', '/estudiantes', 201, admin, {
     nombre: 'Postulante sintético de credenciales', dni, sedeId: String(sede.id), carrera: 'MEDICINA',
     ...(cicloInicial && { cicloId: cicloInicial.id }),
   })).json();
   assert.equal('password' in perfil || 'passwordHash' in perfil, false);
+  const primeraPagina = await (await esperar('GET', '?rol=POSTULANTE&limite=1', 200, admin)).json();
+  assert.ok(!primeraPagina.usuarios.some(usuario => usuario.id === perfil.id));
+  const buscar = async (q, token = admin, filtros = '') => (await (await esperar(
+    'GET', '?rol=POSTULANTE&limite=1&q=' + encodeURIComponent(q) + filtros, 200, token,
+  )).json());
+  const porDni = await buscar(dni);
+  assert.equal(porDni.usuarios[0].id, perfil.id);
+  assert.equal(porDni.total, 1);
+  assert.equal((await buscar((dni + '@sofia.edu').toUpperCase())).usuarios[0].id, perfil.id);
+  assert.equal((await buscar('%_')).total, 0);
   const correo = dni + '@sofia.edu';
   await login(correo, dni, 401);
   const ruta = '/estudiantes/' + perfil.id + '/credenciales';
@@ -54,6 +68,10 @@ async function verificar() {
     nombre: 'Administrador sintético de sede', correo: otroCorreo, passwordInicial: otraClave, sedeId: String(sede.id),
   });
   const otro = (await login(otroCorreo, otraClave)).token;
+  assert.equal((await buscar(dni, otro)).usuarios[0].id, perfil.id);
+  const fuera = await (await esperar('GET', '/sedes', 200, admin)).json();
+  const sedeAjena = fuera.find(candidata => candidata.id !== sede.id);
+  if (sedeAjena) await esperar('GET', '?q=' + dni + '&sedeId=' + sedeAjena.id, 403, otro);
   await esperar('POST', ruta, 404, otro);
   const descargas = await Promise.all([enviar('POST', ruta, admin), enviar('POST', ruta, admin)]);
   assert.deepEqual(descargas.map(res => res.status).sort(), [200, 404]);

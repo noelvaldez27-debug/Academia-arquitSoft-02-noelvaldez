@@ -315,3 +315,7 @@ F1.1 incorporó el cambio de contraseña inicial y voluntario, cambio de correo 
 ### Fase 1 · Gestión de Usuarios web
 
 Acceso y cuenta, listados por rol y sede, estudiantes, docentes, administradores de sede, archivo y recuperación por DNI, sedes, ciclos y cargas Excel. Se incorporó GET /api/usuarios/cargas-masivas con alcance administrativo, paginación y OpenAPI. La regresión aprobó 458 pruebas backend y 9 frontend. Playwright aprobó 8 recorridos simulados. En Compose aislado se comprobaron la API de credenciales y el historial por sede, y se verificaron en navegador el historial y detalle de cargas y el alta y cierre de ciclos a través de nginx. La [SDD web](../specs/frontend/spec.md) registra las métricas, las limitaciones y la diferencia entre estas evidencias. La Fase 2 y el cierre del Sprint 2 quedan pendientes.
+
+### Consolidación de Gestión de Usuarios
+
+La búsqueda de usuarios usa PostgreSQL antes de paginar, con el alcance administrativo vigente. Regresión local: backend 459 pruebas, 84,95 % de líneas y 75,48 % de ramas; frontend 13 pruebas, 76,19 % de líneas y 63,23 % de ramas; Playwright 8 recorridos. Se añadió el trabajo de CI para compilación, Jest con cobertura y Playwright Chromium. La cobertura de frontend permanece por debajo del objetivo técnico recomendado. [SDD](../specs/frontend/spec.md).

@@ -161,7 +161,11 @@ export class UsuarioController {
 
   public listarUsuarios = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { rol, sedeId, pagina, limite, archivados } = req.query;
+      const { rol, sedeId, pagina, limite, archivados, q } = req.query;
+      if (q !== undefined && (typeof q !== 'string' || q.trim().length > 160)) {
+        res.status(400).json({ error: 'La búsqueda debe tener hasta 160 caracteres.' });
+        return;
+      }
       if (archivados !== undefined && archivados !== 'true' && archivados !== 'false') {
         res.status(400).json({ error: 'archivados debe ser true o false.' });
         return;
@@ -172,6 +176,7 @@ export class UsuarioController {
         pagina: pagina ? parseInt(String(pagina), 10) : undefined,
         limite: limite ? parseInt(String(limite), 10) : undefined,
         ...(archivados === 'true' && { soloArchivados: true }),
+        ...(typeof q === 'string' && q.trim() && { q: q.trim() }),
         ejecutor: req.usuario
           ? {
               id: req.usuario.id,

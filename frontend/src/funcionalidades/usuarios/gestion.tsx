@@ -31,6 +31,7 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
   const [sede, cambiarSede] = useState('');
   const [archivados, cambiarArchivados] = useState(false);
   const [busqueda, buscar] = useState('');
+  const [termino, aplicarBusqueda] = useState('');
   const [pagina, cambiarPagina] = useState(1);
   const [datos, cambiarDatos] = useState<Pagina>();
   const [sedes, cambiarSedes] = useState<Sede[]>();
@@ -55,11 +56,22 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
     return () => control.abort();
   }, [solicitar, version]);
   useEffect(() => {
+    const normalizada = busqueda.trim();
+    if (normalizada === termino) return;
+    const reloj = setTimeout(() => {
+      aplicarBusqueda(normalizada);
+      cambiarPagina(1);
+      seleccionar([]);
+      cambiarError('');
+    }, 300);
+    return () => clearTimeout(reloj);
+  }, [busqueda, termino]);
+  useEffect(() => {
     if (!controla) return;
     const control = new AbortController();
     cambiarDatos(undefined);
     const query = new URLSearchParams({ rol, pagina: String(pagina), ...(sede && { sedeId: sede }),
-      ...(archivados && { archivados: 'true' }) });
+      ...(archivados && { archivados: 'true' }), ...(termino && { q: termino }) });
     void solicitar<Pagina>(api + '?' + query, { signal: control.signal })
       .then(r => { if (!control.signal.aborted) {
         if (r.usuarios.length === 0 && pagina > 1) cambiarPagina(p => p - 1);
@@ -67,7 +79,7 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
       } })
       .catch(e => { if (!control.signal.aborted) cambiarError(mensaje(e)); });
     return () => control.abort();
-  }, [controla, solicitar, rol, sede, pagina, archivados, version]);
+  }, [controla, solicitar, rol, sede, pagina, archivados, termino, version]);
 
   async function operar(accion: () => Promise<void>, texto: string) {
     if (mutacion.current) return;
@@ -110,10 +122,6 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
     }
   };
 
-  const termino = busqueda.trim().toLocaleLowerCase('es');
-  const visibles = datos?.usuarios.filter(u => [u.nombre, u.dni, u.correo].some(
-    texto => texto?.toLocaleLowerCase('es').includes(termino),
-  ));
 
   return <div className="mt-6 grid gap-6">
     {error && <div><Estado tipo="error">{error}</Estado><Boton className="boton-secundario mt-2" onClick={() => { cambiarError(''); refrescar(n => n + 1); }}>Actualizar datos</Boton></div>}
@@ -125,15 +133,14 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
         {general && <Selector nombre="filtroSede" etiqueta="Sede" opciones={sedesOpciones} vacio="Todas las sedes" valor={sede} onChange={v => actualizarFiltro(() => cambiarSede(v))} />}
         {estudiantes && <label className="flex items-center gap-2"><input type="checkbox" checked={archivados} onChange={e => actualizarFiltro(() => cambiarArchivados(e.currentTarget.checked))} /> Solo archivados</label>}
       </div>
-      <Campo id="filtrar-pagina" etiqueta="Buscar en esta página" type="search" value={busqueda} onChange={e => buscar(e.currentTarget.value)} />
-      {datos && datos.usuarios.length > 0 && !visibles?.length && <Estado>No hay coincidencias en esta página.</Estado>}
+      <Campo id="filtrar-pagina" etiqueta="Buscar por nombre, DNI o correo" type="search" maxLength={160} value={busqueda} onChange={e => buscar(e.currentTarget.value)} />
       {!datos && !error && <Estado tipo="carga">Cargando usuarios…</Estado>}
       {datos && datos.usuarios.length === 0 && <Estado>No hay usuarios para estos filtros.</Estado>}
       {datos && datos.usuarios.length > 0 && <>
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white" tabIndex={0} role="region" aria-label="Listado de usuarios">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-100"><tr><th scope="col" className="p-3">Usuario</th><th scope="col" className="p-3">Sede / carrera</th><th scope="col" className="p-3">Estado</th><th scope="col" className="p-3">Acciones</th></tr></thead>
-            <tbody>{visibles?.map(u => <tr key={u.id} className="border-t border-slate-200">
+            <tbody>{datos.usuarios.map(u => <tr key={u.id} className="border-t border-slate-200">
               <td className="p-3"><strong>{u.nombre}</strong><div>{u.correo}</div>{u.dni && <div>DNI {u.dni}</div>}</td>
               <td className="p-3">{(sedes ?? []).find(s => String(s.id) === String(u.sedeId))?.nombre ?? '—'}<div>{u.carrera}</div></td>
               <td className="p-3">{archivados && estudiantes ? 'Archivado' : u.activo ? 'Activo' : 'Inactivo'}</td>

@@ -550,6 +550,8 @@ export const especificacionOpenApi = {
           'Permite consultar el listado de usuarios paginado. El administrador general puede consultar todos los usuarios de cualquier rol o sede. El administrador de sede solo puede consultar postulantes de su sede. Postulantes y docentes tienen acceso denegado. Nunca expone contraseñas ni hashes.',
         security: [{ bearerAuth: [] }],
         parameters: [
+          { name: 'q', in: 'query', schema: { type: 'string', maxLength: 160 },
+            description: 'Coincidencia literal parcial en nombre, DNI o correo dentro del alcance autorizado, antes de paginar.' },
           { name: 'archivados', in: 'query', schema: { type: 'boolean', default: false },
             description: 'true consulta solo postulantes archivados dentro del alcance autorizado.' },
           {

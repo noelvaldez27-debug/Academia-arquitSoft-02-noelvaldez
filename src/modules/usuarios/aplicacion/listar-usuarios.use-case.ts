@@ -18,6 +18,7 @@ export interface ListarUsuariosQuery {
   pagina?: number;
   limite?: number;
   soloArchivados?: boolean;
+  q?: string;
   ejecutor?: EjecutorListado;
 }
 
@@ -85,6 +86,7 @@ export class ListarUsuariosUseCase {
       sedeId: sedeIdFiltro,
       pagina,
       limite,
+      ...(query.q && { q: query.q }),
       ...(query.soloArchivados && { soloArchivados: true }),
     });
 

@@ -234,6 +234,13 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
       }
     }
 
+    if (filtros?.q) {
+      params.push(filtros.q);
+      const termino = 'LOWER($' + params.length + '::text)';
+      whereSql += ` AND (strpos(LOWER(nombre), ${termino}) > 0
+        OR strpos(dni, ${termino}) > 0 OR strpos(LOWER(correo), ${termino}) > 0)`;
+    }
+
     const countSql = `SELECT COUNT(*) AS total FROM usuarios${whereSql};`;
     const countRes = await this.pool.query<{ total: string }>(countSql, params);
     const total = parseInt(countRes.rows[0]?.total || '0', 10);

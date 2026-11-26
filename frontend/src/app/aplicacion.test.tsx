@@ -77,7 +77,7 @@ it('cambia la contraseña provisional y vuelve al acceso', async () => {
 
 function apiAdministrativa(sedeId: string | null, responder: (ruta: string) => unknown) {
   const token = 'cabecera.' + btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 60 })) + '.firma';
-  const api = jest.fn(async (ruta: string) => {
+  const api = jest.fn(async (ruta: string, _opciones?: RequestInit) => {
     const json = ruta.endsWith('/login') ? { token, usuario: {
       id: '1', nombre: 'Administración de prueba', rol: 'ADMINISTRADOR', sedeId,
     } } : responder(ruta);
@@ -115,4 +115,70 @@ it('permite consultar ciclos de sede y reserva su cierre al administrador genera
   expect(await screen.findByText('Ciclo sintético')).toBeVisible();
   expect(screen.queryByRole('button', { name: 'Cerrar ciclo' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Guardar registro' })).not.toBeInTheDocument();
+});
+
+it('busca en el servidor y archiva únicamente la selección confirmada', async () => {
+  const confirmacion = jest.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+  try {
+    const alumno = { id: '20', nombre: 'Alumno sintético', dni: '12345678', correo: 'alumno@example.test',
+      rol: 'POSTULANTE', activo: true, sedeId: '2', carrera: 'Ingeniería' };
+    let archivado = false;
+    const api = apiAdministrativa('2', ruta => {
+      if (ruta.endsWith('/sedes')) return [{ id: '2', nombre: 'Sede de prueba' }];
+      if (ruta.endsWith('/ciclos')) return [];
+      if (ruta.endsWith('/archivar')) { archivado = true; return { archivados: 1 }; }
+      const encontrados = ruta.includes('q=Alumno') && !archivado ? [alumno] : [];
+      return { usuarios: encontrados, pagina: 1, limite: 20, total: encontrados.length };
+    });
+    montar('/acceso');
+    const usuario = await ingresar();
+    await usuario.click(within(await screen.findByRole('navigation')).getByRole('link', { name: 'Estudiantes' }));
+    expect(await screen.findByText('No hay usuarios para estos filtros.')).toBeVisible();
+    await usuario.type(screen.getByLabelText('Buscar por nombre, DNI o correo'), 'Alumno');
+    expect(await screen.findByText(alumno.nombre)).toBeVisible();
+    const consultas = api.mock.calls.filter(([ruta]) => ruta.includes('q='));
+    expect(consultas).toEqual([['/api/usuarios?rol=POSTULANTE&pagina=1&q=Alumno', expect.anything()]]);
+    await usuario.click(screen.getByRole('checkbox', { name: 'Seleccionar a Alumno sintético' }));
+    await usuario.click(screen.getByRole('button', { name: /Archivar seleccionados/ }));
+    expect(archivado).toBe(false);
+    await usuario.click(screen.getByRole('button', { name: /Archivar seleccionados/ }));
+    expect(await screen.findByText('Archivo completado.')).toBeVisible();
+    expect(archivado).toBe(true);
+  } finally { confirmacion.mockRestore(); }
+});
+
+it('rechaza un token vencido y mantiene el panel cerrado', async () => {
+  const api = simularAcceso();
+  const { usuario } = await (await api()).json();
+  const token = 'cabecera.' + btoa(JSON.stringify({ exp: 1 })) + '.firma';
+  api.mockResolvedValue({ status: 200, ok: true, json: async () => ({ token, usuario }) });
+  montar('/acceso');
+  await ingresar();
+  expect(await screen.findByRole('alert')).toHaveTextContent('Vuelve a ingresar');
+  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+});
+
+it('mantiene la sesión ante un 403 pero regresa al acceso ante un 401 privado', async () => {
+  const api = apiAdministrativa('2', () => undefined);
+  montar('/acceso');
+  const usuario = await ingresar();
+  const nav = await screen.findByRole('navigation');
+  await usuario.click(within(nav).getByRole('link', { name: 'Estudiantes' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('no tiene acceso');
+  expect(nav).toBeVisible();
+  api.mockResolvedValue({ status: 401, ok: false, json: async () => ({}) });
+  await usuario.click(screen.getByRole('button', { name: 'Actualizar datos' }));
+  expect(await screen.findByText('Tu sesión terminó. Vuelve a ingresar.')).toBeVisible();
+});
+
+it('evita enviar una confirmación de contraseña distinta a la nueva', async () => {
+  const api = simularAcceso(true);
+  montar('/acceso');
+  const usuario = await ingresar();
+  await usuario.type(await screen.findByLabelText('Contraseña provisional'), 'provisional de prueba');
+  await usuario.type(screen.getByLabelText('Nueva contraseña', { exact: true }), 'nueva de prueba');
+  await usuario.type(screen.getByLabelText('Confirmar nueva contraseña'), 'otra de prueba');
+  await usuario.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('deben coincidir');
+  expect(api).toHaveBeenCalledTimes(1);
 });

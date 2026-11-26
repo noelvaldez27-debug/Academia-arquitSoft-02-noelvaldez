@@ -15,6 +15,8 @@
 - [x] F1.2. Implementar sedes, altas, padrón de usuarios, condición, archivo, reactivación y ciclos. Verificar los permisos de ambos administradores.
 - [x] F1.3. Implementar Excel normal y de nuevo ciclo, estados por fila y entregas temporales. Verificar test de un uso y recuperación de ID e historial.
 
+- [x] F1.C. Consolidar búsqueda PostgreSQL y pruebas web, revisar historial saliente e incorporar frontend a CI. Publicar y verificar CI antes de la Fase 2.
+
 ## Fase 2 · Banco de Preguntas (depende de F1)
 
 - [ ] F2.1. Implementar cursos, temas, asignaciones, preguntas y configuración de simulacros. Verificar permisos, orden y edición.

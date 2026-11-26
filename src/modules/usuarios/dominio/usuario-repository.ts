@@ -8,6 +8,7 @@ export interface FiltrosListadoUsuarios {
   pagina?: number;
   limite?: number;
   soloArchivados?: boolean;
+  q?: string;
 }
 
 export interface ResultadoPaginadoUsuarios {
