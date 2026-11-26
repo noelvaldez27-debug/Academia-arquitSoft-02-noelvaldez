@@ -6,7 +6,7 @@ function json(properties: Record<string, object>) {
   return { 'application/json': { schema: { type: 'object', required: Object.keys(properties), properties } } };
 }
 
-const curso = json({ cursoId: texto, ...totales })['application/json'].schema;
+const curso = json({ cursoId: texto, cursoNombre: { ...texto, nullable: true }, ...totales })['application/json'].schema;
 
 export const rutasOpenApiResultados = {
   '/api/v1/resultados/{id}': {

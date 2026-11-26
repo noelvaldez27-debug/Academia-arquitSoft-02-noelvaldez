@@ -339,3 +339,4 @@ F3.1 y F3.2 completadas. Listado autorizado por padrón, vistas virtual e impres
 ### Fase 4 · Procesamiento de Resultados web
 
 F4.1 completada localmente. Mi nota muestra fecha, puntaje definitivo y conteos totales y por curso. El sondeo distingue pendiente de cero puntos, sigue Retry-After y tiene espera acotada. Se reutilizaron los contratos REST vigentes. Regresión aprobada con 462 pruebas backend, 28 Jest de frontend y 20 recorridos Playwright. Compose aislado verificó la nota y las restricciones de acceso con cuentas sintéticas. Una ejecución local midió 2855 ms desde el clic de cierre hasta la nota visible. La validación integral y la tarea 8 de Sprint 2 siguen abiertas. [SDD](../specs/frontend/spec.md#fase-4--mi-nota)
+La consolidación de Fase 4 muestra los nombres de los cursos mediante el contrato interno de Banco, con consulta posterior a la autorización del resultado propio.

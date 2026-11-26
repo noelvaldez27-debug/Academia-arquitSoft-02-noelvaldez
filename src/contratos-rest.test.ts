@@ -32,7 +32,7 @@ test('CA-VS05 contrasta las seis familias REST con el Swagger servido y sus esta
   const auth = usuarios.middlewareAutenticacion;
   const banco = new BancoPreguntasModule(pool, auth, { guardar: jest.fn(), obtener: jest.fn() }, 10000);
   const rendicion = new RendicionModule(pool, {} as Redis, banco, auth);
-  const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, auth);
+  const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, auth, async () => []);
   const ranking = new RankingReportesModule(pool, rendicion.consultasReportes, resultados.consultas, auth, async () => []);
   const analitica = new AnaliticaModule(pool, auth,
     { ...resultados.consultas, paraAnalitica: resultados.resultadosParaAnalitica }, async () => []);

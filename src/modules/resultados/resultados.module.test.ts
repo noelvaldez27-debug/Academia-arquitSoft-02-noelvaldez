@@ -8,7 +8,8 @@ import { rutasOpenApiResultados } from './presentacion/resultados.openapi';
 it('CA-PR05 distingue pendiente, ajeno y procesado y proyecta solo campos autorizados', async () => {
   let listo = false;
   const guardado = { examenId: 'e', simulacroId: 's', postulanteId: 'u', puntajeCentesimos: 33_333,
-    correctas: 1, incorrectas: 1, omitidas: 1, porCurso: [], detalle: [{ preguntaId: 'p' }] };
+    correctas: 1, incorrectas: 1, omitidas: 1,
+    porCurso: [{ cursoId: 'mat', correctas: 1, incorrectas: 1, omitidas: 1 }], detalle: [{ preguntaId: 'p' }] };
   const query = jest.fn(async () => ({ rows: listo ? [guardado] : [] }));
   const autenticar: MiddlewareAutenticacion['autenticar'] = async (req, res, next) => {
     const id = req.get('x-usuario');
@@ -18,7 +19,8 @@ it('CA-PR05 distingue pendiente, ajeno y procesado y proyecta solo campos autori
   };
   const auth = { autenticar, requerirRol: () => (_req: unknown, _res: unknown, next: () => void) => next() };
   const consultar = jest.fn(async id => id === 'e' ? { examenId: id, postulanteId: 'u', simulacroId: 's', respuestas: [] } : null);
-  const modulo = new ResultadosModule({ query } as unknown as Pool, { consultar }, auth as unknown as MiddlewareAutenticacion);
+  const nombres = jest.fn(async (_ids: string[]) => [{ id: 'mat', nombre: 'Matemática' }]);
+  const modulo = new ResultadosModule({ query } as unknown as Pool, { consultar }, auth as unknown as MiddlewareAutenticacion, nombres);
   const http = request(crearApp({ rutasResultados: modulo.rutas, rutasOpenApiAdicionales: rutasOpenApiResultados }));
   const url = '/api/v1/resultados/e';
   await http.get(url).expect(401);
@@ -28,9 +30,12 @@ it('CA-PR05 distingue pendiente, ajeno y procesado y proyecta solo campos autori
     .expect({ estado: 'PENDIENTE', examenId: 'e' });
   listo = true;
   await http.get(url).set('x-usuario', 'otro').expect(404);
+  expect(nombres).not.toHaveBeenCalled();
   await http.get(url).set('x-usuario', 'u').expect(200).expect('Cache-Control', 'no-store').expect({
-    estado: 'PROCESADO', examenId: 'e', simulacroId: 's', puntaje: 333.33, correctas: 1, incorrectas: 1, omitidas: 1, porCurso: [],
+    estado: 'PROCESADO', examenId: 'e', simulacroId: 's', puntaje: 333.33, correctas: 1, incorrectas: 1, omitidas: 1,
+    porCurso: [{ ...guardado.porCurso[0], cursoNombre: 'Matemática' }],
   });
+  expect(nombres).toHaveBeenCalledWith(['mat']);
   expect(await modulo.consultas.porSimulacro('s')).toEqual([guardado]);
   expect(await modulo.consultas.porPostulante('u', 'a')).toEqual([guardado]);
   expect(query).toHaveBeenCalledWith(expect.stringContaining('postulante_id = $1'), ['u', 'a']);

@@ -1,6 +1,6 @@
 import { existenIntentosActivos, RendicionModule, rutasOpenApiRendicion, tieneSimulacrosPorCerrar } from './modules/rendicion-examen';
 import { ResultadosModule, rutasOpenApiResultados } from './modules/resultados';
-import { BancoPreguntasModule, crearConsultaRequierePadron, rutasOpenApiBanco } from './modules/banco-preguntas';
+import { BancoPreguntasModule, crearConsultaNombresCursos, crearConsultaRequierePadron, rutasOpenApiBanco } from './modules/banco-preguntas';
 import { AlmacenArchivosLocal, crearApp, crearPoolPostgres, crearClienteRedis, obtenerConfiguracionRedisDesdeEnv } from './compartido/infraestructura';
 import { crearConsultaPostulanteHabilitado, crearConsultasCicloParaRendicion, UsuariosModule } from './modules/usuarios';
 import { RankingReportesModule, rutasOpenApiRanking } from './modules/ranking-reportes';
@@ -36,7 +36,8 @@ const redis = crearClienteRedis({
 const rendicion = new RendicionModule(pool, redis, bancoPreguntas, usuariosModule.middlewareAutenticacion,
   usuariosModule.servicioConsultaUsuarios, crearConsultaPostulanteHabilitado,
   { requierePadron: crearConsultaRequierePadron, ciclos: crearConsultasCicloParaRendicion });
-const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion);
+const resultados = new ResultadosModule(pool, rendicion.examenesFinalizados, usuariosModule.middlewareAutenticacion,
+  crearConsultaNombresCursos(pool, cacheConsultas));
 rendicion.iniciarTrabajos(resultados.consultas.contarCalificados);
 const rankings = new RankingReportesModule(pool, rendicion.consultasReportes, resultados.consultas,
   usuariosModule.middlewareAutenticacion, bancoPreguntas.cursosAsignados);

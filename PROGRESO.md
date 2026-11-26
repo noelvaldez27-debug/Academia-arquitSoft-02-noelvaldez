@@ -186,3 +186,4 @@ Fase 3 validada con 462 pruebas backend, 84,65 % de líneas y 74,93 % de ramas. 
 F4.1 completada localmente. Mi nota permite seleccionar un intento finalizado o llegar desde el cierre. Muestra el resultado definitivo, la fecha y el desglose por curso. El sondeo respeta Retry-After y se pausa a los 60 segundos. La regresión aprobó 462 pruebas backend, 28 frontend y 20 recorridos Playwright. En Compose aislado se comprobó el cero definitivo, fecha, desglose y permisos, con 2855 ms de cierre a nota visible en una ejecución. Véase la [SDD](specs/frontend/spec.md#fase-4--mi-nota).
 
 Siguiente paso exacto tras autorización del usuario. Publicar la Fase 4 si se autoriza el push y empezar F5.1 en `specs/frontend/tasks.md` si se autoriza Ranking y Reportes. La consolidación general de cobertura queda para después de Fase 6.
+F4.C incorpora el nombre del curso desde el catálogo autorizado de Banco. El botón de reconsulta tras la pausa se verificó con el caso Jest existente.

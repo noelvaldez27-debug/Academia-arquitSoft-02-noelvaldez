@@ -8,7 +8,7 @@ import { examenes, type Intento, type Opcion } from '../rendicion/contratos';
 type Conteos = { correctas: number; incorrectas: number; omitidas: number };
 type Nota = Conteos & {
   estado: 'PROCESADO'; examenId: string; simulacroId: string; puntaje: number;
-  porCurso: (Conteos & { cursoId: string })[];
+  porCurso: (Conteos & { cursoId: string; cursoNombre?: string | null })[];
 };
 type Resultado = Nota | { estado: 'PENDIENTE'; examenId: string };
 type Lectura = { estado: 'carga' | 'pendiente' | 'pausa' | 'ausente' }
@@ -105,7 +105,7 @@ function DetalleNota({ id }: { id: string }) {
           <caption className="mb-2 text-left font-semibold">Resultados por curso</caption>
           <thead><tr><th scope="col" className="pr-2">Curso</th>{columnas.map(([clave, titulo]) => <th scope="col" className="p-2" key={clave}>{titulo}</th>)}</tr></thead>
           <tbody>{nota.porCurso.map(curso => <tr key={curso.cursoId} className="border-t">
-            <th scope="row" className="break-all py-2 pr-2 font-medium">{curso.cursoId}</th>
+            <th scope="row" className="break-words py-2 pr-2 font-medium">{curso.cursoNombre ?? curso.cursoId}</th>
             {columnas.map(([clave]) => <td className="p-2" key={clave}>{curso[clave]}</td>)}
           </tr>)}</tbody>
         </table>

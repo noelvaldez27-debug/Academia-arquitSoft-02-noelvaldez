@@ -1,6 +1,6 @@
 import type { Pool } from 'pg';
 import { MiddlewareAutenticacion, RolUsuario } from '../usuarios';
-import { ConsultarResultadoUseCase } from './aplicacion/consultar-resultado.use-case';
+import { ConsultarResultadoUseCase, type NombresCursos } from './aplicacion/consultar-resultado.use-case';
 import type { ExamenesFinalizadosPort } from './dominio/fuentes-resultado.port';
 import type { Resultado } from './dominio/resultado';
 import { PostgresResultadoRepository } from './infraestructura/postgres-resultado-repository';
@@ -18,10 +18,10 @@ export class ResultadosModule {
   readonly consultas: ConsultaResultadosInterna;
   readonly resultadosParaAnalitica: (simulacroId: string | undefined, despues?: string) => Promise<Resultado[]>;
 
-  constructor(pool: Pool, examenes: ExamenesFinalizadosPort, auth: MiddlewareAutenticacion) {
+  constructor(pool: Pool, examenes: ExamenesFinalizadosPort, auth: MiddlewareAutenticacion, nombresCursos: NombresCursos) {
     const repo = new PostgresResultadoRepository(pool);
     this.resultadosParaAnalitica = (simulacroId, despues) => repo.listarParaAnalitica(simulacroId, despues);
-    this.rutas = crearRutasResultados(new ConsultarResultadoUseCase(id => repo.buscar(id), examenes),
+    this.rutas = crearRutasResultados(new ConsultarResultadoUseCase(id => repo.buscar(id), examenes, nombresCursos),
       auth.autenticar, auth.requerirRol(RolUsuario.Postulante));
     this.consultas = {
       porSimulacro: (id, despues) => repo.listar('simulacro_id', id, despues),

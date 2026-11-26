@@ -13,7 +13,7 @@ const pendiente = { estado: 'PENDIENTE', examenId: 'intento' };
 const nota = {
   estado: 'PROCESADO', examenId: 'intento', simulacroId: 'SIM-1', puntaje: 0,
   correctas: 0, incorrectas: 1, omitidas: 2,
-  porCurso: [{ cursoId: 'MAT', correctas: 0, incorrectas: 1, omitidas: 2 }],
+  porCurso: [{ cursoId: 'MAT', cursoNombre: 'Matemática', correctas: 0, incorrectas: 1, omitidas: 2 }],
 };
 
 beforeEach(() => {
@@ -68,7 +68,7 @@ it('respeta Retry-After, no solapa consultas y muestra cero definitivo y el desg
   expect(screen.getByRole('heading', { name: 'Calificación definitiva' })).toBeVisible();
   expect(screen.getByText('0.00')).toBeVisible();
   expect(screen.getByText(/26 de noviembre de 2026/)).toHaveAttribute('datetime', '2026-11-26T15:00:00Z');
-  expect(within(screen.getByRole('row', { name: 'MAT 0 1 2' })).getAllByRole('cell')).toHaveLength(3);
+  expect(within(screen.getByRole('row', { name: 'Matemática 0 1 2' })).getAllByRole('cell')).toHaveLength(3);
   await avanzar(65000);
   expect(leer).toHaveBeenCalledTimes(2);
 });
