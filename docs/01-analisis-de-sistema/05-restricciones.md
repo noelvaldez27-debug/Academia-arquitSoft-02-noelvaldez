@@ -18,3 +18,6 @@
 | RC14 | Servicio de IA de capa gratuita | El servicio de inteligencia artificial se consume mediante una capa gratuita con límites de uso, detrás de una interfaz que permita cambiar de proveedor sin modificar los módulos. |
 | RC15 | Alcance por sede | Cada estudiante pertenece a una sede. Un administrador de sede solo puede ver, registrar, cargar y desactivar estudiantes de su sede. Solo el administrador general trabaja con todas las sedes, y es único. |
 | RC16 | Usuarios sin borrado | Los usuarios no se borran del sistema: se desactivan, para conservar el historial de exámenes y resultados de cada postulante. |
+## Revisión de RC09 para postulantes
+
+Las nuevas emisiones de credenciales de postulante usan una contraseña provisional aleatoria y con vigencia. Exigen cambio inicial y mantienen el correo derivado del DNI. La regla original se conserva arriba para trazabilidad; se mantiene la política de docentes y administradores.

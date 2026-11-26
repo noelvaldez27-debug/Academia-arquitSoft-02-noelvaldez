@@ -24,3 +24,7 @@ El módulo conserva las cuatro capas de ADR-002. Usa los contratos públicos de 
 3. **Versión congelada (CA-RE02, RC10).** El primer intento fija una versión común e inmutable, con duración, preguntas, contenido, alternativas, orden y claves. Los inicios concurrentes convergen en esa versión y las ediciones posteriores no la alteran. El Banco conserva las claves y las entrega por un contrato interno separado de la proyección visible.
 4. **Modalidad impresa (CA-RE02, CA-RE03, RF05).** Comparte intento, plazo y sincronización con la modalidad virtual. Puede identificar cada pregunta por su número en el orden congelado. La rendición virtual permite consultar el enunciado y las alternativas dentro del sistema.
 5. **Cambios y reintentos (CA-RE03, CA-RE04, RF06).** Se permite marcar, sustituir y borrar durante la vigencia. Cada pregunta usa una revisión asignada por el servidor. El cliente envía la revisión base y un identificador de operación. Un reintento no repite el cambio y una actualización con revisión obsoleta no puede sobrescribir otra. El borrado conserva la revisión. Tras el cierre, las respuestas son inmutables.
+
+## Admisión a simulacros habilitados
+
+CA-VS02 y CA-VS03 verifican que la habilitación y los inicios concurrentes respeten el padrón congelado. El cierre de ciclo comprueba intentos y simulacros sin interrumpir el procesamiento de calificaciones. Ver [SDD de validación](../validacion-sprint-2/spec.md).

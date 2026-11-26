@@ -57,3 +57,8 @@
 | HU20 Iniciar sesión | RF20 |
 | HU21 Cambiar mi contraseña | RF26 |
 | HU22 Cambiar el correo del administrador | RF26 |
+## Revisiones aprobadas para la etapa de validación del Sprint 2
+
+- RF02 y RF26. Las nuevas emisiones de credenciales para postulantes mantienen el usuario por DNI, generan una contraseña provisional aleatoria y exigen su cambio tras el primer ingreso. El texto anterior conserva la decisión original y el cambio posterior sigue disponible para todos.
+- RF21. Importación normal mantiene la omisión de todos los DNI existentes. La modalidad explícita para nuevo ciclo recupera solo postulantes archivados, previa validación del alcance administrativo y del vínculo con el ciclo. Los DNI activos se omiten en ambos modos.
+- RF09 y RF24. El cierre académico archiva las cuentas afectadas e invalida sus sesiones, conservando los registros históricos y los vínculos de ciclo.

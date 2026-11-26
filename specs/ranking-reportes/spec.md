@@ -58,3 +58,7 @@ El cálculo corre en segundo plano mediante RabbitMQ (RC06 y ADR-004). El worker
 - Rendición de Examen conserva la instantánea de carrera, sede y condición al iniciar. Gestiona el cierre general y la reanudación de intentos activos.
 - Procesamiento de Resultados expone sus consultas de calificaciones y totales para validar el cierre y detectar cambios. Ranking reutiliza el puntaje en centésimos en la escala de 0 a 1000, sin penalizaciones.
 - GitHub Actions compiló el commit `5458167` con Node.js 20 y ejecutó Jest con cobertura. [Ejecución 45663589106](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45663589106)
+
+## Revisión aprobada de HU11
+
+Para simulacros nuevos, el padrón congelado al habilitar suministra el denominador por sede y carrera. Se conserva el significado de participación como intento iniciado. Si no existen inscritos, la tasa es null. Los datos legados sin padrón conservan los indicadores dependientes como no disponibles. La condición académica sigue disponible como dato y filtro histórico. Ver [CA-VS03](../validacion-sprint-2/spec.md).

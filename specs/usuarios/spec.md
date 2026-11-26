@@ -138,3 +138,7 @@ Formato: Dado / Cuando / Entonces.
 - Si el nombre se guarda como un solo campo o separado en nombres y apellidos.
 - Tiempo de vida del JWT (propuesta: 8 horas, configurable) y largo mínimo de la contraseña (propuesta: 8 caracteres).
 - Si el administrador podrá restablecer la contraseña de un usuario que la olvidó (no incluido por ahora).
+
+## Ampliación aprobada para ciclos
+
+CA-U13 distingue importación normal (omite todo DNI existente) y nuevo ciclo explícito (omite activos y puede recuperar archivados autorizados). Ambas modalidades conservan la validación por fila y sede. CA-U02 y CA-U08 adoptan emisión provisional aleatoria, expiración y cambio obligatorio para postulantes que reciben nueva credencial. CA-U11 requiere invalidación permanente de JWT anteriores al archivado. La entrega masiva se reserva al administrador responsable mediante Excel temporal de un solo uso. Los criterios detallados CA-VS01–04 se encuentran en la [SDD de validación](../validacion-sprint-2/spec.md).

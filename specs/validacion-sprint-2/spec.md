@@ -16,3 +16,11 @@
 - CA-VS03. Una habilitación congelada resiste cambios posteriores de cuentas, sede y carrera. Un intento nuevo pertenece al padrón. La consulta por sede/carrera compara cohortes equivalentes. Padrón vacío, padrón desconocido y tasa cero se prueban por separado. La edición concurrente no altera el padrón confirmado.
 - CA-VS04. Usuarios, Rendición, Ranking y Analítica conservan compatibilidad histórica tras migraciones. Excel y OpenAPI reflejan las decisiones aprobadas. El historial conserva notas y versiones.
 - CA-VS05. La evidencia transversal identifica dependencias indebidas, estados HTTP y respuestas divergentes, persistencia y recuperación local, y registra AC01–AC08 por alcance.
+
+## Decisiones aprobadas para implementación
+
+- Excel conserva la omisión por defecto para todo DNI existente. El modo explícito de nuevo ciclo vincula altas y recupera solo postulantes archivados autorizados. Reporta los activos omitidos. RF21 y CA-U13 conservan trazabilidad del comportamiento original.
+- El ciclo registra código o nombre, fechas y estado. Usuarios conserva sus membresías históricas y permite una activa por postulante. El administrador general cierra el ciclo. El cierre comprueba simulacros finalizados, ausencia de intentos afectados y continuidad del procesamiento de notas. El archivado por sede queda limitado a su ámbito.
+- El padrón se congela al habilitar un nuevo simulacro antes del primer intento, con sede y carrera históricas. La entrada requiere pertenencia al padrón y cuenta activa. Padrón vacío admite cero inscritos con tasa null. Sin padrón verificable, inscritos y los indicadores dependientes quedan no disponibles.
+- La condición se conserva para consultas históricas y deja de ser obligatoria en altas nuevas.
+- Para altas y recuperaciones que emiten credenciales a postulantes, la nueva decisión reemplaza contraseña DNI y cambio opcional de RF02, RF26 y RC09. Se exige contraseña aleatoria individual, vigencia y cambio inicial. La entrega por lote se limita al administrador responsable, mediante Excel temporal de un solo uso. La contraseña en claro se limita a ese canal autorizado. El almacenamiento temporal para entrega debe estar cifrado, separado del hash, y consumirse atómicamente. Conservar la política existente de docentes y administradores.
