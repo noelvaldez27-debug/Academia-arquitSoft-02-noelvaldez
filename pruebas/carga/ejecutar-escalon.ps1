@@ -1,12 +1,13 @@
 param(
   [Parameter(Mandatory)][ValidateSet(3,50,100,250,500,1000,1500,2000)][int]$Usuarios,
-  [switch]$Autorizado
+  [switch]$Autorizado,
+  [ValidatePattern('^evalua-campana-k6(?:-[a-z0-9]+)?$')][string]$Proyecto='evalua-campana-k6'
 )
 $ErrorActionPreference='Stop'
 if (!$Autorizado) { throw 'Confirma la autorización del escalón con -Autorizado.' }
-$b='evalua-campana-k6-backend-1'
-$pg='evalua-campana-k6-postgres-1'
-$mq='evalua-campana-k6-rabbitmq-1'
+$b="$Proyecto-backend-1"
+$pg="$Proyecto-postgres-1"
+$mq="$Proyecto-rabbitmq-1"
 $env:VUS=[string]$Usuarios
 if ($Usuarios -eq 3) {
   $env:MODO_HUMO='si'
@@ -19,15 +20,16 @@ $env:AUTORIZAR_CARGA='si'
 $env:API_LOCAL='http://127.0.0.1:3000'
 $env:MARCA_SEGUNDOS='1'
 $env:USUARIOS_SINTETICOS='/fixture/cuentas.json'
-if ((docker inspect $b --format '{{index .Config.Labels "com.docker.compose.project"}}') -ne 'evalua-campana-k6' -or
-    (docker network inspect evalua-campana-k6_default --format '{{.Internal}}') -ne 'true' -or
+if ((docker inspect $b --format '{{index .Config.Labels "com.docker.compose.project"}}') -ne $Proyecto -or
+    (docker network inspect "${Proyecto}_default" --format '{{.Internal}}') -ne 'true' -or
     (docker port $b) -or
     (docker exec $b printenv ANALITICA_IA) -ne 'simulada' -or
-    (docker exec evalua-campana-k6-worker-separatas-1 printenv SEPARATAS_IA_PROVEEDOR) -ne 'simulado') {
+    (docker exec "$Proyecto-worker-separatas-1" printenv SEPARATAS_IA_PROVEEDOR) -ne 'simulado') {
   throw 'El aislamiento o la configuración simulada no están verificados.'
 }
-$env:ADMIN_SINTETICO_CORREO=docker exec $b printenv ADMIN_GENERAL_CORREO
-$env:ADMIN_SINTETICO_PASSWORD=docker exec $b printenv ADMIN_GENERAL_PASSWORD
+if ($env:ADMIN_SINTETICO_CORREO -notlike '*.invalid' -or !$env:ADMIN_SINTETICO_PASSWORD) {
+  throw 'Proporciona las credenciales sintéticas de la ejecución mediante el entorno del proceso.'
+}
 $fixture=Get-Content -Raw -Encoding UTF8 pruebas/carga/preparar-humo.cjs | docker exec -i -e VUS -e MODO_CAMPANA $b node -
 if ($LASTEXITCODE -ne 0 -or !$fixture) { throw 'No se preparó el conjunto sintético.' }
 $datos=$fixture | ConvertFrom-Json
@@ -45,21 +47,23 @@ try {
   git rev-parse HEAD | Add-Content (Join-Path $e 'entorno.txt')
   docker image inspect grafana/k6:1.0.0 --format '{{index .RepoDigests 0}}' | Add-Content (Join-Path $e 'entorno.txt')
   "VUS=$Usuarios MARCA_SEGUNDOS=$env:MARCA_SEGUNDOS red_interna=true" | Add-Content (Join-Path $e 'entorno.txt')
-  $trabajo=Start-Job -ArgumentList $e -ScriptBlock {
-    param($destino)
+  $pool=docker exec $b printenv DB_POOL_MAX_API
+  "DB_POOL_MAX_API=$pool" | Add-Content (Join-Path $e 'entorno.txt')
+  $trabajo=Start-Job -ArgumentList $e,$Proyecto -ScriptBlock {
+    param($destino,$proyectoObservado)
     $ruta=Join-Path $destino 'recursos.txt'
     while ($true) {
       $instante=(Get-Date).ToUniversalTime().ToString('o')
       docker stats --no-stream --format '{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.PIDs}}|{{.NetIO}}|{{.BlockIO}}' |
-        Where-Object { $_ -like 'evalua-campana-k6-*' } | ForEach-Object { "$instante|$_" } | Add-Content $ruta
+        Where-Object { $_ -like "$proyectoObservado-*" } | ForEach-Object { "$instante|$_" } | Add-Content $ruta
       Start-Sleep -Seconds 1
     }
   }
   $PSNativeCommandUseErrorActionPreference=$false
-  docker run --rm --name evalua-campana-k6-generador --network "container:$b" --user 0 --mount "type=bind,source=$g,target=/guion,readonly" --mount "type=bind,source=$f,target=/fixture,readonly" --mount "type=bind,source=$e,target=/evidencia" -e VUS -e MARCA_SEGUNDOS -e MODO_HUMO -e API_LOCAL -e AUTORIZAR_CARGA -e USUARIOS_SINTETICOS -e ADMIN_SINTETICO_CORREO -e ADMIN_SINTETICO_PASSWORD -e CICLO_ID -e SIMULACRO_ID grafana/k6:1.0.0 run --out json=/evidencia/metricas.ndjson /guion/simulacro.k6.js
+  docker run --rm --name "$Proyecto-generador" --network "container:$b" --user 0 --mount "type=bind,source=$g,target=/guion,readonly" --mount "type=bind,source=$f,target=/fixture,readonly" --mount "type=bind,source=$e,target=/evidencia" -e VUS -e MARCA_SEGUNDOS -e MODO_HUMO -e API_LOCAL -e AUTORIZAR_CARGA -e USUARIOS_SINTETICOS -e ADMIN_SINTETICO_CORREO -e ADMIN_SINTETICO_PASSWORD -e CICLO_ID -e SIMULACRO_ID grafana/k6:1.0.0 run --out json=/evidencia/metricas.ndjson /guion/simulacro.k6.js
   $codigo=$LASTEXITCODE
   "k6_exit=$codigo" | Set-Content (Join-Path $e 'salida.txt')
-  docker ps --filter label=com.docker.compose.project=evalua-campana-k6 --format '{{.Names}}|{{.Status}}|{{.Ports}}' | Set-Content (Join-Path $e 'servicios.txt')
+  docker ps --filter "label=com.docker.compose.project=$Proyecto" --format '{{.Names}}|{{.Status}}|{{.Ports}}' | Set-Content (Join-Path $e 'servicios.txt')
   docker exec $mq rabbitmqctl list_queues name messages_ready messages_unacknowledged | Set-Content (Join-Path $e 'colas.txt')
   $id=[Guid]::Parse($datos.simulacroId).ToString()
   $sql=@"
@@ -69,7 +73,9 @@ SELECT
  (SELECT count(*) FROM examenes_rendicion WHERE simulacro_id='$id' AND cierre IS NOT NULL) finalizados,
  (SELECT count(*) FROM resultados_examen WHERE simulacro_id='$id') calificados,
  (SELECT count(DISTINCT postulante_id) FROM examenes_rendicion WHERE simulacro_id='$id') postulantes_distintos,
- (SELECT count(*) FROM resultados_examen WHERE simulacro_id='$id' AND puntaje_centesimos=100000) notas_esperadas;
+ (SELECT count(*) FROM resultados_examen WHERE simulacro_id='$id' AND puntaje_centesimos=100000) notas_esperadas,
+ (SELECT count(*)-count(DISTINCT postulante_id) FROM examenes_rendicion WHERE simulacro_id='$id') intentos_duplicados,
+ (SELECT count(*)-count(DISTINCT examen_id) FROM resultados_examen WHERE simulacro_id='$id') resultados_duplicados;
 "@
   $sql | docker exec -i $pg sh -c 'psql -X -A -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' | Set-Content (Join-Path $e 'postgres.txt')
   @'

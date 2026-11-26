@@ -10,8 +10,13 @@ assert.ok(Number.isInteger(cantidad) && (process.env.MODO_CAMPANA === 'si'
 async function api(ruta, esperado, datos, token, metodo = 'POST') {
   const headers = { 'content-type': 'application/json' };
   if (token) headers.authorization = 'Bearer ' + token;
-  const res = await fetch(base + ruta, { method: metodo, headers, body: datos && JSON.stringify(datos),
-    redirect: 'error', signal: AbortSignal.timeout(10000) });
+  let res;
+  try {
+    res = await fetch(base + ruta, { method: metodo, headers, body: datos && JSON.stringify(datos),
+      redirect: 'error', signal: AbortSignal.timeout(10000) });
+  } catch (error) {
+    throw new Error('Falló HTTP local al preparar ' + metodo + ' ' + ruta + ' (' + (error.cause?.code ?? error.name) + ').');
+  }
   assert.equal(res.status, esperado, ruta);
   return res.headers.get('content-type').includes('spreadsheetml') ? res.arrayBuffer() : res.json();
 }
