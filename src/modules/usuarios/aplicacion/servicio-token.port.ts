@@ -4,6 +4,7 @@ export interface PayloadToken {
   id: string;
   rol: RolUsuario;
   sedeId: string | null;
+  versionSesion?: number;
 }
 
 export interface ServicioToken {

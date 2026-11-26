@@ -54,6 +54,11 @@ export class MiddlewareAutenticacion {
         return;
       }
 
+      if ((payload.versionSesion ?? 0) !== usuario.versionSesion) {
+        res.status(401).json({ error: 'Acceso no autorizado: sesión revocada.' });
+        return;
+      }
+
       req.usuario = {
         id: usuario.id ?? payload.id,
         nombre: usuario.nombre,

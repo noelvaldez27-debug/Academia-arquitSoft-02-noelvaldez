@@ -40,6 +40,7 @@ export class JsonWebTokenAdapter implements ServicioToken {
           id: payload.id,
           rol: payload.rol,
           sedeId: payload.sedeId,
+          ...(payload.versionSesion !== undefined && { versionSesion: payload.versionSesion }),
         },
         this.secret,
         {
@@ -61,11 +62,12 @@ export class JsonWebTokenAdapter implements ServicioToken {
         if (err || !decoded) {
           return reject(new Error('Token JWT invalido o expirado.'));
         }
-        const dec = decoded as { id: string; rol: RolUsuario; sedeId?: string | null };
+        const dec = decoded as { id: string; rol: RolUsuario; sedeId?: string | null; versionSesion?: number };
         resolve({
           id: dec.id,
           rol: dec.rol,
           sedeId: dec.sedeId ?? null,
+          ...(dec.versionSesion !== undefined && { versionSesion: dec.versionSesion }),
         });
       });
     });

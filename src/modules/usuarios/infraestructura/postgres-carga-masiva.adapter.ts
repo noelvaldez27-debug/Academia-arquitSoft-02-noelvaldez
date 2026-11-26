@@ -18,7 +18,7 @@ export class PostgresCargaMasivaAdapter implements PersistenciaCargaMasiva {
       const resultado = await operacion({
         cargas,
         usuarios,
-        registro: new RegistrarEstudianteUseCase(usuarios, new PostgresSedeRepository(cliente), this.credenciales, true),
+        registro: new RegistrarEstudianteUseCase(usuarios, new PostgresSedeRepository(cliente), this.credenciales),
         bloquearCarga: async id => {
           await cliente.query('SELECT id FROM cargas_masivas WHERE id = $1 FOR UPDATE', [id]);
           return cargas.buscarPorId(id);

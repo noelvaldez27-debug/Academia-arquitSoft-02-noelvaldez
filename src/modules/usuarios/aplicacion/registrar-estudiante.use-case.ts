@@ -24,7 +24,6 @@ export class RegistrarEstudianteUseCase {
     private readonly usuarioRepository: UsuarioRepository,
     private readonly sedeRepository: SedeRepository,
     private readonly generadorCredenciales: GeneradorCredenciales,
-    private readonly admitirCargaAnterior = false,
   ) {}
 
   public async ejecutar(command: RegistrarEstudianteCommand): Promise<Usuario> {
@@ -77,7 +76,7 @@ export class RegistrarEstudianteUseCase {
     }
 
     const condicion = command.condicion;
-    if (!esCondicionPostulante(condicion) && !(this.admitirCargaAnterior && condicion == null)) {
+    if (condicion != null && !esCondicionPostulante(condicion)) {
       throw new ErrorValidacion('La condición del postulante debe ser MATRICULADO o LIBRE.');
     }
 

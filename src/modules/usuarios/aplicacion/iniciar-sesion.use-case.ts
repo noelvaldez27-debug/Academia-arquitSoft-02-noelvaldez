@@ -39,6 +39,7 @@ export class IniciarSesionUseCase {
       id: usuario.id ?? '',
       rol: usuario.rol,
       sedeId: usuario.sedeId ?? null,
+      ...(usuario.versionSesion > 0 && { versionSesion: usuario.versionSesion }),
     });
 
     return {

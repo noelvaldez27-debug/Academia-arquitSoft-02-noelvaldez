@@ -215,7 +215,7 @@ export const especificacionOpenApi = {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['nombre', 'dni', 'sedeId', 'carrera', 'condicion'],
+                required: ['nombre', 'dni', 'sedeId', 'carrera'],
                 properties: {
                   nombre: { type: 'string', example: 'Juan Alumno' },
                   dni: { type: 'string', example: '71234567' },

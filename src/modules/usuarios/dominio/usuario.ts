@@ -16,6 +16,7 @@ export interface PropiedadesUsuario {
   passwordHash: string;
   rol: RolUsuario;
   activo?: boolean;
+  versionSesion?: number;
   sedeId?: string | null;
   carrera?: string | null;
   condicion?: CondicionPostulante | null;
@@ -24,6 +25,7 @@ export interface PropiedadesUsuario {
 
 export class Usuario {
   readonly condicion: PropiedadesUsuario['condicion'];
+  readonly versionSesion: number;
   private readonly _id?: string;
   private _nombre: string;
   private readonly _dni?: string | null;
@@ -53,6 +55,7 @@ export class Usuario {
     this._rol = props.rol;
     this.condicion = props.rol === RolUsuario.Postulante ? props.condicion ?? null : null;
     this._activo = props.activo !== undefined ? props.activo : true;
+    this.versionSesion = props.versionSesion ?? 0;
 
     if (this._rol === RolUsuario.Postulante) {
       this.validarDni(props.dni);

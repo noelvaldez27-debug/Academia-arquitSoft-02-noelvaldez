@@ -18,6 +18,7 @@ interface FilaUsuario {
   password_hash: string;
   rol: string;
   activo: boolean;
+  version_sesion: number;
   sede_id: number | null;
   carrera: string | null;
   condicion: Usuario['condicion'];
@@ -45,6 +46,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
       passwordHash: fila.password_hash,
       rol: fila.rol as RolUsuario,
       activo: fila.activo,
+      versionSesion: fila.version_sesion,
       sedeId: fila.sede_id !== null && fila.sede_id !== undefined ? String(fila.sede_id) : null,
       carrera: fila.carrera,
       condicion: fila.condicion,
@@ -61,7 +63,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
       `INSERT INTO usuarios (nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        ${this.idempotente ? "ON CONFLICT DO NOTHING" : ""}
-       RETURNING id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion;`,
+       RETURNING id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion;`,
       [
         usuario.nombre,
         usuario.dni || null,
@@ -124,7 +126,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     }
 
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion
        FROM usuarios
        WHERE id = $1;`,
       [idNumerico]
@@ -139,7 +141,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
 
   public async buscarPorDni(dni: string): Promise<Usuario | null> {
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion
        FROM usuarios
        WHERE dni = $1;`,
       [dni.trim()]
@@ -154,7 +156,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
 
   public async buscarPorCorreo(correo: string): Promise<Usuario | null> {
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion
        FROM usuarios
        WHERE LOWER(correo) = LOWER($1);`,
       [correo.trim().toLowerCase()]
@@ -206,7 +208,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     queryParams.push(offset);
     const offsetIdx = queryParams.length;
 
-    const selectSql = `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion
+    const selectSql = `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion
                FROM usuarios${whereSql}
                ORDER BY id ASC
                LIMIT $${limitIdx} OFFSET $${offsetIdx};`;

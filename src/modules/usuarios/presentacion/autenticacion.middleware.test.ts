@@ -50,6 +50,27 @@ describe('MiddlewareAutenticacion (AC04, ADR-007, RC15, CA-U06)', () => {
   });
 
   describe('autenticar', () => {
+    it('CA-VS01 rechaza el JWT anterior tras reactivar y acepta el emitido para la nueva versión', async () => {
+      mockReq.headers = { authorization: 'Bearer sesion' };
+      const usuario = Usuario.crearPostulante({
+        id: '1', nombre: 'Postulante sintético', correo: '12345678@sofia.edu', dni: '12345678',
+        passwordHash: 'hash-sintetico', sedeId: '1', carrera: 'Medicina',
+      });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValue(new Usuario({
+        id: usuario.id, nombre: usuario.nombre, correo: usuario.correo, dni: usuario.dni,
+        passwordHash: usuario.passwordHash, sedeId: usuario.sedeId, carrera: usuario.carrera,
+        rol: usuario.rol, versionSesion: 2,
+      }));
+      const datos = { id: '1', rol: RolUsuario.Postulante, sedeId: '1' };
+      (mockServicioToken.verificarToken as jest.Mock)
+        .mockResolvedValueOnce(datos)
+        .mockResolvedValueOnce({ ...datos, versionSesion: 2 });
+      await middleware.autenticar(mockReq as Request, mockRes as Response, mockNext);
+      expect(statusMock).toHaveBeenCalledWith(401);
+      expect(mockNext).not.toHaveBeenCalled();
+      await middleware.autenticar(mockReq as Request, mockRes as Response, mockNext);
+      expect(mockNext).toHaveBeenCalledTimes(1);
+    });
     it('(CA-U06) debe responder 401 si no se envía header Authorization o no empieza con Bearer', async () => {
       await middleware.autenticar(mockReq as Request, mockRes as Response, mockNext);
 

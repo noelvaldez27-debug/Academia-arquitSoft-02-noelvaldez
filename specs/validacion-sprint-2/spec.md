@@ -24,3 +24,7 @@
 - El padrón se congela al habilitar un nuevo simulacro antes del primer intento, con sede y carrera históricas. La entrada requiere pertenencia al padrón y cuenta activa. Padrón vacío admite cero inscritos con tasa null. Sin padrón verificable, inscritos y los indicadores dependientes quedan no disponibles.
 - La condición se conserva para consultas históricas y deja de ser obligatoria en altas nuevas.
 - Para altas y recuperaciones que emiten credenciales a postulantes, la nueva decisión reemplaza contraseña DNI y cambio opcional de RF02, RF26 y RC09. Se exige contraseña aleatoria individual, vigencia y cambio inicial. La entrega por lote se limita al administrador responsable, mediante Excel temporal de un solo uso. La contraseña en claro se limita a ese canal autorizado. El almacenamiento temporal para entrega debe estar cifrado, separado del hash, y consumirse atómicamente. Conservar la política existente de docentes y administradores.
+
+## Evidencia parcial de CA-VS01
+
+La migración 017 añade la versión de sesión con valor inicial compatible y la actualiza atómicamente al cambiar el estado o el hash de contraseña. Un JWT sin versión representa la versión inicial. Se comprobó en PostgreSQL con datos sintéticos y rollback, y en Jest se verificó que un token anterior siga rechazado después de reactivar. El alta acepta condición ausente y conserva valores explícitos admitidos por el contrato anterior. Esta evidencia no cubre aún la emisión provisional ni la recuperación de ciclo.

@@ -117,7 +117,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
       nombre: 'Carlos Alumno',
       dni: '71234567',
       sedeId: 'sede-uuid-hana',
-      carrera: '  ingenieria de sistemas  ', condicion: 'LIBRE',
+      carrera: '  ingenieria de sistemas  ',
       ejecutor: ejecutorAdminGeneral,
     };
 
@@ -131,6 +131,7 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
     expect(estudiante.rol).toBe(RolUsuario.Postulante);
     expect(estudiante.sedeId).toBe('sede-uuid-hana');
     expect(estudiante.carrera).toBe('INGENIERIA DE SISTEMAS');
+    expect(estudiante.condicion).toBeNull();
     expect(estudiante.activo).toBe(true);
     expect(mockUsuarioRepo.guardar).toHaveBeenCalled();
   });
