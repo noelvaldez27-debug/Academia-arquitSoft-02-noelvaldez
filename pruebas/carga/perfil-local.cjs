@@ -2,6 +2,7 @@ const { monitorEventLoopDelay, performance } = require('node:perf_hooks');
 const { createRequire } = require('node:module');
 const desdeApp = createRequire('/app/package.json');
 const muestras = new Map();
+let poolPico;
 const demora = monitorEventLoopDelay({ resolution: 20 });
 demora.enable();
 function guardar(nombre, inicio, fallo) {
@@ -13,6 +14,13 @@ function medir(objeto, metodo, clasificar) {
   const original = objeto[metodo];
   objeto[metodo] = function (...args) {
     const nombre = clasificar(args);
+    if (nombre === 'pg_pool') {
+      const { totalCount, idleCount, waitingCount } = this;
+      poolPico ??= { total: 0, ocupadas: 0, enEspera: 0 };
+      poolPico.total = Math.max(poolPico.total, totalCount);
+      poolPico.ocupadas = Math.max(poolPico.ocupadas, totalCount - idleCount);
+      poolPico.enEspera = Math.max(poolPico.enEspera, waitingCount);
+    }
     const inicio = performance.now();
     const i = args.length - 1;
     if (typeof args[i] === 'function') {
@@ -38,6 +46,12 @@ medir(Client.prototype, 'query', args => {
   return 'pg_' + tabla;
 });
 medir(desdeApp('bcryptjs'), 'compare', () => 'bcrypt');
+const { JsonWebTokenAdapter } = desdeApp('/app/dist/modules/usuarios/infraestructura/jsonwebtoken-token.adapter');
+const { PostgresUsuarioRepository } = desdeApp('/app/dist/modules/usuarios/infraestructura/postgres-usuario-repository');
+medir(JsonWebTokenAdapter.prototype, 'generarToken', () => 'jwt_generar');
+medir(JsonWebTokenAdapter.prototype, 'verificarToken', () => 'jwt_verificar');
+medir(PostgresUsuarioRepository.prototype, 'buscarPorCorreo', () => 'usuario_por_correo');
+medir(PostgresUsuarioRepository.prototype, 'buscarPorId', () => 'usuario_por_id');
 medir(desdeApp('amqplib'), 'connect', () => 'rabbit_conexion');
 const Redis = desdeApp('ioredis').Redis;
 medir(Redis.prototype, 'sendCommand', () => 'redis');
@@ -51,7 +65,8 @@ setInterval(() => {
   }
   console.log('PERFIL_K6 ' + JSON.stringify({ instante: new Date().toISOString(),
     eventLoopP95: +(demora.percentile(95)/1e6).toFixed(2), eventLoopMax: +(demora.max/1e6).toFixed(2),
-    rssMiB: +(process.memoryUsage.rss()/1048576).toFixed(2), datos }));
+    rssMiB: +(process.memoryUsage.rss()/1048576).toFixed(2), poolPico, datos }));
   demora.reset();
   muestras.clear();
+  poolPico = undefined;
 }, 1000).unref();

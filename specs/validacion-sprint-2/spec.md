@@ -86,3 +86,18 @@ En 17 ventanas del backend se observaron 2 176 adquisiciones del pool, máximo 1
 ### Revalidación tras optimizar
 
 Publicación de cierres por lote y pool configurable en el backend. Humo de 3 VU conforme. A 50 VU la nota pasó a 1 853,50 ms, con HU11 e integridad conservados. REST habitual (4 849,45 ms) y registro (1 017,69 ms) excedieron los límites. Se detuvo la campaña en 50 VU. Ver [comparación, evidencia y matriz](../../docs/sprint-2.md#optimización-y-revalidación-de-ac01). No se requiere una migración ni una modificación de OpenAPI.
+
+### Comparación de pools y perfil separado de autenticación
+
+El backend 401e078, con publicación por lotes, ejecutó cohortes sintéticas equivalentes de 50 VU, primero con pool 10 y después con pool 20, usando el mismo perfil local y la misma VM. Las cohortes eran nuevas dentro del mismo proyecto y las tablas conservaron los datos anteriores. Una ejecución por configuración no separa la variación entre repeticiones ni el efecto del orden.
+
+| Pool | REST p95 | Marca p95 | Nota p95 | Ranking p95 | Cierre general a ranking | HTTP / s | Espera de pool máxima / cola muestreada máxima | Demora máxima del loop |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 10 | 3717,60 ms | 437,82 ms | 2619,50 ms | 101,07 ms | 2035 ms | 35,41 | 2568,52 ms / 44 | 556,79 ms |
+| 20 | 3705,02 ms | 1162,07 ms | 1655,75 ms | 214,33 ms | 2047 ms | 31,28 | 2950,39 ms / 32 | 780,14 ms |
+
+Ambas corridas observaron 50 VU, 50 iteraciones completas, 353 comprobaciones y cero errores técnicos. PostgreSQL reconcilió 50 inscritos, intentos y notas esperadas. El perfil observó 10 y 20 conexiones ocupadas en sus respectivos máximos, y dos conexiones RabbitMQ de publicación por corrida. RSS máxima observada de API: 117,39 y 117,75 MiB. La espera de pool se mide al adquirir la conexión, por separado de la duración cliente de las consultas. La demora del event loop puede afectar ambas mediciones. Se seleccionó 10: ambas cumplen nota y ranking, REST sigue fuera del objetivo y 10 conserva el margen de registro.
+
+El perfil dedicado usó las mismas diez cuentas dos veces, con y sin instrumentación. Cada ejecución midió diez logins en serie y diez con concurrencia de hasta diez, cada uno seguido de una consulta protegida. Login p95 en serie/paralelo: 97,74/792,02 ms perfilado y 97,75/883,03 ms sin perfil. Consulta protegida p95: 7,43/357,84 ms y 6,96/326,20 ms respectivamente. La muestra no aísla un coste estable del perfil. En la ventana perfilada, máximos medidos: bcrypt 203,56 ms, consulta por correo 205,85 ms, consulta por ID 142,82 ms, emisión JWT 1,75 ms, verificación JWT 1,64 ms, adquisición del pool 0,51 ms y event loop 209,85 ms. Diez comparaciones bcrypt de diez rondas en un proceso separado usaron 729,38 ms de CPU y 709,99 ms de reloj. Esto confirma coste de CPU y que el tiempo de consulta observado incluye planificación del proceso; no demuestra que el servidor SQL tarde 205,85 ms.
+
+El primer arranque del perfil no pudo conectar al HTTP. El guion se corrigió para esperar /health y la repetición completó ambas variantes. No se usaron tokens precalculados ni se modificaron el hash, JWT o la consulta de usuario activo. Evidencias: [pool 10](../../docs/evidencias/campana-k6/vu-50-20261125-223829/), [pool 20](../../docs/evidencias/campana-k6/vu-50-20261125-223927/) y [autenticación](../../docs/evidencias/campana-k6/autenticacion-20261125-224039/).

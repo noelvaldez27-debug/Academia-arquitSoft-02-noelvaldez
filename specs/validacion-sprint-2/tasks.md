@@ -16,4 +16,5 @@
   - [x] 8d. Perfilar los incumplimientos de AC01 en condiciones comparables.
   - [x] 8e. Aplicar optimizaciones puntuales justificadas y ejecutar regresión.
   - [x] 8f. Revalidar humo y 50 VU; detener el escalado conforme a los umbrales.
-  - [ ] 8g. Resolver la latencia restante y retomar capacidad tras decisión sobre una nueva intervención.
+  - [x] 8g. Comparar pools de 10 y 20 y perfilar la autenticación por separado.
+  - [ ] 8h. Revalidar la configuración elegida sin perfilado antes de escalar.
