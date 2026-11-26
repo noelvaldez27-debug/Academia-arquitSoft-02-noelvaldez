@@ -27,6 +27,8 @@ El siguiente diagrama representa los principales contenedores de EVALUA-NET, sus
 
 ![Nivel 2 · Diagrama de contenedores de EVALUA-NET](../imagen/nivel2-contenedores.png)
 
+El gráfico histórico agrupa Redis. Las tablas muestran la separación aprobada de las dos instancias en el Sprint 2.
+
 **Leyenda:** azul oscuro = persona · azul = contenedor · gris = sistema externo · recuadro punteado = límite del sistema EVALUA-NET. Cada flecha indica la relación con su verbo y su [protocolo].
 
 **Descripción:** Los usuarios acceden mediante una aplicación web que se comunica con la API principal. La API concentra las funcionalidades del monolito modular y utiliza PostgreSQL para la información permanente, Redis para datos temporales, el almacén de archivos para las separatas y RabbitMQ para distribuir tareas.
@@ -44,7 +46,8 @@ Los workers procesan eventos de forma asíncrona: uno calcula resultados y ranki
 | **Aplicación web** | SPA; framework por definir. | Proporciona las interfaces para rendir simulacros, gestionar preguntas y separatas, consultar resultados y administrar usuarios. | Estado de las pantallas y respuestas locales pendientes de sincronización. |
 | **API EVALUA-NET** | Node.js + TypeScript (referencia). | Expone la API REST y ejecuta las reglas del negocio mediante un monolito modular. | Usuarios, preguntas, simulacros, respuestas, resultados y separatas. |
 | **Base de datos principal** | PostgreSQL. | Almacena de forma permanente la información académica y administrativa. | Usuarios, preguntas, simulacros, respuestas definitivas, resultados, rankings y preguntas propuestas. |
-| **Almacenamiento temporal y caché** | Redis. | Almacena respuestas temporales durante los simulacros y acelera determinadas consultas. | Respuestas temporales, información de sesión y datos de caché. |
+| **Almacenamiento temporal de Rendición** | Redis con AOF. | Persiste temporalmente las marcas activas hasta su consolidación. | Marcas, revisiones y operaciones de idempotencia. |
+| **Caché de consultas** | Redis independiente con expulsión LRU. | Cache-Aside con PostgreSQL como fuente definitiva. | Versiones visibles congeladas y catálogos autorizados de temas, cursos y sedes. |
 | **Sistema de mensajería** | RabbitMQ. | Gestiona la comunicación asíncrona entre la API y los procesos en segundo plano. | Mensajes y eventos de exámenes finalizados y separatas subidas. |
 | **Worker de procesamiento** | Proceso independiente; tecnología por definir. | Consume eventos y calcula resultados sin bloquear las solicitudes principales. | Exámenes finalizados, puntajes y resultados. |
 | **Worker de documentos** | Proceso independiente; tecnología por definir. | Extrae el texto de las separatas (directo en Word y PDF con texto; con IA en imágenes y PDF escaneados) y genera propuestas de preguntas. | Separatas, texto extraído y preguntas propuestas pendientes de aprobación. |
@@ -69,7 +72,8 @@ Los workers procesan eventos de forma asíncrona: uno calcula resultados y ranki
 | Docente / Encargado académico | Aplicación web | Administra preguntas, sube separatas, aprueba preguntas y consulta reportes. | HTTPS |
 | Aplicación web | API EVALUA-NET | Envía solicitudes y recibe información del sistema. | HTTPS/JSON |
 | API EVALUA-NET | PostgreSQL | Consulta y almacena información permanente. | SQL sobre TCP |
-| API EVALUA-NET | Redis | Guarda y recupera respuestas temporales y datos de caché. | Protocolo Redis sobre TCP |
+| API EVALUA-NET | Redis de Rendición | Guarda y recupera respuestas temporales. | Protocolo Redis sobre TCP |
+| API EVALUA-NET | Redis de consultas | Lee y guarda proyecciones descartables. | Protocolo Redis sobre TCP |
 | API EVALUA-NET | Almacén de archivos | Guarda y recupera las separatas subidas. | Por definir |
 | API EVALUA-NET | RabbitMQ | Publica eventos de exámenes finalizados y separatas subidas. | AMQP |
 | RabbitMQ | Worker de procesamiento | Entrega mensajes de exámenes finalizados. | AMQP |

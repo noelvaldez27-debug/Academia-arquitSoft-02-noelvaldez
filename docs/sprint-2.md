@@ -297,6 +297,10 @@ El guion k6 exporta únicamente métricas, comprobaciones y metadatos de la ejec
 
 GitHub Actions validó en `aed5518` la instalación reproducible con Node.js 20, la compilación de TypeScript, la comprobación del exportador y Jest con cobertura. La medición local de referencia permanece en 453 pruebas de 95 suites y 85,20 % de líneas y 76,05 % de ramas. Se mantienen los resultados de carga y la matriz AC01–AC08. [Ejecución de CI](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45752880302).
 
-## Propuesta de caché de consultas
+## Caché de consultas validada localmente
 
-La [SDD de caché de consultas](../specs/cache-consultas/spec.md) propone Cache-Aside con una instancia Redis independiente y descartable, comenzando por la versión visible congelada. La decisión de infraestructura requiere aprobación antes de implementar. Las mediciones comparativas, la justificación de los catálogos mutables y la evidencia de integración están pendientes. Se conservan los resultados de carga y el estado de la tarea 8.
+Cache-Aside con Redis aislado, 32 MiB de maxmemory y allkeys-lru. TTL en segundos: simulacro visible 3600, temas 120, nombres de cursos y sedes 300. La migración 022 avanza generaciones en la transacción de escritura. Se excluyen autenticación, permisos, calificaciones, ranking y estadísticas.
+
+En Compose aislado, 20 lecturas de la misma versión requirieron 20 SELECT sin caché, 1 con caché inicialmente vacía y 0 con caché caliente. Sedes cambió 20 lecturas de catálogo por 20 lecturas de generación y fue más lenta en la muestra. Se verificaron carga de configuración, expiración, caída temporal, rollback y cambios de los catálogos, aislamiento del propietario y consolidación sin pérdida de la marca. El archivo de verificación se ejecuta dentro del backend con cuentas sintéticas y VERIFICAR_CATALOGOS=si. No es una prueba de capacidad.
+
+Compilación de TypeScript aprobada. Jest aprobó 456 pruebas en 98 suites, con 85,20 % de líneas y 75,73 % de ramas. Véase la [SDD](../specs/cache-consultas/spec.md). Se mantienen las evidencias previas de carga y la tarea 8 abierta.
