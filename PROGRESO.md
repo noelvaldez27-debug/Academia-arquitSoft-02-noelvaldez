@@ -170,3 +170,5 @@ F1.3 completada con importación normal y por ciclo, historial paginado por alca
 ### Consolidación de Fase 1
 
 F1.C verificada localmente: búsqueda literal parametrizada por nombre, DNI y correo, filtros autorizados y paginación PostgreSQL; espera de 300 ms en la web. Jest backend 459 pruebas, frontend 13 y Playwright 8. Siguiente paso exacto: verificar el resultado de CI del avance directo y después iniciar F2.1 en specs/frontend/tasks.md.
+
+La consolidación se publicó por avance directo hasta 4d474c5. CI 45823085433 aprobó backend y frontend. F2.1 completada: catálogos autorizados y paginados, gestión de preguntas, temas, asignaciones y configuración de simulacros. Se comprobaron permisos y orden sin claves contra Compose aislado. Siguiente paso: F2.2, listado histórico y revisión de separatas.

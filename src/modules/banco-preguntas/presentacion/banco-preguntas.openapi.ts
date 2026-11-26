@@ -57,7 +57,24 @@ const configuracionSimulacro = {
   properties: { duracionMinutos: { type: 'integer', minimum: 1 },
     preguntas: { type: 'array', minItems: 1, uniqueItems: true, items: texto } },
 };
+function listadoBanco(titulo: string, propiedades: object, parametros: string[] = [], busqueda = false) {
+  const operacion = operacionBanco(titulo, 200, parametros, undefined, {
+    type: 'object', properties: {
+      datos: { type: 'array', items: { type: 'object', properties: propiedades } },
+      pagina: { type: 'integer' }, hayMas: { type: 'boolean' },
+    },
+  });
+  return { ...operacion, parameters: [...operacion.parameters,
+    { name: 'pagina', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 10000 } },
+    { name: 'limite', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+    ...(busqueda ? [{ name: 'q', in: 'query', schema: { type: 'string', maxLength: 160 } }] : []),
+  ] };
+}
+
 export const rutasOpenApiBanco = {
+  '/api/banco-preguntas/cursos/{cursoId}/docentes': {
+    get: listadoBanco('Listar docentes asignados como administrador general', { id: texto }, ['cursoId']),
+  },
   '/api/banco-preguntas/cursos/{cursoId}/temas': {
     get: operacionBanco('Listar temas activos del curso', 200, ['cursoId']),
     post: operacionBanco('Crear un tema como administrador general', 201, ['cursoId'], curso),
@@ -73,6 +90,7 @@ export const rutasOpenApiBanco = {
     delete: operacionBanco('Retirar la asignación de un docente como administrador general', 200, ['cursoId', 'docenteId']),
   },
   '/api/banco-preguntas/simulacros': {
+    get: listadoBanco('Listar configuraciones sin claves como administrador general', { id: texto, ...configuracionSimulacro.properties }, [], true),
     post: operacionBanco('Crear configuración de simulacro', 201, [], configuracionSimulacro),
   },
   '/api/banco-preguntas/simulacros/{id}': {
@@ -108,6 +126,7 @@ export const rutasOpenApiBanco = {
     },
   },
   '/api/banco-preguntas/cursos': {
+    get: listadoBanco('Listar cursos para el administrador general y docentes', { id: texto, nombre: texto }, [], true),
     post: operacionBanco('Crear curso', 201, [], curso, { ...curso, properties: { ...curso.properties, id: texto } }),
   },
   '/api/banco-preguntas/cursos/{cursoId}/preguntas': {

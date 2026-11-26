@@ -1,3 +1,6 @@
+import { ConsultarCatalogosBanco } from './aplicacion/consultar-catalogos-banco';
+import { crearCatalogosBanco } from './infraestructura/postgres-catalogos-banco';
+import { crearRutasCatalogos } from './presentacion/catalogos.routes';
 import { PostgresVersionSimulacro } from './infraestructura/postgres-version-simulacro';
 import { ConsultaClavesSimulacro, ConsultaSimulacros, GestionarSimulacrosUseCase } from './aplicacion/gestionar-simulacros.use-case';
 import { crearRutasSimulacros } from './presentacion/simulacro.routes';
@@ -41,6 +44,7 @@ export class BancoPreguntasModule {
     const { preguntas, separatas } = this.repositorios;
     this.existeSimulacro = async id => Boolean(await preguntas.buscarSimulacro(id));
     this.rutas = crearRutasPreguntas(new GestionarPreguntasUseCase(preguntas, randomUUID), auth);
+    this.rutas.use(crearRutasCatalogos(new ConsultarCatalogosBanco(crearCatalogosBanco(pool, cacheConsultas))));
     const asignaciones = new PostgresAsignacionesDocentes(pool);
     this.cursosAsignados = id => asignaciones.porDocente(id);
     this.rutas.use(crearRutasTemas(new GestionarTemasUseCase(
