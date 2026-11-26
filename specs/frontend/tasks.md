@@ -42,3 +42,6 @@
 
 - [x] F6.1. Implementar historial, gráficos, agregados y recomendación. Verificar accesibilidad, datos históricos, permiso docente y casos sin evidencia.
 - [ ] F6.2. Ejecutar recorridos de los seis módulos, evaluación AC06 y pruebas de navegador, diseño adaptable y accesibilidad. Registrar evidencias, brechas y preparación para la integración final. La tarea 8 de validación de backend mantiene su planificación separada.
+  - [x] F6.2a. Validar el ciclo sintético integral, navegación por rol, OpenAPI y regresión local.
+  - [x] F6.2b. Registrar cobertura, mediciones preliminares, brechas y protocolo AC06.
+  - [ ] F6.2c. Incorporar los resultados reales de AC06 y verificar su criterio de aceptación.

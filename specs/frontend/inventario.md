@@ -64,3 +64,16 @@ Usuarios incorpora historial paginado de cargas con alcance por sede y búsqueda
 ## Rendición web
 
 El listado del postulante usa GET /api/v1/examenes/simulacros. Véanse los criterios de elegibilidad en la SDD de Rendición. La modalidad impresa mantiene el número y las letras de la versión congelada. La transición a Mi nota conserva la referencia del intento para la Fase 4.
+
+## Trazabilidad de F6.2
+
+El inventario agrupa pantallas, variantes y acciones dentro de destinos compartidos. La prueba de navegación verifica los destinos de menú de los cuatro roles en escritorio y móvil emulado. Los recorridos críticos documentados a continuación tienen evidencia funcional adicional.
+
+| Módulo | Evidencia | Alcance pendiente |
+| --- | --- | --- |
+| M1 · RF01–02, RF19–26 · CA-U y CA-VS01/02 | API real de altas y ciclo, acceso por rol y cierre web. Pruebas específicas de archivo, cuenta y carga Excel. | Revalidar todas las variantes de recuperación y carga con la misma sesión integral. |
+| M2 · RF03, RF15–18 · CA-BP | Curso, asignación, preguntas y configuración por API real. Editor y separatas tienen pruebas de navegador específicas. | Repetir todas las combinaciones de archivo, autorización y revisión en el mismo ciclo. |
+| M3 · RF04–07 · CA-RE, AC07 | Inicio propio, padrón congelado, sincronización al recuperar red, persistencia y cierre en Compose. Vencimiento en Playwright. | Ejercicios de recuperación operativa a otra escala. |
+| M4 · RF07–08 · CA-PR | Nota propia, worker, cero y desglose en Compose. | Validación de rendimiento bajo carga autorizada. |
+| M5 · RF10, RF14 · CA-RR, CA-VS03 | Posición, publicación, participación y Excel en Compose. | Costo de paginación local con conjuntos representativos. |
+| M6 · RF09, RF11–13 · CA-AE | Historial y recomendación propios, estadísticas autorizadas e IA simulada en Compose. | Evaluación humana AC06. |

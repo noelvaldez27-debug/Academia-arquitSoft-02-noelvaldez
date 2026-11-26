@@ -352,3 +352,27 @@ Para la validación integral, la paginación del ranking y del cuadro de mérito
 ### Fase 6 · Analítica del Estudiante web
 
 F6.1 implementada con historial, evolución y rendimiento propio, recomendación por solicitud y estadísticas por curso, tema y pregunta en los ámbitos autorizados. Compilaron backend y frontend. Regresión aprobada con 462 pruebas de backend, 41 de frontend y 22 recorridos Playwright. Analítica web obtuvo 100 % de líneas y 82,81 % de ramas. Cobertura global web en 62,33 % de líneas y 51,16 % de ramas. Compose aislado confirmó historial, filtros, permisos y reutilización de la recomendación de IA simulada. F6.2, la evaluación AC06, la consolidación de cobertura y las actividades pendientes del Sprint 2 requieren autorización. [SDD web](../specs/frontend/spec.md#fase-6--analítica-del-estudiante)
+
+### F6.2 · Estado de la validación integral
+
+| Actividad de validación | Estado y evidencia |
+| --- | --- |
+| 1. Análisis y decisiones | Validada para el alcance aprobado. SDD y reglas registradas. |
+| 2. Guion escalonado | Validada como preparación. Escalones restantes sujetos a autorización. |
+| 3. RF21, ciclos y padrón | Validada para el alcance local. Decisiones y contratos documentados. |
+| 4. Recuperación, sesiones y archivo | Validada para el alcance local con pruebas de Usuarios y autorización. |
+| 5. Ciclo, padrón, HU11 e histórico | Validada en Compose local con datos sintéticos. |
+| 6. Arquitectura y contratos | Validada localmente con regresión, Supertest y Swagger. |
+| 7. PostgreSQL, Redis y recuperación | Validada para las pruebas controladas históricas. No equivale a disponibilidad operativa. |
+| 8. Campaña masiva | Parcial. Humo conforme con 3 VU. REST habitual y registro incumplieron a 50 VU. 8i sigue pendiente. |
+
+| Criterio | Estado actual y límite |
+| --- | --- |
+| AC01 | Parcial. El recorrido local confirma nota y ranking. Se conservan los incumplimientos oficiales de REST y registro a 50 VU. |
+| AC02 | Parcial. Hay recuperación controlada local. Falta disponibilidad en una ventana operativa representativa. |
+| AC03 | Pendiente de capacidad. Se conservan el humo de 3 VU y el escalón de 50 VU. |
+| AC04 | Parcial. Roles, propietario, sede, sesión y entrega temporal tienen evidencia local. Queda pendiente la evidencia de cifrado en el entorno previsto. |
+| AC05 | Parcial. Contratos, regresión y alta de sede respaldan mantenibilidad. Queda pendiente evaluar una ampliación real de módulos. |
+| AC06 | Pendiente de evaluación humana. [Protocolo e instrumento](../specs/frontend/usabilidad-ac06.md). |
+| AC07 | Validado para el escenario local de desconexión y retorno. IndexedDB conserva marcas y se comprueba la sincronización y persistencia tras el cierre. |
+| AC08 | Parcial. Se conserva el consumo base local. Queda pendiente evaluar costo y escalado en el entorno previsto. |
