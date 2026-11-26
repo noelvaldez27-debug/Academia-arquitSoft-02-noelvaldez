@@ -30,7 +30,7 @@ Se evaluará que la implementación respete las decisiones arquitectónicas docu
 ## Notas del proyecto (no forman parte del enunciado)
 
 - Se implementan los 6 módulos del backend completos, no solo los prioritarios.
-- La aplicación web y el despliegue en AWS corresponden al Sprint 3 (ver `docs/sprint-3.md`).
+- La aplicación web se desarrolla y verifica localmente en el Sprint 2 según la [SDD del frontend](../specs/frontend/spec.md). El Sprint 3 recibe la aplicación para la integración final y el despliegue en AWS. Las referencias a Sprint 3 para tareas del cliente en las auditorías históricas reflejan el plan anterior. La planificación web no modifica la evidencia ni el estado de AC01–AC08.
 - Las pruebas de carga con k6 llegan hasta 2,000 usuarios virtuales, aunque el atributo AC03 define un objetivo de 5,000 conexiones (ver `04-atributos-de-calidad.md`).
 - En las pruebas automatizadas y de carga se usa el adaptador simulado de `ServicioIA`, nunca la IA real.
 ## Auditoría de cierre funcional y validación pendiente

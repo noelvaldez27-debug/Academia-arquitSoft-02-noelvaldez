@@ -3,8 +3,8 @@
 ## Estado actual
 - Fase 1 (documentación): terminada. Análisis de sistema actualizado con las decisiones del Sprint 2 y 3 y con el alcance por sede del módulo 1
 - Fase 2 (desarrollo): base y seis módulos del backend implementados y validados funcionalmente. La validación integral de la arquitectura, los atributos de calidad y las pruebas de carga del Sprint 2 siguen pendientes.
-- Sprint 2: implementar y validar los 6 módulos del backend (ver `docs/sprint-2.md`)
-- Sprint 3: aplicación web, integración y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
+- Sprint 2 abierto: implementar y validar los 6 módulos del backend y desarrollar y verificar localmente la aplicación web (ver `docs/sprint-2.md`)
+- Sprint 3: integración final y despliegue en AWS (ver `docs/sprint-3.md`). En pausa
 
 ## Módulos
 | # | Módulo | Estado |
@@ -16,8 +16,8 @@
 | 4 | Procesamiento de Resultados | terminado (9 de 9 tareas) |
 | 5 | Ranking y Reportes | terminado (9 de 9 tareas) |
 | 6 | Analítica del Estudiante | terminado (8 de 8 tareas) |
-| - | Pruebas de carga con k6 (hasta 2,000 usuarios virtuales) | sin empezar, se hace al final del Sprint 2 |
-| - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 3, sin empezar |
+| - | Validación de carga k6 | 3 VU conformes, 50 VU con incumplimiento; tarea 8 abierta |
+| - | Aplicación web (`frontend/`, React + Tailwind) | Sprint 2, planificación completa; Fase 0 pendiente de aprobación |
 
 ## Decisiones ya tomadas (no reabrir sin avisar al usuario)
 - Nadie se registra solo: las cuentas las crea siempre un administrador (RC09)
@@ -37,7 +37,7 @@
 - En pruebas automatizadas y de carga se usa el adaptador simulado de `ServicioIA`, nunca la IA real
 - Versiones fijadas de servicios de infraestructura en Docker Compose: PostgreSQL 16 (`postgres:16-alpine`), Redis 7 (`redis:7-alpine`), RabbitMQ 3.13 con interfaz de gestión (`rabbitmq:3.13-management-alpine`).
 - IA y adjuntos: `ServicioIA` se definió con entrada de texto (`proponer(texto, curso)`); el soporte de adjuntos binarios para imágenes y PDF escaneados (ADR-011) queda pendiente para la especificación del módulo Banco de Preguntas.
-- Por ahora solo se trabaja el Sprint 2. El Sprint 3 (aplicación web, despliegue en AWS, adaptador de S3, actualización de C4) queda en pausa hasta que el usuario lo confirme. No iniciar nada de eso por iniciativa propia.
+- Por ahora solo se trabaja el Sprint 2. El Sprint 3 (integración final, despliegue en AWS, adaptador de S3, actualización de C4) queda en pausa hasta que el usuario lo confirme. No iniciar nada de eso por iniciativa propia.
 - El administrador de sede puede desactivar y reactivar postulantes de su sede (CA-U11, confirmado por el usuario).
 - El administrador general puede crear sedes nuevas sin cambiar código (CA-U14, AC05, confirmado por el usuario).
 
@@ -49,6 +49,7 @@ Supuestos escritos en `specs/usuarios/spec.md` y `specs/usuarios/tasks.md` que e
 - No hay restablecer contraseña olvidada
 
 ## Última tarea completada
+Planificación del frontend P1: auditoría, inventario, especificación y tareas. React, Tailwind y nginx corresponden al ADR-014. Las propuestas de herramienta, sesión, almacenamiento local, identidad, referencias de navegación y evaluación AC06 esperan aprobación. Jest aprobó 453 pruebas en 95 suites en esta sesión con acceso a puertos locales de Supertest. También se verificaron los enlaces de la SDD y git diff --check.
 Módulo 6, tarea 8 completada. TypeScript compiló y Jest aprobó 428 pruebas en 87 suites. Analítica obtuvo 98,35 % de líneas y 85,71 % de ramas. El proyecto obtuvo 89,69 % de líneas y 83,03 % de ramas. Los recorridos Compose con IA simulada y plantillas locales pasaron, incluida la compatibilidad de las migraciones 015 y 016, el congelamiento histórico, permisos, concurrencia y renovación.
 
 Módulo 6, tarea 7 completada. RF12 expone agregados por curso, pregunta y tema filtrados por permisos e historia. TypeScript compiló y pasaron ocho pruebas específicas en cinco suites.
@@ -108,6 +109,7 @@ Módulo 6 validado localmente y publicado. GitHub Actions completó la compilaci
 La revisión de a5cddf0 quedó documentada en docs/sprint-2.md. Las actividades 1, 3, 6 y 7 tienen evidencia suficiente para el alcance revisado. Las actividades 2, 4, 5 y 8 quedan parcialmente acreditadas. Se reutilizaron las evidencias de Jest, CI y Compose. Las tareas V1–V6 y el plan de carga están pendientes de aprobación.
 
 ## Siguiente paso exacto
+Esperar aprobación de las cuatro decisiones de [specs/frontend/spec.md](specs/frontend/spec.md#decisiones-para-aprobar-juntas) y después iniciar F0.1 en [tasks.md](specs/frontend/tasks.md). El registro histórico siguiente corresponde a la validación del backend.
 La auditoría y los criterios técnicos fueron aprobados. La SDD de impacto y la preparación estática del guion k6 están completadas. El guion pasó el chequeo de sintaxis de Node.js. No hay una ejecución k6 registrada. Consultar specs/validacion-sprint-2/tasks.md. Las decisiones de ciclo, padrón, excepción de Excel y credenciales provisionales están aprobadas. Tarea 3 completada. Tarea 4 en curso. Migraciones 017–019. Implementadas credenciales provisionales de 24 horas con cambio obligatorio y descarga Excel restringida de un solo uso, archivado individual y por lote con auditoría y coordinación con Rendición. Altas por API y Excel con condición opcional. Jest aprobó 432 pruebas en 87 suites, con cobertura global de 87,34 % de líneas y 79,74 % de ramas. Usuarios alcanzó 85,46 % y 77,55 %. El recorrido de credenciales y archivado pasó en Compose aislado. Tarea 4 completada. La migración 020 registra ciclos, membresías y altas por Excel para nuevo ciclo. La recuperación individual y masiva conserva el ID, rota credenciales y registra el evento. Compose verificó reintento concurrente, JWT revocado y contraste con el modo normal. Tarea 5 completada. La migración 021 preserva simulacros antiguos sin padrón y exige habilitación explícita para los nuevos. Compose verificó habilitación concurrente, métricas históricas de HU11 y cierre de ciclo. Jest aprobó 439 pruebas en 89 suites. Tarea 6 completada: ExcelJS detrás de LectorExcel, guardia de dependencias y prueba REST/OpenAPI de los seis módulos. Regresión de 441 pruebas en 91 suites. Tarea 7 completada para el alcance local: PostgreSQL conservó datos tras reinicio, Redis recuperó la marca confirmada tras el 503 y se actualizó AC01–AC08. Jest aprobó 446 pruebas en 94 suites; líneas 84,40 % y ramas 75,02 %. El guion k6 ya incluye ciclo, padrón y conciliación del cierre. Humo k6 aprobado con 3 VU, 35 solicitudes y cero errores técnicos. Jest 451 pruebas en 95 suites, cobertura 85,16 % líneas y 76,00 % ramas. Campaña autorizada detenida a 50 VU por p95 REST habitual 3 643,08 ms y cierre a nota 5 910,30 ms. HU11 íntegro y cero errores técnicos. Diagnóstico, optimización y revalidación completados. Humo optimizado conforme. A 50 VU aprobó el p95 de nota, con incumplimientos de REST habitual y registro. 453 pruebas en 95 suites; global 85,20 % líneas y 76,05 % ramas. Tarea 8 abierta. Esperar decisión sobre una nueva intervención y autorización separada del push. El Sprint 2 permanece abierto. La campaña k6 aún requiere autorización de ejecución.
 
 ## Notas para el siguiente editor

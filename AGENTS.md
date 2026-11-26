@@ -1,9 +1,9 @@
-﻿# AGENTS.md — EVALUA-NET
+# AGENTS.md — EVALUA-NET
 
 ## Proyecto
 Sistema web de simulacros de exámenes virtuales con IA para la Academia Preuniversitaria Sofía (curso IS-488 Arquitectura de Software, UNSCH).
 La documentación está en `docs/` (análisis, arquitectura, diseño y modelo C4). Es la fuente de verdad: léela antes de proponer cambios de diseño.
-El proyecto avanza por sprints: Sprint 2 = implementación y validación del backend (los 6 módulos); Sprint 3 = aplicación web, integración y despliegue en AWS.
+El proyecto avanza por sprints: Sprint 2 = implementación y validación de los seis módulos del backend y desarrollo de la aplicación web; Sprint 3 = integración final y despliegue en AWS.
 
 ## Stack
 - Backend: Node.js + TypeScript
@@ -13,7 +13,7 @@ El proyecto avanza por sprints: Sprint 2 = implementación y validación del bac
 - Nube de despliegue: AWS (RC13)
 - Servicio de IA: capa gratuita de Gemini, detrás de la interfaz `ServicioIA` (ADR-010, ADR-011). Las imágenes se leen con el mismo modelo, sin OCR aparte
 - Archivos (separatas): interfaz `AlmacenArchivos`; disco local en el Sprint 2 y Amazon S3 en el despliegue (ADR-012)
-- Aplicación web: React + Tailwind CSS en la carpeta `frontend/`, separada del backend (ADR-014). Se construye en el Sprint 3
+- Aplicación web: React + Tailwind CSS en la carpeta `frontend/`, separada del backend (ADR-014). Se construye y verifica localmente en el Sprint 2
 - Pruebas: Jest con reporte de cobertura, GitHub Actions para ejecutarlas, k6 para carga (hasta 2,000 usuarios virtuales)
 
 ## Arquitectura

@@ -27,7 +27,7 @@ El proyecto debe encontrarse desplegado y operativo al momento de la presentaci�
 
 ## Notas del proyecto (no forman parte del enunciado)
 
-- La docente confirm처 que la demo debe mostrar una interfaz de usuario, no solo la API con Swagger. Por eso se construye la aplicaci처n web (React + Tailwind, carpeta `frontend/`, ver ADR-014).
+- La docente confirm처 que la demo debe mostrar una interfaz de usuario, no solo la API con Swagger. La aplicaci처n web (React + Tailwind, carpeta `frontend/`, ADR-014) llega desde el Sprint 2 para la integraci처n final, el despliegue y la demostraci처n.
 - Plataforma de despliegue: AWS, con una instancia EC2 y docker-compose, y Amazon S3 para las separatas (ver ADR-013 y ADR-012).
 - Los diagramas C4 (`docs/04-modelo-c4/`) deben actualizarse al inicio de este sprint: contenedores con la aplicaci처n web, el despliegue en AWS y Gemini como sistema externo; componentes con `ServicioIA` y `AlmacenArchivos`.
 - Debe existir `docs/despliegue.md` con el procedimiento paso a paso, y el repositorio debe arrancar con `docker compose up` y variables de entorno documentadas en `.env.example`.
