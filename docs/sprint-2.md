@@ -131,3 +131,7 @@ Plan de ejecución posterior: humo, luego 50, 100, 250, 500, 1 000, 1 500 y 2 00
 Parámetros previstos: `API_LOCAL`, `SIMULACRO_ID`, `USUARIOS_SINTETICOS`, `MARCA_SEGUNDOS` y `VUS`. `AUTORIZAR_CARGA=si` se utiliza exclusivamente tras aprobación. La invocación posterior será `k6 run --out json=RUTA_LOCAL_DE_EVIDENCIAS pruebas/carga/simulacro.k6.js`. Guardar salida original, resumen, recursos Docker y generador, métricas de PostgreSQL, Redis y RabbitMQ, SHA y características del equipo. Detener antes del siguiente escalón ante saturación persistente o fallo de integridad. La estabilización sostenida y el observador de ranking definitivo deben calibrarse durante el humo autorizado. El valor de 2 000 VU es el máximo previsto y no un resultado obtenido.
 
 La autorización posterior confirmó la gestión mínima de ciclos, el padrón previo al primer intento y la excepción de importación para nuevo ciclo. El detalle de decisiones y criterios está en la [SDD de validación](../specs/validacion-sprint-2/spec.md).
+
+### Evidencia incremental de gestión de cuentas
+
+El seguimiento de CA-VS01–02 está en la [SDD de validación](../specs/validacion-sprint-2/spec.md). Las rutas de entrega y archivado incorporadas tienen contrato OpenAPI y recorrido local reproducible. La evidencia de este recorrido no acredita todavía la recuperación en nuevos ciclos ni el padrón de HU11.

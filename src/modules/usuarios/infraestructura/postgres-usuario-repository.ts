@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import type { CondicionPostulante } from '../dominio/usuario';
+import type { EmisionProvisional } from '../dominio/emision-provisional';
 import {
   Usuario,
   UsuarioRepository,
@@ -19,6 +20,7 @@ interface FilaUsuario {
   rol: string;
   activo: boolean;
   version_sesion: number;
+  password_provisional_hasta: Date | null;
   sede_id: number | null;
   carrera: string | null;
   condicion: Usuario['condicion'];
@@ -47,6 +49,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
       rol: fila.rol as RolUsuario,
       activo: fila.activo,
       versionSesion: fila.version_sesion,
+      passwordProvisionalHasta: fila.password_provisional_hasta,
       sedeId: fila.sede_id !== null && fila.sede_id !== undefined ? String(fila.sede_id) : null,
       carrera: fila.carrera,
       condicion: fila.condicion,
@@ -56,14 +59,21 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     });
   }
 
-  public async guardar(usuario: Usuario): Promise<Usuario> {
+  public async guardar(usuario: Usuario, emision?: EmisionProvisional): Promise<Usuario> {
     const sedeIdNumerico = usuario.sedeId ? parseInt(usuario.sedeId, 10) : null;
 
     const res = await this.pool.query<FilaUsuario>(
-      `INSERT INTO usuarios (nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `${emision ? 'WITH alta AS (' : ''}
+       INSERT INTO usuarios (nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion
+         ${emision ? ', password_provisional_hasta' : ''})
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10 ${emision ? ", now() + interval '24 hours'" : ''})
        ${this.idempotente ? "ON CONFLICT DO NOTHING" : ""}
-       RETURNING id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion;`,
+       RETURNING id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion,
+         version_sesion, password_provisional_hasta
+       ${emision ? `), entrega AS (
+         INSERT INTO entregas_credenciales_usuarios (usuario_id, administrador_id, carga_id, referencia, version_sesion, vence)
+         SELECT id, $11, $12, $13, version_sesion, password_provisional_hasta FROM alta
+       ) SELECT * FROM alta` : ''};`,
       [
         usuario.nombre,
         usuario.dni || null,
@@ -75,6 +85,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
         usuario.carrera || null,
         usuario.alcanceAdministrador || null,
         usuario.condicion ?? null,
+        ...(emision ? [emision.administradorId, emision.cargaId ?? null, emision.referencia] : []),
       ]
     );
 
@@ -104,6 +115,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
        SET nombre = $1,
            correo = $2,
            password_hash = $3,
+           password_provisional_hasta = CASE WHEN password_hash IS DISTINCT FROM $3 THEN NULL ELSE password_provisional_hasta END,
            activo = $4,
            sede_id = $5,
            actualizado_en = CURRENT_TIMESTAMP
@@ -126,7 +138,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     }
 
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta
        FROM usuarios
        WHERE id = $1;`,
       [idNumerico]
@@ -139,9 +151,19 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     return this.mapearFilaAUsuario(res.rows[0]);
   }
 
+  public async cambiarPassword(id: string, versionSesion: number, hash: string): Promise<boolean> {
+    const resultado = await this.pool.query(
+      `UPDATE usuarios SET password_hash = $3, password_provisional_hasta = NULL, actualizado_en = now()
+       WHERE id = $1 AND activo AND version_sesion = $2
+         AND (password_provisional_hasta IS NULL OR password_provisional_hasta > now())`,
+      [id, versionSesion, hash],
+    );
+    return resultado.rowCount === 1;
+  }
+
   public async buscarPorDni(dni: string): Promise<Usuario | null> {
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta
        FROM usuarios
        WHERE dni = $1;`,
       [dni.trim()]
@@ -156,7 +178,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
 
   public async buscarPorCorreo(correo: string): Promise<Usuario | null> {
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta
        FROM usuarios
        WHERE LOWER(correo) = LOWER($1);`,
       [correo.trim().toLowerCase()]
@@ -184,6 +206,9 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
 
     let whereSql = ' WHERE 1=1';
     const params: any[] = [];
+    whereSql += filtros?.soloArchivados
+      ? " AND rol = 'POSTULANTE' AND NOT activo"
+      : " AND (rol <> 'POSTULANTE' OR activo)";
 
     if (filtros?.rol) {
       params.push(filtros.rol);
@@ -208,7 +233,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     queryParams.push(offset);
     const offsetIdx = queryParams.length;
 
-    const selectSql = `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion
+    const selectSql = `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta
                FROM usuarios${whereSql}
                ORDER BY id ASC
                LIMIT $${limitIdx} OFFSET $${offsetIdx};`;

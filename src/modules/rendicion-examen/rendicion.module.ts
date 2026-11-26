@@ -30,7 +30,8 @@ export class RendicionModule {
   private readonly cierres: PostgresCierreSimulacro;
 
   constructor(pool: Pool, redis: Redis, banco: Pick<BancoPreguntasModule, 'consultasVersionadas' | 'existeSimulacro'>,
-    auth: MiddlewareAutenticacion, usuarios?: ServicioConsultaUsuarios) {
+    auth: MiddlewareAutenticacion, usuarios?: ServicioConsultaUsuarios,
+    habilitar?: Parameters<typeof crearTransaccionExamen>[2]) {
     const reloj = () => new Date();
     const examenes = new PostgresExamenRepository(pool);
     this.cierres = new PostgresCierreSimulacro(pool);
@@ -47,7 +48,7 @@ export class RendicionModule {
           throw error;
         }
       };
-    });
+    }, habilitar);
     const finalizar = new FinalizarExamenUseCase(transaccion, temporales, reloj);
     const controlador = new ExamenController(
       new IniciarExamenUseCase(transaccion, reloj, randomUUID, id => temporales.inicializar(id), async id => {

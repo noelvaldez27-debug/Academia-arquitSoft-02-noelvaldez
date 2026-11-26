@@ -33,6 +33,7 @@ export class ProcesarCargaMasivaUseCase {
             },
             nombre: fila.nombre, dni: fila.dni, sedeId: String(fila.sedeId), carrera: fila.carrera,
             condicion: fila.condicion,
+            cargaId: carga.id,
           });
           carga.incrementarCreadas();
         } catch (error) {

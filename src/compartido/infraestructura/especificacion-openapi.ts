@@ -6,6 +6,27 @@ const esquemaDetallesCarga = {
     properties: { fila: { type: 'integer' }, motivo: { type: 'string' } },
   },
 };
+function descargaCredenciales(formato: 'uuid' | 'id') {
+  return {
+    post: {
+      tags: ['Usuarios'],
+      summary: 'Consumir entrega temporal de credenciales del administrador emisor',
+      security: [{ bearerAuth: [] }],
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string',
+        ...(formato === 'uuid' && { format: formato }) } }],
+      responses: {
+        200: { description: 'Excel de un solo uso', content: {
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': { schema: { type: 'string', format: 'binary' } },
+        } },
+        400: { description: 'Identificador inválido' },
+        401: { description: 'Sesión inválida o ausente' },
+        403: { description: 'Se requiere administrador autorizado' },
+        404: { description: 'Entrega vencida, consumida o ajena' },
+        503: { description: 'Entrega temporalmente no disponible' },
+      },
+    },
+  };
+}
 export const especificacionOpenApi = {
   openapi: '3.0.0',
   info: {
@@ -24,6 +45,31 @@ export const especificacionOpenApi = {
     },
   },
   paths: {
+    '/api/usuarios/estudiantes/archivar': {
+      post: {
+        tags: ['Usuarios'],
+        summary: 'Archivar postulantes de forma atómica dentro del alcance autorizado',
+        security: [{ bearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: {
+          type: 'object', required: ['ids'], properties: { ids: {
+            type: 'array', minItems: 1, maxItems: 1000, items: { type: 'string', pattern: '^[1-9][0-9]{0,9}$' },
+          } },
+        } } } },
+        responses: {
+          200: { description: 'Cantidad de cuentas que cambiaron de estado', content: { 'application/json': { schema: {
+            type: 'object', required: ['archivados'], properties: { archivados: { type: 'integer', minimum: 0 } },
+          } } } },
+          400: { description: 'Identificadores inválidos' },
+          401: { description: 'Sesión inválida o ausente' },
+          403: { description: 'Fuera del rol o ámbito autorizado' },
+          404: { description: 'Uno o más postulantes no existen' },
+          409: { description: 'Existen intentos activos' },
+          503: { description: 'Archivado temporalmente no disponible' },
+        },
+      },
+    },
+    '/api/usuarios/estudiantes/{id}/credenciales': descargaCredenciales('id'),
+    '/api/usuarios/cargas-masivas/{id}/credenciales': descargaCredenciales('uuid'),
     '/api/usuarios/cargas-masivas': {
       post: {
         tags: ['Usuarios'],
@@ -150,6 +196,8 @@ export const especificacionOpenApi = {
                   type: 'object',
                   properties: {
                     token: { type: 'string' },
+                    cambioPasswordRequerido: { type: 'boolean',
+                      description: 'El token provisional solo habilita PATCH /api/usuarios/password.' },
                     usuario: {
                       type: 'object',
                       properties: {
@@ -416,6 +464,8 @@ export const especificacionOpenApi = {
           'Permite consultar el listado de usuarios paginado. El administrador general puede consultar todos los usuarios de cualquier rol o sede. El administrador de sede solo puede consultar postulantes de su sede. Postulantes y docentes tienen acceso denegado. Nunca expone contraseñas ni hashes.',
         security: [{ bearerAuth: [] }],
         parameters: [
+          { name: 'archivados', in: 'query', schema: { type: 'boolean', default: false },
+            description: 'true consulta solo postulantes archivados dentro del alcance autorizado.' },
           {
             name: 'rol',
             in: 'query',

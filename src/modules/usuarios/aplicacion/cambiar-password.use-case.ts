@@ -16,7 +16,8 @@ import { CambiarPasswordCommand } from './cambiar-password.command';
 export class CambiarPasswordUseCase {
   constructor(
     private readonly usuarioRepository: UsuarioRepository,
-    private readonly servicioHash: ServicioHash
+    private readonly servicioHash: ServicioHash,
+    private readonly ahora: () => Date = () => new Date(),
   ) {}
 
   public async ejecutar(comando: CambiarPasswordCommand): Promise<void> {
@@ -35,7 +36,7 @@ export class CambiarPasswordUseCase {
     }
 
     const usuario = await this.usuarioRepository.buscarPorId(comando.usuarioId);
-    if (!usuario || !usuario.activo) {
+    if (!usuario || !usuario.activo || (usuario.passwordProvisionalHasta && usuario.passwordProvisionalHasta <= this.ahora())) {
       throw new ErrorAutenticacion('Credenciales invalidas.');
     }
 
@@ -47,8 +48,17 @@ export class CambiarPasswordUseCase {
     if (!passwordValida) {
       throw new ErrorAutenticacion('Credenciales invalidas.');
     }
+    if (usuario.passwordProvisionalHasta && comando.passwordActual === comando.passwordNueva) {
+      throw new ErrorValidacion('La contraseña nueva debe ser diferente de la provisional.');
+    }
 
     const nuevoHash = await this.servicioHash.generarHash(comando.passwordNueva);
+    if (this.usuarioRepository.cambiarPassword) {
+      if (!await this.usuarioRepository.cambiarPassword(comando.usuarioId, usuario.versionSesion, nuevoHash)) {
+        throw new ErrorAutenticacion('La sesión cambió. Vuelve a iniciar sesión.');
+      }
+      return;
+    }
     usuario.cambiarPasswordHash(nuevoHash);
 
     await this.usuarioRepository.actualizar(usuario);

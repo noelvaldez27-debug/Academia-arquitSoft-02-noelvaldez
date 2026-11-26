@@ -43,7 +43,7 @@ export function crearRutasUsuario(
   // PATCH /password - Cambiar la propia contraseña (Cualquier rol autenticado)
   router.patch(
     '/password',
-    middleware.autenticar,
+    middleware.autenticarParaCambiarPassword,
     controller.cambiarPassword
   );
 

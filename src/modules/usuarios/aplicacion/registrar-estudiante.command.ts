@@ -13,5 +13,6 @@ export interface RegistrarEstudianteCommand {
   sedeId: string;
   carrera: string;
   condicion?: unknown;
+  cargaId?: string;
   ejecutor?: EjecutorAccion;
 }

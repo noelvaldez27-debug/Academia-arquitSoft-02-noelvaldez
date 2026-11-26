@@ -28,3 +28,11 @@
 ## Evidencia parcial de CA-VS01
 
 La migración 017 añade la versión de sesión con valor inicial compatible y la actualiza atómicamente al cambiar el estado o el hash de contraseña. Un JWT sin versión representa la versión inicial. Se comprobó en PostgreSQL con datos sintéticos y rollback, y en Jest se verificó que un token anterior siga rechazado después de reactivar. El alta acepta condición ausente y conserva valores explícitos admitidos por el contrato anterior. Esta evidencia no cubre aún la emisión provisional ni la recuperación de ciclo.
+
+### Evidencia incremental y requisitos aún abiertos
+
+El versionado de JWT de la migración 017 se reutiliza. Las migraciones 018 y 019 introducen credenciales y auditoría. La entrega se realiza con una referencia de una sola recuperación y generación XLSX en memoria. El archivado individual y por lote comprueba alcance e intentos no cerrados. Altas por API y Excel aceptan la ausencia de condición y conservan los datos históricos.
+
+La recuperación por DNI, la modalidad Excel de nuevo ciclo y el padrón de HU11 permanecen abiertas. Mientras se implementa la recuperación de ciclo, la ruta histórica de reactivación aún conserva su semántica de RF24 y no emite una nueva credencial.
+
+Evidencia del avance de tarea 4: Jest 432 pruebas en 87 suites. Cobertura global 87,34 % líneas y 79,74 % ramas, y Usuarios 85,46 % y 77,55 %. Docker Compose ejecutó el recorrido de credenciales y archivado con PostgreSQL, Redis y RabbitMQ. Se comprobó alta habitual sin condición, alta Excel, consumo concurrente de la entrega, vigencia, alcance, rotación de sesión, rechazo de archivado durante un intento activo, archivado idempotente y consulta diferenciada de archivados.

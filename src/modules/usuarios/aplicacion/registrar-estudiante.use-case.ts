@@ -12,6 +12,7 @@ import {
 import { GeneradorCredenciales } from './generar-credenciales';
 import { RegistrarEstudianteCommand } from './registrar-estudiante.command';
 import { esCondicionPostulante } from '../dominio/usuario';
+import type { EmisionProvisional } from '../dominio/emision-provisional';
 
 /**
  * Caso de uso: registrar estudiante con nombre, DNI, sede y carrera (RF01, RF22, HU01, CA-U01).
@@ -24,6 +25,7 @@ export class RegistrarEstudianteUseCase {
     private readonly usuarioRepository: UsuarioRepository,
     private readonly sedeRepository: SedeRepository,
     private readonly generadorCredenciales: GeneradorCredenciales,
+    private readonly emitir?: (administradorId: string, cargaId?: string) => Promise<EmisionProvisional>,
   ) {}
 
   public async ejecutar(command: RegistrarEstudianteCommand): Promise<Usuario> {
@@ -80,7 +82,10 @@ export class RegistrarEstudianteUseCase {
       throw new ErrorValidacion('La condición del postulante debe ser MATRICULADO o LIBRE.');
     }
 
-    const credenciales = await this.generadorCredenciales.generarParaDni(command.dni.trim());
+    const emision = await this.emitir?.(command.ejecutor.id, command.cargaId);
+    const credenciales = emision
+      ? { correo: GeneradorCredenciales.generarCorreoDni(command.dni), passwordHash: emision.passwordHash }
+      : await this.generadorCredenciales.generarParaDni(command.dni.trim());
 
     const nuevoPostulante = Usuario.crearPostulante({
       nombre: command.nombre.trim(),
@@ -92,6 +97,6 @@ export class RegistrarEstudianteUseCase {
       condicion: esCondicionPostulante(condicion) ? condicion : null,
     });
 
-    return await this.usuarioRepository.guardar(nuevoPostulante);
+    return emision ? this.usuarioRepository.guardar(nuevoPostulante, emision) : this.usuarioRepository.guardar(nuevoPostulante);
   }
 }

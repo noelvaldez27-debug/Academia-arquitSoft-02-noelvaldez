@@ -5,6 +5,7 @@ import { PostgresCierreSimulacro } from './postgres-cierre-simulacro';
 
 export function crearTransaccionExamen(
   pool: Pool, consultas: (bd: Pick<Pool, 'query'>) => OperacionesExamen['consultarSimulacro'],
+  habilitar?: (bd: Pick<Pool, 'query'>) => OperacionesExamen['consultarPostulanteHabilitado'],
 ): TransaccionExamen {
   return async operar => {
     const cliente = await pool.connect();
@@ -14,6 +15,7 @@ export function crearTransaccionExamen(
       const resultado = await operar({
         examenes: new PostgresExamenRepository(cliente),
         consultarSimulacro: consultas(cliente),
+        consultarPostulanteHabilitado: habilitar?.(cliente),
         coordinarInicio: id => cierres.coordinarInicio(id),
         solicitarCierre: (id, administradorId) => cierres.solicitar(id, administradorId),
       });

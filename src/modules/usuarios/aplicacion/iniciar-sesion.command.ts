@@ -14,4 +14,5 @@ export interface UsuarioAutenticadoDTO {
 export interface ResultadoInicioSesion {
   token: string;
   usuario: UsuarioAutenticadoDTO;
+  cambioPasswordRequerido?: true;
 }

@@ -1,11 +1,13 @@
 import { Usuario } from './usuario';
 import { RolUsuario } from './rol-usuario';
+import type { EmisionProvisional } from './emision-provisional';
 
 export interface FiltrosListadoUsuarios {
   rol?: RolUsuario;
   sedeId?: string;
   pagina?: number;
   limite?: number;
+  soloArchivados?: boolean;
 }
 
 export interface ResultadoPaginadoUsuarios {
@@ -16,8 +18,9 @@ export interface ResultadoPaginadoUsuarios {
 }
 
 export interface UsuarioRepository {
-  guardar(usuario: Usuario): Promise<Usuario>;
+  guardar(usuario: Usuario, emision?: EmisionProvisional): Promise<Usuario>;
   actualizar(usuario: Usuario): Promise<void>;
+  cambiarPassword?(id: string, versionSesion: number, hash: string): Promise<boolean>;
   buscarPorId(id: string): Promise<Usuario | null>;
   buscarPorDni(dni: string): Promise<Usuario | null>;
   buscarPorCorreo(correo: string): Promise<Usuario | null>;

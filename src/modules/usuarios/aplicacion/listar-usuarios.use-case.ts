@@ -17,6 +17,7 @@ export interface ListarUsuariosQuery {
   sedeId?: string;
   pagina?: number;
   limite?: number;
+  soloArchivados?: boolean;
   ejecutor?: EjecutorListado;
 }
 
@@ -84,6 +85,7 @@ export class ListarUsuariosUseCase {
       sedeId: sedeIdFiltro,
       pagina,
       limite,
+      ...(query.soloArchivados && { soloArchivados: true }),
     });
 
     const usuarios: UsuarioResumenDTO[] = resultado.usuarios.map((u) => ({

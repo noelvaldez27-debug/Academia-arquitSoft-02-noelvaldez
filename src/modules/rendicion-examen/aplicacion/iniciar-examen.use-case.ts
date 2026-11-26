@@ -14,7 +14,11 @@ export class IniciarExamenUseCase {
   ) {}
 
   ejecutar(postulanteId: string, simulacroId: string) {
-    return this.transaccion(async ({ examenes, consultarSimulacro, coordinarInicio }) => {
+    return this.transaccion(async ({ examenes, consultarSimulacro, coordinarInicio, consultarPostulanteHabilitado }) => {
+      const admision = await consultarPostulanteHabilitado?.(postulanteId);
+      if (consultarPostulanteHabilitado && !admision) {
+        throw new ErrorRendicion('conflicto', 'La cuenta no puede iniciar un intento.');
+      }
       const enCierre = await coordinarInicio?.(simulacroId);
       const existente = await examenes.buscarIntento(postulanteId, simulacroId);
       existente?.verificarVigencia(this.reloj());
@@ -22,7 +26,7 @@ export class IniciarExamenUseCase {
       const simulacro = await consultarSimulacro(simulacroId);
       if (existente) return { examen: existente, simulacro };
 
-      const datosIniciales = await this.consultarDatos?.(postulanteId) ?? null;
+      const datosIniciales = admision ?? await this.consultarDatos?.(postulanteId) ?? null;
       const inicio = this.reloj();
       const candidato = new Examen(this.generarId(), postulanteId, simulacroId, inicio,
         new Date(inicio.getTime() + simulacro.duracionMinutos * 60_000), null, datosIniciales);

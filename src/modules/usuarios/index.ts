@@ -34,3 +34,4 @@ export {
   UsuariosModule,
   ConfigModuloUsuarios,
 } from './usuarios.module';
+export { crearConsultaPostulanteHabilitado } from './infraestructura/postgres-archivar-postulantes';

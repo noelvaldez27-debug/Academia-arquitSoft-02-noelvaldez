@@ -30,11 +30,18 @@ import { ServicioConsultaUsuarios } from './aplicacion/consultar-usuario.port';
 import { UsuarioController } from './presentacion/usuario.controller';
 import { MiddlewareAutenticacion } from './presentacion/autenticacion.middleware';
 import { crearRutasUsuario } from './presentacion/usuario.routes';
+import { CredencialesProvisionales } from './infraestructura/credenciales-provisionales';
+import { PostgresEntregaCredenciales } from './infraestructura/postgres-entrega-credenciales';
+import { crearRutasEntregaCredenciales } from './presentacion/credenciales.routes';
+import { PostgresArchivarPostulantes } from './infraestructura/postgres-archivar-postulantes';
+import type { ConsultarActivos } from './infraestructura/postgres-archivar-postulantes';
+import { crearRutasArchivado } from './presentacion/archivado.routes';
 
 export interface ConfigModuloUsuarios {
   pool: Pool;
   jwtSecret?: string;
   jwtDuracion?: string;
+  consultarIntentosActivos?: ConsultarActivos;
 }
 
 /**
@@ -70,8 +77,9 @@ export class UsuariosModule {
       duracion: config.jwtDuracion,
     });
     const generadorCredenciales = new GeneradorCredenciales(hashAdapter);
+    const provisionales = new CredencialesProvisionales((config.jwtSecret ?? process.env.JWT_SECRET!).trim(), hashAdapter);
 
-    const persistenciaCarga = new PostgresCargaMasivaAdapter(config.pool, generadorCredenciales);
+    const persistenciaCarga = new PostgresCargaMasivaAdapter(config.pool, generadorCredenciales, provisionales);
     const maxMb = Number(process.env.CARGA_MASIVA_MAX_MB) || 10;
     this.prepararCargaMasiva = new PrepararCargaMasivaUseCase(persistenciaCarga, sedeRepo, randomUUID, {
       maxMb,
@@ -84,7 +92,8 @@ export class UsuariosModule {
     this.registrarEstudianteUseCase = new RegistrarEstudianteUseCase(
       usuarioRepo,
       sedeRepo,
-      generadorCredenciales
+      generadorCredenciales,
+      provisionales.emitir.bind(provisionales),
     );
     this.registrarDocenteUseCase = new RegistrarDocenteUseCase(
       usuarioRepo,
@@ -104,7 +113,9 @@ export class UsuariosModule {
       hashAdapter
     );
     this.listarUsuariosUseCase = new ListarUsuariosUseCase(usuarioRepo);
-    this.desactivarUsuarioUseCase = new DesactivarUsuarioUseCase(usuarioRepo);
+    const archivado = config.consultarIntentosActivos &&
+      new PostgresArchivarPostulantes(config.pool, config.consultarIntentosActivos);
+    this.desactivarUsuarioUseCase = new DesactivarUsuarioUseCase(usuarioRepo, archivado?.ejecutar.bind(archivado));
     this.reactivarUsuarioUseCase = new ReactivarUsuarioUseCase(usuarioRepo);
     this.registrarAdministradorSedeUseCase = new RegistrarAdministradorSedeUseCase(
       usuarioRepo,
@@ -132,6 +143,9 @@ export class UsuariosModule {
     );
 
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);
+    const entregas = new PostgresEntregaCredenciales(config.pool, provisionales);
+    this.router.use(crearRutasEntregaCredenciales(this.middlewareAutenticacion, entregas.descargar.bind(entregas)));
+    this.router.use(crearRutasArchivado(this.middlewareAutenticacion, archivado?.ejecutar.bind(archivado)));
     const cambiarCondicion = new CambiarCondicionUseCase((id, condicion, sede) =>
       usuarioRepo.cambiarCondicion(id, condicion, sede));
     this.router.patch('/estudiantes/:id/condicion', this.middlewareAutenticacion.autenticar, async (req, res) => {

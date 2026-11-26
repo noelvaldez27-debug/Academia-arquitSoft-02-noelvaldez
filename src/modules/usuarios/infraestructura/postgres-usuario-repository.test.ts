@@ -290,7 +290,7 @@ describe('PostgresUsuarioRepository (Pool simulado)', () => {
 
     expect(mockQuery).toHaveBeenNthCalledWith(
       1,
-      expect.stringContaining('SELECT COUNT(*) AS total FROM usuarios WHERE 1=1 AND rol = $1 AND sede_id = $2;'),
+      expect.stringMatching(/SELECT COUNT\(\*\).*AND \(rol <> 'POSTULANTE' OR activo\).*AND rol = \$1 AND sede_id = \$2/),
       [RolUsuario.Postulante, 1]
     );
     expect(mockQuery).toHaveBeenNthCalledWith(

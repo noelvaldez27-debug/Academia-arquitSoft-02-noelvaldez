@@ -160,12 +160,17 @@ export class UsuarioController {
 
   public listarUsuarios = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { rol, sedeId, pagina, limite } = req.query;
+      const { rol, sedeId, pagina, limite, archivados } = req.query;
+      if (archivados !== undefined && archivados !== 'true' && archivados !== 'false') {
+        res.status(400).json({ error: 'archivados debe ser true o false.' });
+        return;
+      }
       const resultado = await this.listarUsuariosUseCase.ejecutar({
         rol: rol as any,
         sedeId: sedeId ? String(sedeId) : undefined,
         pagina: pagina ? parseInt(String(pagina), 10) : undefined,
         limite: limite ? parseInt(String(limite), 10) : undefined,
+        ...(archivados === 'true' && { soloArchivados: true }),
         ejecutor: req.usuario
           ? {
               id: req.usuario.id,

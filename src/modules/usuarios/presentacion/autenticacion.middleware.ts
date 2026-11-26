@@ -32,7 +32,13 @@ export class MiddlewareAutenticacion {
     private readonly usuarioRepository: UsuarioRepository
   ) {}
 
-  public autenticar = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  public autenticar = (req: Request, res: Response, next: NextFunction) =>
+    this.verificar(req, res, next, false);
+
+  public autenticarParaCambiarPassword = (req: Request, res: Response, next: NextFunction) =>
+    this.verificar(req, res, next, true);
+
+  private async verificar(req: Request, res: Response, next: NextFunction, permitirProvisional: boolean): Promise<void> {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       res.status(401).json({ error: 'Acceso no autorizado: token no proporcionado.' });
@@ -58,6 +64,16 @@ export class MiddlewareAutenticacion {
         res.status(401).json({ error: 'Acceso no autorizado: sesión revocada.' });
         return;
       }
+      if (usuario.passwordProvisionalHasta) {
+        if (usuario.passwordProvisionalHasta.getTime() <= Date.now()) {
+          res.status(401).json({ error: 'Acceso no autorizado: credencial provisional vencida.' });
+          return;
+        }
+        if (!permitirProvisional) {
+          res.status(403).json({ error: 'Debes cambiar la contraseña provisional antes de continuar.' });
+          return;
+        }
+      }
 
       req.usuario = {
         id: usuario.id ?? payload.id,
@@ -75,7 +91,7 @@ export class MiddlewareAutenticacion {
       res.status(401).json({ error: 'Acceso no autorizado: token invalido o expirado.' });
       return;
     }
-  };
+  }
 
   public requerirRol = (...rolesPermitidos: RolUsuario[]) => {
     return (req: Request, res: Response, next: NextFunction): void => {

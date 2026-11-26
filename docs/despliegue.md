@@ -296,3 +296,20 @@ $recorrido | docker exec -i -e RANKING_FASE=recuperado "$proyecto-backend-1" nod
 ```
 
 El recorrido normal verifica el cierre concurrente, la clasificación, los permisos docentes y la exportación. La fase de compatibilidad aplica las migraciones en un esquema sintético dentro de una transacción que revierte al finalizar. Las fases de caída y recuperación comprueban que el ranking espere la calificación pendiente.
+
+### Credenciales provisionales y archivado
+
+Las migraciones 018 y 019 agregan vigencia de credenciales, entregas restringidas y auditoría administrativa. Las nuevas cuentas creadas por API o importación normal reciben una credencial provisional de 24 horas. Usuarios guarda el hash de la contraseña y, para la entrega, una referencia aleatoria diferente por cuenta. La contraseña se deriva mediante HMAC con separación de propósito a partir del secreto de despliegue y la referencia. El servidor arma el Excel en memoria, dentro de la transacción que consume la referencia. La rotación del secreto de despliegue deja inválidas las entregas pendientes generadas con el secreto anterior.
+
+El administrador responsable consume una entrega individual con `POST /api/usuarios/estudiantes/{id}/credenciales` o la del lote terminado con `POST /api/usuarios/cargas-masivas/{id}/credenciales`. El token provisional solo habilita `PATCH /api/usuarios/password`. Después se requiere un nuevo inicio de sesión. La versión de sesión bloquea tokens anteriores.
+
+El archivado individual reutiliza la ruta de desactivación para postulantes. `POST /api/usuarios/estudiantes/archivar` archiva un lote de manera atómica y `GET /api/usuarios?archivados=true` muestra postulantes archivados dentro del alcance autorizado. El inicio de Rendición toma un bloqueo compartido sobre la cuenta y el archivado un bloqueo exclusivo antes de consultar intentos activos mediante el contrato público de Rendición. El archivado espera a que los intentos estén cerrados y permanece independiente del consumo de calificaciones pendientes.
+
+Para verificar en un proyecto Compose aislado, con datos sintéticos e IA simulada, cargar el administrador de prueba y ejecutar:
+
+```powershell
+$recorrido = Get-Content -Raw -Encoding UTF8 pruebas/verificar-credenciales-compose.cjs
+$recorrido | docker compose exec -T -e VERIFICAR_ARCHIVO=si backend node -
+```
+
+Los recorridos antiguos que iniciaban sesión con el DNI en altas nuevas deben obtener la entrega provisional y cambiar la contraseña antes de usar las rutas académicas. Sus resultados históricos se conservan vinculados al código anterior.

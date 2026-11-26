@@ -18,6 +18,14 @@ interface FilaExamen {
 const columnas = `id, postulante_id AS "postulanteId", simulacro_id AS "simulacroId", inicio, vence, cierre,
   carrera_inicial AS carrera, sede_inicial AS "sedeId", condicion_inicial AS condicion`;
 
+export async function existenIntentosActivos(bd: Pick<Pool, 'query'>, postulantes: string[]) {
+  const { rows } = await bd.query(
+    'SELECT 1 FROM examenes_rendicion WHERE postulante_id = ANY($1::text[]) AND cierre IS NULL LIMIT 1',
+    [postulantes],
+  );
+  return rows.length > 0;
+}
+
 export type IntentoCerradoParaAnalitica = Pick<IntentoParaReportes,
   'id' | 'postulanteId' | 'simulacroId' | 'sedeId'> & { cierre: Date };
 

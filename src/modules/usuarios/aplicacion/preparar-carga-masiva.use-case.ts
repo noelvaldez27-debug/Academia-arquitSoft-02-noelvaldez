@@ -22,7 +22,7 @@ export class PrepararCargaMasivaUseCase {
       throw new ErrorAccesoDenegado('La sede del administrador no está disponible.');
     }
     const lectura = await leerYValidarExcel(archivo, {
-      ...this.limites, exigirColumnaSede: true, exigirCondicion: true, sedeAdminNombre: sedeAdmin?.nombre,
+      ...this.limites, exigirColumnaSede: true, sedeAdminNombre: sedeAdmin?.nombre,
     });
     const carga = new CargaMasiva({
       id: this.generarId(),

@@ -26,7 +26,9 @@ export interface DesactivarUsuarioCommand {
  * - Postulantes y docentes tienen acceso denegado.
  */
 export class DesactivarUsuarioUseCase {
-  constructor(private readonly usuarioRepository: UsuarioRepository) {}
+  constructor(private readonly usuarioRepository: UsuarioRepository,
+    private readonly archivarPostulantes?: (actor: NonNullable<DesactivarUsuarioCommand['ejecutor']>,
+      ids: string[]) => Promise<unknown>) {}
 
   public async ejecutar(command: DesactivarUsuarioCommand): Promise<void> {
     if (!command.ejecutor) {
@@ -76,6 +78,10 @@ export class DesactivarUsuarioUseCase {
       }
     }
 
+    if (usuario.rol === RolUsuario.Postulante && this.archivarPostulantes) {
+      await this.archivarPostulantes(command.ejecutor, [usuarioId]);
+      return;
+    }
     usuario.desactivar();
     await this.usuarioRepository.actualizar(usuario);
   }

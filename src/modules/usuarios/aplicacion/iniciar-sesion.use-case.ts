@@ -13,7 +13,8 @@ export class IniciarSesionUseCase {
   constructor(
     private readonly usuarioRepository: UsuarioRepository,
     private readonly servicioHash: ServicioHash,
-    private readonly servicioToken: ServicioToken
+    private readonly servicioToken: ServicioToken,
+    private readonly ahora: () => Date = () => new Date(),
   ) {}
 
   public async ejecutar(command: IniciarSesionCommand): Promise<ResultadoInicioSesion> {
@@ -26,7 +27,7 @@ export class IniciarSesionUseCase {
       throw new ErrorAutenticacion('Credenciales invalidas.');
     }
 
-    if (!usuario.activo) {
+    if (!usuario.activo || (usuario.passwordProvisionalHasta && usuario.passwordProvisionalHasta <= this.ahora())) {
       throw new ErrorAutenticacion('Credenciales invalidas.');
     }
 
@@ -44,6 +45,7 @@ export class IniciarSesionUseCase {
 
     return {
       token,
+      ...(usuario.passwordProvisionalHasta && { cambioPasswordRequerido: true }),
       usuario: {
         id: usuario.id ?? '',
         nombre: usuario.nombre,
