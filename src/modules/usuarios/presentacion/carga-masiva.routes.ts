@@ -5,11 +5,14 @@ import { PrepararCargaMasivaUseCase } from '../aplicacion/preparar-carga-masiva.
 import { ErrorAccesoDenegado, ErrorConflicto, ErrorNoEncontrado, ErrorValidacion, RolUsuario } from '../dominio';
 import { MiddlewareAutenticacion } from './autenticacion.middleware';
 
+import type { ListarCargasMasivasUseCase } from '../aplicacion/listar-cargas-masivas.use-case';
+
 export function crearRutasCargaMasiva(
   preparar: PrepararCargaMasivaUseCase,
   consultar: ConsultarCargaMasivaUseCase,
   autenticacion: MiddlewareAutenticacion,
   maxMb: number,
+  listar?: ListarCargasMasivasUseCase,
 ): Router {
   const router = Router();
   const administrador = autenticacion.requerirRol(RolUsuario.Administrador);
@@ -40,6 +43,16 @@ export function crearRutasCargaMasiva(
     }
   });
 
+  if (listar) router.get('/cargas-masivas', autenticacion.autenticar, administrador, async (req, res) => {
+    try {
+      const pagina = enteroLimitado(req.query.pagina, 1, 10_000);
+      const limite = enteroLimitado(req.query.limite, 20, 100);
+      res.json(await listar.ejecutar(req.usuario!, pagina, limite));
+    } catch (error) {
+      responderError(res, error);
+    }
+  });
+
   router.get('/cargas-masivas/:id', autenticacion.autenticar, administrador, async (req: Request<{ id: string }>, res) => {
     try {
       if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(req.params.id)) {
@@ -52,6 +65,14 @@ export function crearRutasCargaMasiva(
   });
 
   return router;
+}
+
+function enteroLimitado(valor: unknown, defecto: number, maximo: number): number {
+  if (valor === undefined) return defecto;
+  if (typeof valor !== 'string' || !/^[1-9]d*$/.test(valor) || Number(valor) > maximo) {
+    throw new ErrorValidacion('La paginación indicada es inválida.');
+  }
+  return Number(valor);
 }
 
 function responderError(res: Response, error: unknown): void {

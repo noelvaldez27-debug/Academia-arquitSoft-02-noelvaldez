@@ -1,5 +1,6 @@
 import { CambiarCondicionUseCase } from './aplicacion/cambiar-condicion.use-case';
 import { PostgresCargaMasivaRepository } from './infraestructura/postgres-carga-masiva-repository';
+import { ListarCargasMasivasUseCase } from './aplicacion/listar-cargas-masivas.use-case';
 import { ConsultarCargaMasivaUseCase } from './aplicacion/consultar-carga-masiva.use-case';
 import { crearRutasCargaMasiva } from './presentacion/carga-masiva.routes';
 import { randomUUID } from 'node:crypto';
@@ -170,11 +171,13 @@ export class UsuariosModule {
       const estado = await cambiarCondicion.ejecutar(req.usuario, String(req.params.id), req.body?.condicion);
       res.sendStatus(estado);
     });
+    const cargas = new PostgresCargaMasivaRepository(config.pool);
     this.router.use(crearRutasCargaMasiva(
       this.prepararCargaMasiva,
-      new ConsultarCargaMasivaUseCase(new PostgresCargaMasivaRepository(config.pool)),
+      new ConsultarCargaMasivaUseCase(cargas),
       this.middlewareAutenticacion,
       maxMb,
+      new ListarCargasMasivasUseCase(cargas.listar.bind(cargas)),
     ));
   }
 }

@@ -252,6 +252,13 @@ async function verificar() {
   }
   assert.equal(resumen.estado, 'COMPLETADA');
   assert.equal(resumen.creadas, 1);
+  const historialCargas = await (await esperar('GET', '/cargas-masivas?limite=1', 200, admin)).json();
+  assert.equal(historialCargas.pagina, 1);
+  assert.equal(historialCargas.cargas[0].id, resumen.id);
+  assert.equal(historialCargas.cargas[0].propia, true);
+  const cargasOtraSede = await (await esperar('GET', '/cargas-masivas', 200, otro)).json();
+  assert.ok(!cargasOtraSede.cargas.some(carga => carga.id === resumen.id));
+  await esperar('GET', '/cargas-masivas?limite=101', 400, admin);
   const archivoLote = await esperar('POST', rutaCarga + '/credenciales', 200, admin);
   const resultadoLote = new ExcelJS.Workbook();
   await resultadoLote.xlsx.load(Buffer.from(await archivoLote.arrayBuffer()));

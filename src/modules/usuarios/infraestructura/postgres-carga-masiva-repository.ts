@@ -40,6 +40,16 @@ interface FilaLoteBD {
 export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
   constructor(private readonly pool: Pick<Pool, 'query'>) {}
 
+  async listar(sedeId: string | null, actorId: string, pagina: number, limiteConExtra: number) {
+    const { rows } = await this.pool.query<{ id: string; estado: string; creadaEl: Date; propia: boolean }>(
+      `SELECT id, estado, creado_en AS "creadaEl", (usuario_id = $2::integer) AS propia
+       FROM cargas_masivas WHERE ($1::integer IS NULL OR sede_id = $1::integer)
+       ORDER BY creado_en DESC, id DESC LIMIT $3 OFFSET $4`,
+      [sedeId, actorId, limiteConExtra, (pagina - 1) * (limiteConExtra - 1)],
+    );
+    return rows;
+  }
+
   private parsearDetalles(valor: string | DetalleErrorFila[] | undefined): DetalleErrorFila[] {
     if (!valor) {
       return [];

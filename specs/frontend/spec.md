@@ -73,3 +73,5 @@ Compilación local con TypeScript y Vite y compilación de imagen nginx sobre No
 F1.1 conecta la cuenta a PATCH /api/usuarios/password y PATCH /api/usuarios/correo. Tras un cambio exitoso se vuelve al acceso. Un 401 de una consulta privada descarta el JWT correspondiente. El panel y la cuenta se restringen mientras el backend informe cambio provisional.
 
 F1.2 agrega listados paginados, altas de estudiantes y personal, condición académica, archivo individual y masivo, recuperación por DNI y ciclo, sedes y ciclos. La búsqueda por nombre, DNI y correo opera en la página visible. Los filtros de rol, sede y archivo son del servidor. El backend vigente permite actualizar la condición del estudiante. El resto de los campos del perfil y los datos de terceros carecen de operación de edición aprobada.
+
+F1.3 añade GET /api/usuarios/cargas-masivas como lectura paginada del módulo propietario Usuarios. El administrador general consulta el conjunto global; el administrador de sede, exclusivamente su sede. El historial devuelve estado, fecha, referencia y si la carga es propia. La descarga conserva su validación independiente de responsable y uso único.

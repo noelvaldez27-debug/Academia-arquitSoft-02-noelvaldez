@@ -123,6 +123,32 @@ export const especificacionOpenApi = {
     '/api/usuarios/estudiantes/{id}/credenciales': descargaCredenciales('id'),
     '/api/usuarios/cargas-masivas/{id}/credenciales': descargaCredenciales('uuid'),
     '/api/usuarios/cargas-masivas': {
+      get: {
+        tags: ['Usuarios'],
+        summary: 'Consultar el historial paginado de cargas en el alcance administrativo',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'pagina', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 10000, default: 1 } },
+          { name: 'limite', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } },
+        ],
+        responses: {
+          '200': { description: 'Página de cargas', content: { 'application/json': { schema: {
+            type: 'object', required: ['cargas', 'pagina', 'hayMas'],
+            properties: {
+              pagina: { type: 'integer' }, hayMas: { type: 'boolean' },
+              cargas: { type: 'array', items: { type: 'object', required: ['id', 'estado', 'creadaEl', 'propia'],
+                properties: {
+                  id: { type: 'string', format: 'uuid' }, estado: { type: 'string' },
+                  creadaEl: { type: 'string', format: 'date-time' }, propia: { type: 'boolean' },
+                } } },
+            },
+          } } } },
+          '400': { description: 'Paginación inválida' },
+          '401': { description: 'Sesión inválida o ausente' },
+          '403': { description: 'Acceso denegado' },
+          '500': { description: 'No se pudo consultar el historial' },
+        },
+      },
       post: {
         tags: ['Usuarios'],
         summary: 'Aceptar un Excel para registro masivo en segundo plano',
