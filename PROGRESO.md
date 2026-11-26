@@ -191,3 +191,5 @@ F4.C incorpora el nombre del curso desde el catálogo autorizado de Banco. El bo
 Fase 4 publicada por avance directo hasta ff16882 tras nueve pruebas específicas. Aprobaron backend y frontend en [GitHub Actions](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45882614157).
 
 F5.1 completada con posición propia y ranking administrativo, filtros combinados, estados y paginación local. Tres pruebas específicas aprobaron. Siguiente tarea F5.2 en specs/frontend/tasks.md.
+
+F5.2 completada localmente con participación HU11, resultados, cuadro de mérito, descarga Excel y agregados docentes. Regresión aprobada con 462 pruebas backend, 34 frontend y 20 recorridos Playwright. Compose sintético verificó publicación, privacidad, padrón y Excel. La Fase 5 queda local. Siguiente paso exacto tras autorización del usuario: publicar la Fase 5 si autoriza el push e iniciar F6.1 en specs/frontend/tasks.md si aprueba Analítica del Estudiante.

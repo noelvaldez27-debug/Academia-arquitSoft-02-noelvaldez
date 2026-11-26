@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { randomInt, randomUUID } = require('node:crypto');
 const { mkdirSync } = require('node:fs');
+const { setTimeout: esperar } = require('node:timers/promises');
 const Excel = require('exceljs');
 const { chromium } = require('../frontend/node_modules/playwright');
 
@@ -16,7 +17,7 @@ async function solicitar(ruta, metodo, esperado, token, datos) {
     headers: { ...(token && { authorization: 'Bearer ' + token }), ...(datos && { 'content-type': 'application/json' }) },
     body: datos && JSON.stringify(datos),
   });
-  assert.equal(respuesta.status, esperado, metodo + ' ' + ruta);
+  assert.ok([esperado].flat().includes(respuesta.status), metodo + ' ' + ruta + ': HTTP ' + respuesta.status);
   return respuesta;
 }
 const json = async (...args) => (await solicitar(...args)).json();
@@ -132,6 +133,76 @@ async function ejecutar() {
       await solicitar(resultado, 'GET', 403, admin);
       await pagina.screenshot({ path: 'frontend/evidencias-locales/mi-nota-compose.png', fullPage: true });
       console.log('Mi nota verificada con nginx, API, RabbitMQ y worker real. Cierre a nota visible: ' + tiempoVisible + ' ms.');
+    }
+    if (process.env.EVALUA_VERIFICAR_RANKING === 'si') {
+      const ranking = '/api/v1/rankings/' + sim.id;
+      const posicion = async definitiva => {
+        for (let i = 0; i < 80; i++) {
+          const respuesta = await fetch(new URL(ranking + '/propio', base), {
+            headers: { authorization: 'Bearer ' + propio.token },
+          });
+          if (respuesta.ok) {
+            const datos = await respuesta.json();
+            if (datos.definitiva === definitiva && datos.general.puesto === 1) return datos;
+          } else assert.ok([404, 503].includes(respuesta.status));
+          await esperar(250);
+        }
+        assert.fail('No se publicó la posición esperada.');
+      };
+      const provisional = await posicion(false);
+      assert.equal(provisional.puntaje, 0);
+      assert.equal(provisional.carrera.puesto, 1);
+      assert.equal(provisional.sede.puesto, 1);
+      assert.equal(Object.hasOwn(provisional, 'filas'), false);
+      await solicitar(ranking, 'GET', 403, propio.token);
+      await solicitar(ranking + '/propio', 'GET', 404, externo.token);
+      await pagina.getByRole('navigation').getByRole('link', { name: 'Mi posición' }).click();
+      const simulacroPropio = pagina.locator('select[name="simulacro-propio"]');
+      await simulacroPropio.selectOption(sim.id, { timeout: 10000 });
+      await pagina.getByText('Publicación provisional', { exact: true }).waitFor();
+      await pagina.getByText('Puesto 1', { exact: true }).first().waitFor();
+      await solicitar(rendicion + '/simulacros/' + sim.id + '/cierre', 'POST', [200, 202], admin);
+      await posicion(true);
+      await simulacroPropio.selectOption('');
+      await simulacroPropio.selectOption(sim.id);
+      await pagina.getByText('Publicación definitiva', { exact: true }).waitFor();
+      await pagina.screenshot({ path: 'frontend/evidencias-locales/mi-posicion-compose.png', fullPage: true });
+
+      const gestor = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+      await gestor.goto(new URL('/acceso', base).href);
+      await gestor.getByLabel('Correo institucional').fill(process.env.EVALUA_ADMIN_SINTETICO_CORREO);
+      await gestor.getByLabel('Contraseña').fill(process.env.EVALUA_ADMIN_SINTETICO_PASSWORD);
+      await gestor.getByRole('button', { name: 'Ingresar' }).click();
+      await gestor.getByRole('navigation').getByRole('link', { name: 'Reportes' }).click();
+      const selector = gestor.locator('select[name="simulacro-admin"]');
+      for (let i = 0; i < 20; i++) {
+        await selector.waitFor();
+        if (await selector.locator('option').evaluateAll((items, id) => items.some(item => item.value === id), sim.id)) break;
+        const siguiente = gestor.getByRole('button', { name: 'Siguiente' }).first();
+        await siguiente.click();
+      }
+      await selector.selectOption(sim.id);
+      await gestor.getByRole('table', { name: 'Posiciones' }).waitFor();
+      await gestor.getByRole('button', { name: 'Participación', exact: true }).click();
+      const informe = gestor.getByRole('region', { name: 'Informe del simulacro' });
+      await informe.getByText('Inscritos en el padrón').waitFor();
+      const resumen = (await json(ranking + '/reportes/participacion', 'GET', 200, admin)).resumen;
+      assert.equal(resumen.inscritos, 1);
+      assert.equal(resumen.participantes, 1);
+      assert.equal(resumen.porcentajeParticipacion, 100);
+      await informe.getByText('100 %', { exact: true }).waitFor();
+      await gestor.screenshot({ path: 'frontend/evidencias-locales/participacion-compose.png', fullPage: true });
+      await gestor.getByRole('button', { name: 'Cuadro de mérito', exact: true }).click();
+      await gestor.getByRole('table', { name: 'Cuadro de mérito' }).waitFor();
+      const evento = gestor.waitForEvent('download');
+      await gestor.getByRole('button', { name: 'Exportar Excel' }).click();
+      const archivo = await evento;
+      assert.equal(archivo.suggestedFilename(), 'meritos.xlsx');
+      const libro = new Excel.Workbook();
+      await libro.xlsx.readFile(await archivo.path());
+      assert.ok(libro.worksheets[0].rowCount >= 2);
+      await gestor.close();
+      console.log('Ranking web verificado con publicación provisional y definitiva, privacidad, padrón real y Excel legible.');
     }
   } finally { await browser.close(); }
 }

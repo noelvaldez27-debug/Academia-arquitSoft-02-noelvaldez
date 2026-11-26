@@ -340,3 +340,9 @@ F3.1 y F3.2 completadas. Listado autorizado por padrón, vistas virtual e impres
 
 F4.1 completada localmente. Mi nota muestra fecha, puntaje definitivo y conteos totales y por curso. El sondeo distingue pendiente de cero puntos, sigue Retry-After y tiene espera acotada. Se reutilizaron los contratos REST vigentes. Regresión aprobada con 462 pruebas backend, 28 Jest de frontend y 20 recorridos Playwright. Compose aislado verificó la nota y las restricciones de acceso con cuentas sintéticas. Una ejecución local midió 2855 ms desde el clic de cierre hasta la nota visible. La validación integral y la tarea 8 de Sprint 2 siguen abiertas. [SDD](../specs/frontend/spec.md#fase-4--mi-nota)
 La consolidación de Fase 4 muestra los nombres de los cursos mediante el contrato interno de Banco, con consulta posterior a la autorización del resultado propio.
+
+### Fase 5 · Ranking y Reportes web
+
+F5.1 y F5.2 completadas localmente. Mi posición muestra puntaje y puestos propios. El panel administrativo conserva los empates y pagina las filas recibidas. Participación distingue padrón desconocido de tasa cero. Resultados y Cuadro de mérito permiten exportar Excel con los filtros aplicados. El docente consulta solo agregados autorizados. El recorrido sintético en Compose confirmó estados provisional y definitivo, privacidad, participación y lectura del Excel descargado.
+
+Regresión aprobada con 462 pruebas Jest de backend, 34 de frontend y 20 recorridos Playwright. Ranking y Reportes web alcanzó 98,97 % de líneas y 86,73 % de ramas. La cobertura global web quedó en 59,20 % de líneas y 49,19 % de ramas. Sigue pendiente consolidarla después de la Fase 6. El Sprint 2 continúa abierto.

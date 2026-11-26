@@ -1,6 +1,7 @@
 import { Rendicion } from '../funcionalidades/rendicion/rendicion';
 import { MiNota } from '../funcionalidades/resultados/mi-nota';
-import { MiPosicion, PanelRanking } from '../funcionalidades/ranking-reportes/ranking';
+import { MiPosicion } from '../funcionalidades/ranking-reportes/ranking';
+import { DesempenoDocente, PanelRanking } from '../funcionalidades/ranking-reportes/reportes';
 import { GestionSeparatas } from '../funcionalidades/banco-preguntas/separatas';
 import { GestionBanco } from '../funcionalidades/banco-preguntas/banco';
 import { GestionSimulacros } from '../funcionalidades/banco-preguntas/simulacros';
@@ -77,6 +78,7 @@ function Panel() {
           <h1 className="text-3xl font-bold tracking-tight">{activa?.titulo ?? 'Inicio'}</h1>
           {seccion === 'ranking' && perfil === 'postulante' ? <MiPosicion />
             : seccion === 'reportes' && (perfil === 'general' || perfil === 'sede') ? <PanelRanking general={perfil === 'general'} />
+            : seccion === 'desempeno' && perfil === 'docente' ? <DesempenoDocente />
             : seccion === 'cuenta' ? (
             <div className="mt-6 grid gap-8">
               <section className="grid gap-4"><h2 className="text-lg font-semibold">Contraseña</h2><FormularioCuenta /></section>

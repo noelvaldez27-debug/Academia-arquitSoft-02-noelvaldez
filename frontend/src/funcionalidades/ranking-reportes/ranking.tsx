@@ -5,6 +5,7 @@ import { banco, usarLectura, type Pagina } from '../banco-preguntas/lecturas';
 import { examenes, type Opcion } from '../rendicion/contratos';
 import { Selector } from '../usuarios/gestion';
 
+
 type Puesto = { puesto: number | null; participantes: number };
 interface Propio { definitiva: boolean; puntaje: number | null; general: Puesto; carrera: Puesto | null; sede: Puesto | null }
 export interface FilaRanking { postulanteId: string; puesto: number; puntaje: number }
@@ -98,13 +99,14 @@ export function RankingAdministrativo({ ruta }: { ruta: string }) {
   </section>}</Consulta>;
 }
 
-export function FiltrosRanking({ general, aplicar }: { general: boolean; aplicar: (query: string) => void }) {
+export function FiltrosRanking({ general, reporte, aplicar }: { general: boolean; reporte: boolean; aplicar: (query: string) => void }) {
   const sedes = usarLectura<{ id: string; nombre: string }[]>(general ? '/api/usuarios/sedes' : undefined);
   function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const filtros = new URLSearchParams();
     for (const [nombre, valor] of new FormData(evento.currentTarget)) {
-      if (typeof valor === 'string' && valor.trim()) filtros.set(nombre, valor.trim());
+      if (typeof valor !== 'string' || !valor.trim()) continue;
+      filtros.set(nombre, nombre === 'desde' || nombre === 'hasta' ? new Date(valor).toISOString() : valor.trim());
     }
     aplicar(filtros.toString());
   }
@@ -113,18 +115,15 @@ export function FiltrosRanking({ general, aplicar }: { general: boolean; aplicar
     {general && <Selector nombre="sedeId" etiqueta="Sede" vacio="Todas las sedes"
       opciones={(sedes?.datos ?? []).map(s => ({ valor: String(s.id), texto: s.nombre }))} />}
     {!general && <p className="text-sm">Ámbito de tu sede</p>}
+    {reporte && <>
+      <Selector nombre="condicion" etiqueta="Condición histórica" vacio="Todas las condiciones" opciones={[
+        { valor: 'MATRICULADO', texto: 'Matriculado' }, { valor: 'LIBRE', texto: 'Libre' },
+        { valor: 'NO_DETERMINADA', texto: 'No determinada' },
+      ]} />
+      <Campo id="reporte-desde" etiqueta="Inicio desde" name="desde" type="datetime-local" />
+      <Campo id="reporte-hasta" etiqueta="Inicio hasta" name="hasta" type="datetime-local" />
+    </>}
     <Boton className="boton-secundario">Aplicar filtros</Boton>
     {sedes?.error && <Estado tipo="error">{sedes.error}</Estado>}
   </form>;
-}
-
-export function PanelRanking({ general }: { general: boolean }) {
-  const [id, elegir] = useState('');
-  const [query, filtrar] = useState('');
-  const base = id ? rutaRanking(id) + (query ? '?' + query : '') : '';
-  return <div className="mt-6 grid gap-5">
-    <ElegirSimulacro catalogo={general} id={id} elegir={elegir} />
-    {id && <><p className="break-all text-sm">Simulacro {id}</p><FiltrosRanking general={general} aplicar={filtrar} />
-      <RankingAdministrativo ruta={base} /></>}
-  </div>;
 }

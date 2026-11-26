@@ -36,7 +36,7 @@
 ## Fase 5 · Ranking y Reportes (depende de F2–F4)
 
 - [x] F5.1. Implementar posición propia y ranking administrativo. Verificar publicación, filtros y privacidad.
-- [ ] F5.2. Implementar reportes por perfil y exportaciones. Verificar padrón desconocido, tasa cero, restricciones y descargas.
+- [x] F5.2. Implementar reportes por perfil y exportaciones. Verificar padrón desconocido, tasa cero, restricciones y descargas.
 
 ## Fase 6 · Analítica (depende de F2 y F4; reutiliza filtros y tablas de F5)
 
