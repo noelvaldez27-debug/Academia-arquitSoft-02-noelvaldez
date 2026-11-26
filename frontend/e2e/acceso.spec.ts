@@ -7,6 +7,7 @@ test('protege rutas, muestra el panel del rol y deja una captura local', async (
     token,
     usuario: { id: '1', nombre: 'Docente de ejemplo', correo: 'docente@example.test', rol: 'DOCENTE', sedeId: null },
   } }));
+  await page.route('**/api/banco-preguntas/**', route => route.fulfill({ json: { datos: [], pagina: 1, hayMas: false } }));
   await page.goto('/panel/general/usuarios');
   await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
   await page.screenshot({ path: info.outputPath('acceso.png'), fullPage: true });

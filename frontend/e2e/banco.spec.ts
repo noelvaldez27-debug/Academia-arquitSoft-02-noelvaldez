@@ -44,7 +44,7 @@ test('el administrador crea una pregunta con cinco alternativas y ordena el simu
   await expect(page.getByText('Pregunta guardada.')).toBeVisible();
   await page.screenshot({ path: info.outputPath('banco.png'), fullPage: true });
   await menu.getByRole('link', { name: 'Simulacros' }).click();
-  await page.getByRole('combobox', { name: 'Curso', exact: true }).selectOption('c1');
+  await page.getByRole('region', { name: 'Editor de simulacro' }).getByRole('combobox', { name: 'Curso', exact: true }).selectOption('c1');
   await page.getByRole('listitem').filter({ hasText: 'Pregunta sintética existente' }).getByRole('button', { name: 'Agregar' }).click();
   await page.getByRole('listitem').filter({ hasText: 'Pregunta sintética nueva' }).getByRole('button', { name: 'Agregar' }).click();
   await page.getByRole('button', { name: 'Subir pregunta 2' }).click();
