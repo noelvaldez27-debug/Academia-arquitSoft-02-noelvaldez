@@ -60,3 +60,7 @@ OpenAPI y las rutas permiten crear cursos y simulacros y operar con IDs conocido
 ## Contratos incorporados al finalizar Fase 2
 
 Usuarios incorpora historial paginado de cargas con alcance por sede y búsqueda de usuarios por q antes de paginar. Banco incorpora GET /cursos, GET /simulacros, GET /cursos/{cursoId}/docentes y GET /separatas. Cursos admite búsqueda por nombre. Simulacros admite filtro por referencia. Las asignaciones se consultan por curso. Separatas admite curso y estado, con consulta global del administrador general y consulta propia del docente. Las vistas usan selectores y listados para recuperar referencias. El identificador y el tipo del archivo identifican separatas históricas porque el modelo no conserva el nombre original.
+
+## Rendición web
+
+El listado del postulante usa GET /api/v1/examenes/simulacros. Véanse los criterios de elegibilidad en la SDD de Rendición. La modalidad impresa mantiene el número y las letras de la versión congelada. La transición a Mi nota conserva la referencia del intento para la Fase 4.

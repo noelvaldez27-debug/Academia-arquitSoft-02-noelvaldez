@@ -29,7 +29,7 @@ export function VistaIntento({ origen, modo, marcas, bloqueado = true, marcar, a
 
   if (intento.estado === 'FINALIZADO') {
     return <section className="mt-6 grid gap-4 rounded-xl border border-slate-200 bg-white p-5" aria-label="Intento finalizado">
-      <Estado>El servidor confirmó la finalización. La calificación se procesa por separado.</Estado>
+      <Estado>El servidor confirmó la finalización. Calificación pendiente de consulta.</Estado>
       {acciones}
       <Link className="enlace" state={{ intentoId: intento.id }} to="/panel/postulante/nota">Ir a Mi nota</Link>
       <Boton className="boton-secundario w-fit" onClick={volver}>Volver a simulacros</Boton>

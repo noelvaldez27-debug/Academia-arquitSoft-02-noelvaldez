@@ -25,6 +25,7 @@ interface EstadoSesion {
   solicitar<T>(ruta: string, opciones?: Omit<Parameters<typeof solicitarApi>[1] & object, 'sesion'>): Promise<T>;
   completarCambio(mensaje: string): void;
   ingresar(correo: string, password: string, signal: AbortSignal): Promise<void>;
+  configurarSalida(guardia: () => boolean): () => void;
   salir(): void;
 }
 
@@ -52,6 +53,11 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
   const [sesion, guardar] = useState<Sesion | null>(null);
   const [aviso, avisar] = useState('');
   const tokenActivo = useRef<string | null>(null);
+  const guardiaSalida = useRef<(() => boolean) | undefined>(undefined);
+  const configurarSalida = useCallback((guardia: () => boolean) => {
+    guardiaSalida.current = guardia;
+    return () => { if (guardiaSalida.current === guardia) guardiaSalida.current = undefined; };
+  }, []);
   const [vencida, avisarVencimiento] = useState(false);
   useEffect(() => {
     if (!sesion) return;
@@ -96,8 +102,8 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
   }, [sesion]);
 
   return <Contexto.Provider value={{
-    sesion, vencida, aviso, ingresar,
-    salir: () => { tokenActivo.current = null; guardar(null); avisar(''); avisarVencimiento(false); },
+    sesion, vencida, aviso, ingresar, configurarSalida,
+    salir: () => { if (guardiaSalida.current && !guardiaSalida.current()) return; tokenActivo.current = null; guardar(null); avisar(''); avisarVencimiento(false); },
     completarCambio: mensaje => {
       tokenActivo.current = null;
       guardar(null);

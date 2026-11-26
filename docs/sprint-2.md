@@ -329,3 +329,9 @@ F2.1 y F2.2 completadas localmente. Se incorporaron catálogos paginados de curs
 ### Consolidación de Banco de Preguntas
 
 Jest backend 461 pruebas y frontend 17. Cobertura web global 64,42 % de líneas y 52,80 % de ramas. Compilación web y 12 recorridos Playwright aprobados.
+
+Banco de Preguntas quedó publicado por avance directo hasta 0e7c8e0. CI aprobó backend y frontend tras acotar el selector del editor de simulacros en Chromium. [Ejecución 45872738322](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45872738322)
+
+### Fase 3 · Rendición web
+
+F3.1 y F3.2 completadas localmente. Listado autorizado por padrón, vistas virtual e impresa, cronómetro basado en el servidor, cola local de 24 horas, reanudación, idempotencia, conciliación y cierre. El backend aprobó 462 pruebas. El frontend aprobó 21 pruebas Jest y 20 recorridos Playwright de regresión. La prueba en Compose aislado verificó IndexedDB, acceso por padrón, reentrada, reconexión y persistencia de respuestas confirmadas. El vencimiento y la pérdida simulada de confirmación se cubrieron en Playwright. [SDD](../specs/frontend/spec.md). Fase 4 y publicación de Fase 3 quedan pendientes de autorización.

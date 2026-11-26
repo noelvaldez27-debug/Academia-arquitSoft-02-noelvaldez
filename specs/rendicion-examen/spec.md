@@ -2,7 +2,7 @@
 
 ## Alcance
 
-Backend para iniciar, sincronizar respuestas y cerrar simulacros (HU04–HU05, RF04–RF07). El cliente del Sprint 3 conserva las respuestas pendientes y las sincroniza antes de pedir el cierre. Procesamiento de Resultados calificará el intento mediante el evento y la API interna de Rendición (RF07–RF08, C4 N3–N4).
+Backend para iniciar, sincronizar respuestas y cerrar simulacros (HU04–HU05, RF04–RF07). El cliente web del Sprint 2 conserva las respuestas pendientes y las sincroniza antes de pedir el cierre. Procesamiento de Resultados calificará el intento mediante el evento y la API interna de Rendición (RF07–RF08, C4 N3–N4).
 
 ## Criterios de aceptación
 

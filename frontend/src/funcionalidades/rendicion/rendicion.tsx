@@ -3,7 +3,7 @@ import { usarSesion } from '../../app/sesion';
 import { Boton, Estado } from '../../compartido/controles';
 import { usarLectura, textoFallo } from '../banco-preguntas/lecturas';
 import { examenes, type Intento, type Modo, type Opcion, type Reloj } from './contratos';
-import { VistaIntento } from './vista-intento';
+import { IntentoSincronizado } from './intento-sincronizado';
 
 const estados = { DISPONIBLE: 'Disponible', EN_CURSO: 'En curso', FINALIZADO: 'Finalizado' } as const;
 
@@ -41,7 +41,7 @@ export function Rendicion() {
     abrir(undefined); elegir(undefined); fallar(''); refrescar(n => n + 1);
   }
 
-  if (origen) return <VistaIntento key={origen.intento.id} origen={origen} modo={modo} volver={volver} />;
+  if (origen) return <IntentoSincronizado key={origen.intento.id} inicial={origen} modo={modo} volver={volver} />;
 
   return <div className="mt-6 grid gap-5">
     {error && <Estado tipo="error">{error}</Estado>}
