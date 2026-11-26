@@ -30,6 +30,17 @@ interface FilaUsuario {
 export class PostgresUsuarioRepository implements UsuarioRepository {
   constructor(private readonly pool: Pick<Pool, 'query'>, private readonly idempotente = false) {}
 
+  async reactivarPostulanteAnterior(id: string, version: number) {
+    const { rowCount } = await this.pool.query(
+      `UPDATE usuarios SET activo = true, actualizado_en = now()
+       WHERE id = $1 AND version_sesion = $2 AND rol = 'POSTULANTE' AND NOT activo
+         AND NOT EXISTS (
+           SELECT 1 FROM auditoria_postulantes WHERE postulante_id = $1 AND operacion = 'ARCHIVADO'
+         )`, [id, version],
+    );
+    return rowCount === 1;
+  }
+
   async cambiarCondicion(id: string, condicion: CondicionPostulante, sedeId: string | null): Promise<boolean> {
     const { rowCount } = await this.pool.query(
       `UPDATE usuarios SET condicion = $2, actualizado_en = CURRENT_TIMESTAMP

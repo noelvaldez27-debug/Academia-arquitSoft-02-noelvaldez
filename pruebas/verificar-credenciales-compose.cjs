@@ -71,6 +71,7 @@ async function verificar() {
   assert.equal((await consultaAcademica(limitado.token)).status, 401);
   await login(correo, provisional, 401);
   const sesion = await login(correo, nueva);
+  let ciclo;
   assert.equal((await consultaAcademica(sesion.token)).status, 200);
   if (process.env.VERIFICAR_ARCHIVO === 'si') {
     const banco = 'http://127.0.0.1:3000/api/banco-preguntas';
@@ -101,6 +102,28 @@ async function verificar() {
     const archivados = await (await esperar('GET', '/?archivados=true&limite=100', 200, admin)).json();
     assert.ok(!habituales.usuarios.some(usuario => usuario.id === perfil.id));
     assert.ok(archivados.usuarios.some(usuario => usuario.id === perfil.id));
+    await esperar('PATCH', '/' + perfil.id + '/reactivar', 409, admin);
+    await esperar('POST', '/ciclos', 403, otro, { nombre: 'Ciclo', iniciaEl: '2026-01-01', terminaEl: '2026-12-31' });
+    await esperar('POST', '/ciclos', 400, admin, { nombre: 'Ciclo', iniciaEl: '2026-02-30', terminaEl: '2026-12-31' });
+    ciclo = await (await esperar('POST', '/ciclos', 201, admin, {
+      nombre: 'Ciclo sintético', iniciaEl: '2026-01-01', terminaEl: '2026-12-31',
+    })).json();
+    const recuperacion = { nombre: 'Recuperado sintético', dni, sedeId: String(sede.id),
+      carrera: 'INGENIERIA', cicloId: ciclo.id };
+    const resultados = await Promise.all([
+      enviar('POST', '/estudiantes', admin, recuperacion), enviar('POST', '/estudiantes', admin, recuperacion),
+    ]);
+    assert.deepEqual(resultados.map(res => res.status).sort(), [201, 409]);
+    const recuperado = await resultados.find(res => res.ok).json();
+    assert.equal(recuperado.id, perfil.id);
+    assert.equal(recuperado.carrera, 'INGENIERIA');
+    await login(correo, nueva, 401);
+    assert.equal((await consultaAcademica(sesion.token)).status, 401);
+    const entregaNueva = await esperar('POST', ruta, 200, admin);
+    const nuevaEntrega = new ExcelJS.Workbook();
+    await nuevaEntrega.xlsx.load(Buffer.from(await entregaNueva.arrayBuffer()));
+    assert.equal((await login(correo, nuevaEntrega.getWorksheet(1).getCell('B2').value)).cambioPasswordRequerido, true);
+    await esperar('POST', archivar, 200, admin, { ids: [perfil.id] });
   }
   const libroCarga = new ExcelJS.Workbook();
   const hojaCarga = libroCarga.addWorksheet('Datos');
@@ -109,6 +132,23 @@ async function verificar() {
   hojaCarga.addRow(['Postulante sintético por lote', dniLote, sede.nombre, 'Medicina']);
   const formulario = new FormData();
   formulario.append('archivo', new Blob([await libroCarga.xlsx.writeBuffer()]), 'postulantes.xlsx');
+  async function subir(libroExcel, cicloId) {
+    const datos = new FormData();
+    datos.append('archivo', new Blob([await libroExcel.xlsx.writeBuffer()]), 'postulantes.xlsx');
+    const respuesta = await fetch(api + '/cargas-masivas' + (cicloId ? '?cicloId=' + cicloId : ''), {
+      method: 'POST', headers: { authorization: 'Bearer ' + admin }, body: datos, redirect: 'error',
+    });
+    assert.equal(respuesta.status, 202);
+    const ruta = '/cargas-masivas/' + (await respuesta.json()).id;
+    let resumen;
+    for (let i = 0; i < 40; i++) {
+      resumen = await (await esperar('GET', ruta, 200, admin)).json();
+      if (resumen.estado === 'COMPLETADA') break;
+      await pausa(250);
+    }
+    assert.equal(resumen.estado, 'COMPLETADA');
+    return { ruta, resumen };
+  }
   const carga = await fetch(api + '/cargas-masivas', {
     method: 'POST', headers: { authorization: 'Bearer ' + admin }, body: formulario, redirect: 'error',
   });
@@ -137,6 +177,28 @@ async function verificar() {
     await login(dniLote + '@sofia.edu', credencialLote.getCell('B2').value, 401);
   } finally {
     await pool.end();
+  }
+  if (ciclo) {
+    const recuperacion = new ExcelJS.Workbook();
+    const filas = recuperacion.addWorksheet('Datos');
+    filas.addRow(['Nombre', 'DNI', 'Sede', 'Carrera']);
+    filas.addRow(['Recuperación desde Excel', dni, sede.nombre, 'Medicina']);
+    assert.equal((await subir(recuperacion)).resumen.yaExistian, 1);
+    const cicloPosterior = await (await esperar('POST', '/ciclos', 201, admin, {
+      nombre: 'Otro ciclo sintético', iniciaEl: '2027-01-01', terminaEl: '2027-12-31',
+    })).json();
+    const loteConCiclo = await subir(recuperacion, cicloPosterior.id);
+    assert.equal(loteConCiclo.resumen.recuperadas, 1);
+    assert.equal(loteConCiclo.resumen.creadas, 0);
+    const archivo = await esperar('POST', loteConCiclo.ruta + '/credenciales', 200, admin);
+    const historial = new ExcelJS.Workbook();
+    await historial.xlsx.load(Buffer.from(await archivo.arrayBuffer()));
+    assert.equal(historial.getWorksheet(1).getCell('A2').value, correo);
+    const nuevos = new ExcelJS.Workbook();
+    const filasNuevas = nuevos.addWorksheet('Datos');
+    filasNuevas.addRow(['Nombre', 'DNI', 'Sede', 'Carrera']);
+    filasNuevas.addRow(['Postulante activo', dni, sede.nombre, 'Medicina']);
+    assert.equal((await subir(nuevos, ciclo.id)).resumen.yaExistian, 1);
   }
   console.log('Credencial provisional, alcance, descarga concurrente y rotación de sesión verificados.');
 }

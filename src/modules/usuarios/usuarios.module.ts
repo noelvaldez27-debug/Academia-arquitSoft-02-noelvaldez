@@ -36,6 +36,9 @@ import { crearRutasEntregaCredenciales } from './presentacion/credenciales.route
 import { PostgresArchivarPostulantes } from './infraestructura/postgres-archivar-postulantes';
 import type { ConsultarActivos } from './infraestructura/postgres-archivar-postulantes';
 import { crearRutasArchivado } from './presentacion/archivado.routes';
+import { enTransaccionUsuarios, PostgresRegistroCiclo } from './infraestructura/postgres-registro-ciclo';
+import { PostgresCiclosAcademicos } from './infraestructura/postgres-ciclos-academicos';
+import { crearRutasCiclos } from './presentacion/ciclos.routes';
 
 export interface ConfigModuloUsuarios {
   pool: Pool;
@@ -94,6 +97,8 @@ export class UsuariosModule {
       sedeRepo,
       generadorCredenciales,
       provisionales.emitir.bind(provisionales),
+      (cicloId, postulante, actor, emision) => enTransaccionUsuarios(config.pool,
+        bd => new PostgresRegistroCiclo(bd).guardar(cicloId, postulante, actor, emision)),
     );
     this.registrarDocenteUseCase = new RegistrarDocenteUseCase(
       usuarioRepo,
@@ -116,7 +121,7 @@ export class UsuariosModule {
     const archivado = config.consultarIntentosActivos &&
       new PostgresArchivarPostulantes(config.pool, config.consultarIntentosActivos);
     this.desactivarUsuarioUseCase = new DesactivarUsuarioUseCase(usuarioRepo, archivado?.ejecutar.bind(archivado));
-    this.reactivarUsuarioUseCase = new ReactivarUsuarioUseCase(usuarioRepo);
+    this.reactivarUsuarioUseCase = new ReactivarUsuarioUseCase(usuarioRepo, usuarioRepo.reactivarPostulanteAnterior.bind(usuarioRepo));
     this.registrarAdministradorSedeUseCase = new RegistrarAdministradorSedeUseCase(
       usuarioRepo,
       sedeRepo,
@@ -143,6 +148,9 @@ export class UsuariosModule {
     );
 
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);
+    const ciclos = new PostgresCiclosAcademicos(config.pool);
+    this.router.use(crearRutasCiclos(this.middlewareAutenticacion, () => ciclos.listar(),
+      datos => ciclos.crear(randomUUID(), datos.nombre, datos.iniciaEl, datos.terminaEl)));
     const entregas = new PostgresEntregaCredenciales(config.pool, provisionales);
     this.router.use(crearRutasEntregaCredenciales(this.middlewareAutenticacion, entregas.descargar.bind(entregas)));
     this.router.use(crearRutasArchivado(this.middlewareAutenticacion, archivado?.ejecutar.bind(archivado)));

@@ -23,9 +23,11 @@ export interface CargaMasivaProps {
   id: string;
   usuarioId: number;
   sedeId: number | null;
+  cicloId?: string | null;
   estado?: EstadoCargaMasiva;
   totalFilas?: number;
   creadas?: number;
+  recuperadas?: number;
   yaExistian?: number;
   rechazadas?: number;
   errores?: DetalleErrorFila[];
@@ -35,12 +37,14 @@ export interface CargaMasivaProps {
 }
 
 export class CargaMasiva {
+  readonly cicloId: string | null;
   private readonly _id: string;
   private readonly _usuarioId: number;
   private readonly _sedeId: number | null;
   private _estado: EstadoCargaMasiva;
   private _totalFilas: number;
   private _creadas: number;
+  private _recuperadas: number;
   private _yaExistian: number;
   private _rechazadas: number;
   private _errores: DetalleErrorFila[];
@@ -59,9 +63,11 @@ export class CargaMasiva {
     this._id = props.id;
     this._usuarioId = props.usuarioId;
     this._sedeId = props.sedeId ?? null;
+    this.cicloId = props.cicloId ?? null;
     this._estado = props.estado ?? 'PENDIENTE';
     this._totalFilas = props.totalFilas ?? 0;
     this._creadas = props.creadas ?? 0;
+    this._recuperadas = props.recuperadas ?? 0;
     this._yaExistian = props.yaExistian ?? 0;
     this._rechazadas = props.rechazadas ?? 0;
     this._errores = props.errores ? [...props.errores] : [];
@@ -92,6 +98,9 @@ export class CargaMasiva {
 
   get creadas(): number {
     return this._creadas;
+  }
+  get recuperadas(): number {
+    return this._recuperadas;
   }
 
   get yaExistian(): number {
@@ -135,6 +144,10 @@ export class CargaMasiva {
 
   public incrementarCreadas(cantidad: number = 1): void {
     this._creadas += cantidad;
+    this._actualizadoEn = new Date();
+  }
+  public incrementarRecuperadas(): void {
+    this._recuperadas++;
     this._actualizadoEn = new Date();
   }
 

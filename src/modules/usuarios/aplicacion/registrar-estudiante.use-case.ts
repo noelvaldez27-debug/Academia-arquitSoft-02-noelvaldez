@@ -26,9 +26,12 @@ export class RegistrarEstudianteUseCase {
     private readonly sedeRepository: SedeRepository,
     private readonly generadorCredenciales: GeneradorCredenciales,
     private readonly emitir?: (administradorId: string, cargaId?: string) => Promise<EmisionProvisional>,
+    private readonly registrarEnCiclo?: (cicloId: string, postulante: Usuario,
+      actor: NonNullable<RegistrarEstudianteCommand['ejecutor']>, emision: EmisionProvisional) =>
+      Promise<{ usuario: Usuario; recuperado: boolean }>,
   ) {}
 
-  public async ejecutar(command: RegistrarEstudianteCommand): Promise<Usuario> {
+  public async ejecutar(command: RegistrarEstudianteCommand, informarRecuperacion?: () => void): Promise<Usuario> {
     if (!command.ejecutor) {
       throw new ErrorNoAutenticado('Acceso no autorizado.');
     }
@@ -72,7 +75,11 @@ export class RegistrarEstudianteUseCase {
       }
     }
 
-    const usuarioExistente = await this.usuarioRepository.buscarPorDni(command.dni.trim());
+    if (command.cicloId !== undefined && (typeof command.cicloId !== 'string' ||
+        !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(command.cicloId))) {
+      throw new ErrorValidacion('Identificador de ciclo inválido.');
+    }
+    const usuarioExistente = command.cicloId ? null : await this.usuarioRepository.buscarPorDni(command.dni.trim());
     if (usuarioExistente) {
       throw new ErrorConflicto('El DNI ya se encuentra registrado.');
     }
@@ -97,6 +104,12 @@ export class RegistrarEstudianteUseCase {
       condicion: esCondicionPostulante(condicion) ? condicion : null,
     });
 
+    if (command.cicloId) {
+      if (!this.registrarEnCiclo || !emision) throw new Error('Registro por ciclo no disponible.');
+      const resultado = await this.registrarEnCiclo(command.cicloId.toLowerCase(), nuevoPostulante, command.ejecutor, emision);
+      if (resultado.recuperado) informarRecuperacion?.();
+      return resultado.usuario;
+    }
     return emision ? this.usuarioRepository.guardar(nuevoPostulante, emision) : this.usuarioRepository.guardar(nuevoPostulante);
   }
 }

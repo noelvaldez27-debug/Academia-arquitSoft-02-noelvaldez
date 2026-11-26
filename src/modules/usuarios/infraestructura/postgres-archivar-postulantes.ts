@@ -40,6 +40,10 @@ export class PostgresArchivarPostulantes {
            INSERT INTO auditoria_postulantes (postulante_id, administrador_id, operacion)
            SELECT id, $2, 'ARCHIVADO' FROM archivados`, [activos, actor.id],
         );
+        await cliente.query(
+          'UPDATE postulantes_ciclo SET desvinculado_en = now() WHERE postulante_id = ANY($1::integer[]) AND desvinculado_en IS NULL',
+          [activos],
+        );
       }
       await cliente.query('COMMIT');
       return { archivados: activos.length };

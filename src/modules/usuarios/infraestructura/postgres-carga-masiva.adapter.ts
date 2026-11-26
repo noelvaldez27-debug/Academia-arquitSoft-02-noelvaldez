@@ -6,6 +6,7 @@ import { PostgresCargaMasivaRepository } from './postgres-carga-masiva-repositor
 import { PostgresSedeRepository } from './postgres-sede-repository';
 import { PostgresUsuarioRepository } from './postgres-usuario-repository';
 import type { CredencialesProvisionales } from './credenciales-provisionales';
+import { PostgresRegistroCiclo } from './postgres-registro-ciclo';
 
 export class PostgresCargaMasivaAdapter implements PersistenciaCargaMasiva {
   constructor(private readonly pool: Pool, private readonly credenciales: GeneradorCredenciales,
@@ -17,11 +18,13 @@ export class PostgresCargaMasivaAdapter implements PersistenciaCargaMasiva {
       await cliente.query('BEGIN');
       const cargas = new PostgresCargaMasivaRepository(cliente);
       const usuarios = new PostgresUsuarioRepository(cliente, true);
+      const ciclos = new PostgresRegistroCiclo(cliente);
       const resultado = await operacion({
         cargas,
         usuarios,
         registro: new RegistrarEstudianteUseCase(usuarios, new PostgresSedeRepository(cliente), this.credenciales,
-          this.provisionales?.emitir.bind(this.provisionales)),
+          this.provisionales?.emitir.bind(this.provisionales), ciclos.guardar.bind(ciclos)),
+        verificarCiclo: id => ciclos.verificarAbierto(id),
         bloquearCarga: async id => {
           await cliente.query('SELECT id FROM cargas_masivas WHERE id = $1 FOR UPDATE', [id]);
           return cargas.buscarPorId(id);

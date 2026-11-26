@@ -36,3 +36,9 @@ El versionado de JWT de la migración 017 se reutiliza. Las migraciones 018 y 01
 La recuperación por DNI, la modalidad Excel de nuevo ciclo y el padrón de HU11 permanecen abiertas. Mientras se implementa la recuperación de ciclo, la ruta histórica de reactivación aún conserva su semántica de RF24 y no emite una nueva credencial.
 
 Evidencia del avance de tarea 4: Jest 432 pruebas en 87 suites. Cobertura global 87,34 % líneas y 79,74 % ramas, y Usuarios 85,46 % y 77,55 %. Docker Compose ejecutó el recorrido de credenciales y archivado con PostgreSQL, Redis y RabbitMQ. Se comprobó alta habitual sin condición, alta Excel, consumo concurrente de la entrega, vigencia, alcance, rotación de sesión, rechazo de archivado durante un intento activo, archivado idempotente y consulta diferenciada de archivados.
+
+### Tarea 4 completada
+
+La migración 020 crea ciclos y membresías con índice único para impedir membresías activas simultáneas. Los administradores consultan ciclos con GET /api/usuarios/ciclos y el administrador general los crea con POST. El alta por DNI acepta cicloId en JSON y la carga Excel lo acepta como parámetro explícito. El modo normal mantiene la omisión de DNI existentes. La carga de ciclo informa recuperadas por separado, además de los activos omitidos. La recuperación conserva el identificador, mantiene el historial, audita y entrega una nueva credencial. El archivado termina la membresía activa y conserva su fila.
+
+El recorrido Compose con datos sintéticos verificó recuperación individual concurrente, recuperación Excel, actualización de perfil, bloqueo de JWT anterior y de reactivación directa, y credenciales nuevas. La regresión de esta revisión registró 434 pruebas en 87 suites. Pasaron además 2 pruebas dirigidas de sede y cierre de ciclo durante una carga.

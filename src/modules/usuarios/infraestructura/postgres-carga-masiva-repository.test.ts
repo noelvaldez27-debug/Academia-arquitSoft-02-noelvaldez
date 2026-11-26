@@ -44,6 +44,7 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
         '[]',
         carga.creadoEn,
         carga.actualizadoEn,
+        null,
       ]);
     });
   });
@@ -118,6 +119,7 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
         '[]',
         carga.actualizadoEn,
         'c-1',
+        0,
       ]);
     });
   });

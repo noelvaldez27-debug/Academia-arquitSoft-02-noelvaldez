@@ -5,6 +5,7 @@ import {
   ErrorAccesoDenegado,
   ErrorValidacion,
   ErrorNoEncontrado,
+  ErrorConflicto,
 } from '../dominio';
 
 export interface ReactivarUsuarioCommand {
@@ -24,7 +25,8 @@ export interface ReactivarUsuarioCommand {
  * - Postulantes y docentes tienen acceso denegado.
  */
 export class ReactivarUsuarioUseCase {
-  constructor(private readonly usuarioRepository: UsuarioRepository) {}
+  constructor(private readonly usuarioRepository: UsuarioRepository,
+    private readonly reactivarPostulante?: (id: string, versionSesion: number) => Promise<boolean>) {}
 
   public async ejecutar(command: ReactivarUsuarioCommand): Promise<void> {
     if (!command.ejecutor) {
@@ -61,6 +63,12 @@ export class ReactivarUsuarioUseCase {
       }
     }
 
+    if (usuario.rol === RolUsuario.Postulante && this.reactivarPostulante) {
+      if (!usuario.activo && !await this.reactivarPostulante(usuarioId, usuario.versionSesion)) {
+        throw new ErrorConflicto('Recupera el postulante por DNI indicando un ciclo.');
+      }
+      return;
+    }
     usuario.reactivar();
     await this.usuarioRepository.actualizar(usuario);
   }

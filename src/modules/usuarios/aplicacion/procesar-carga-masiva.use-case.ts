@@ -1,4 +1,4 @@
-import { ErrorAccesoDenegado, ErrorConflicto, ErrorValidacion, RolUsuario } from '../dominio';
+import { ErrorAccesoDenegado, ErrorConflicto, ErrorNoEncontrado, ErrorValidacion, RolUsuario } from '../dominio';
 import { LoteCargaMasiva, PersistenciaCargaMasiva } from './carga-masiva.port';
 
 export class ProcesarCargaMasivaUseCase {
@@ -24,7 +24,8 @@ export class ProcesarCargaMasivaUseCase {
           if (!administrador?.activo || administrador.rol !== RolUsuario.Administrador) {
             throw new ErrorAccesoDenegado('El administrador ya no tiene permisos para registrar estudiantes.');
           }
-          await registro.ejecutar({
+          let recuperado = false;
+          const datos = {
             ejecutor: {
               id: String(carga.usuarioId),
               rol: administrador.rol,
@@ -34,17 +35,21 @@ export class ProcesarCargaMasivaUseCase {
             nombre: fila.nombre, dni: fila.dni, sedeId: String(fila.sedeId), carrera: fila.carrera,
             condicion: fila.condicion,
             cargaId: carga.id,
-          });
-          carga.incrementarCreadas();
+          };
+          if (carga.cicloId) await registro.ejecutar({ ...datos, cicloId: carga.cicloId }, () => { recuperado = true; });
+          else await registro.ejecutar(datos);
+          if (recuperado) carga.incrementarRecuperadas();
+          else carga.incrementarCreadas();
         } catch (error) {
           if (error instanceof ErrorConflicto) {
             const existente = await usuarios.buscarPorDni(fila.dni);
             if (!existente) throw error;
             carga.incrementarYaExistian();
+            if (carga.cicloId && existente.activo) carga.agregarAviso(fila.numeroFila, 'El DNI ya tiene una cuenta activa.');
             if (existente.nombre !== fila.nombre) {
               carga.agregarAviso(fila.numeroFila, 'El DNI ya existe con un nombre diferente.');
             }
-          } else if (error instanceof ErrorValidacion || error instanceof ErrorAccesoDenegado) {
+          } else if (error instanceof ErrorValidacion || error instanceof ErrorAccesoDenegado || error instanceof ErrorNoEncontrado) {
             estado = 'ERROR';
             carga.agregarRechazo(fila.numeroFila, error.message);
           } else {

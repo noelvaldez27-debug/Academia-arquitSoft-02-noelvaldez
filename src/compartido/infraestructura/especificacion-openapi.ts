@@ -6,6 +6,14 @@ const esquemaDetallesCarga = {
     properties: { fila: { type: 'integer' }, motivo: { type: 'string' } },
   },
 };
+const datosCiclo = {
+  nombre: { type: 'string', maxLength: 120 },
+  iniciaEl: { type: 'string', format: 'date' },
+  terminaEl: { type: 'string', format: 'date' },
+};
+const esquemaCiclo = { type: 'object', properties: {
+  id: { type: 'string', format: 'uuid' }, ...datosCiclo, cerradoEn: { type: 'string', format: 'date-time', nullable: true },
+} };
 function descargaCredenciales(formato: 'uuid' | 'id') {
   return {
     post: {
@@ -45,6 +53,32 @@ export const especificacionOpenApi = {
     },
   },
   paths: {
+    '/api/usuarios/ciclos': {
+      get: {
+        summary: 'Consultar ciclos abiertos e históricos',
+        tags: ['Usuarios'], security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Ciclos', content: { 'application/json': { schema: { type: 'array', items: esquemaCiclo } } } },
+          401: { description: 'Sesión inválida o ausente' },
+          403: { description: 'Rol no permitido' },
+          503: { description: 'Ciclos temporalmente no disponibles' },
+        },
+      },
+      post: {
+        summary: 'Crear ciclo como administrador general',
+        tags: ['Usuarios'], security: [{ bearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: {
+          type: 'object', required: ['nombre', 'iniciaEl', 'terminaEl'], properties: datosCiclo,
+        } } } },
+        responses: {
+          201: { description: 'Ciclo creado', content: { 'application/json': { schema: esquemaCiclo } } },
+          400: { description: 'Nombre o fechas inválidos' },
+          401: { description: 'Sesión inválida o ausente' },
+          403: { description: 'Se requiere administrador general' },
+          503: { description: 'Ciclos temporalmente no disponibles' },
+        },
+      },
+    },
     '/api/usuarios/estudiantes/archivar': {
       post: {
         tags: ['Usuarios'],
@@ -74,6 +108,8 @@ export const especificacionOpenApi = {
       post: {
         tags: ['Usuarios'],
         summary: 'Aceptar un Excel para registro masivo en segundo plano',
+        parameters: [{ name: 'cicloId', in: 'query', schema: { type: 'string', format: 'uuid' },
+          description: 'Selecciona la modalidad explícita de nuevo ciclo. Si se omite, se ignoran todos los DNI existentes.' }],
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -94,6 +130,8 @@ export const especificacionOpenApi = {
           '400': { description: 'Archivo XLSX inválido, sin columnas requeridas o fuera de los límites' },
           '401': { description: 'Sesión inválida o ausente' },
           '403': { description: 'Se requiere rol de administrador' },
+          '404': { description: 'Ciclo no encontrado' },
+          '409': { description: 'Ciclo cerrado' },
           '500': { description: 'No se pudo aceptar la carga' },
         },
       },
@@ -115,6 +153,8 @@ export const especificacionOpenApi = {
                 estado: { type: 'string', enum: ['PENDIENTE', 'PROCESANDO', 'COMPLETADA', 'FALLIDA'] },
                 totalFilas: { type: 'integer' },
                 creadas: { type: 'integer' },
+                recuperadas: { type: 'integer' },
+                cicloId: { type: 'string', format: 'uuid' },
                 yaExistian: { type: 'integer' },
                 rechazadas: { type: 'integer' },
                 errores: esquemaDetallesCarga,
@@ -269,6 +309,8 @@ export const especificacionOpenApi = {
                   dni: { type: 'string', example: '71234567' },
                   sedeId: { type: 'string', example: 'Hana' },
                   carrera: { type: 'string', example: 'Medicina Humana' },
+                  cicloId: { type: 'string', format: 'uuid',
+                    description: 'Vincula el alta o recupera el postulante archivado para este ciclo.' },
                   condicion: { type: 'string', enum: ['MATRICULADO', 'LIBRE'] },
                 },
               },
@@ -582,7 +624,7 @@ export const especificacionOpenApi = {
       patch: {
         summary: 'Reactivar usuario inactivo',
         description:
-          'Reactiva la cuenta de un usuario inactivo. El administrador general puede reactivar cualquier usuario; el administrador de sede solo puede reactivar postulantes de su sede.',
+          'Reactiva cuentas inactivas anteriores al archivado auditado. Los postulantes archivados se recuperan por DNI al registrar un nuevo ciclo.',
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -614,6 +656,7 @@ export const especificacionOpenApi = {
               'Acceso denegado (no administrador, o administrador de sede intentando modificar a un usuario de otra sede o rol distinto a postulante)',
           },
           '404': { description: 'Usuario no encontrado' },
+          '409': { description: 'El postulante debe recuperarse en un ciclo' },
         },
       },
     },

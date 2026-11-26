@@ -11,9 +11,11 @@ interface FilaCargaMasivaBD {
   id: string;
   usuario_id: number;
   sede_id: number | null;
+  ciclo_id?: string | null;
   estado: string;
   total_filas: number;
   creadas: number;
+  recuperadas?: number;
   ya_existian: number;
   rechazadas: number;
   errores: string | DetalleErrorFila[];
@@ -58,9 +60,11 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
       id: fila.id,
       usuarioId: fila.usuario_id,
       sedeId: fila.sede_id,
+      cicloId: fila.ciclo_id,
       estado: fila.estado as EstadoCargaMasiva,
       totalFilas: fila.total_filas,
       creadas: fila.creadas,
+      recuperadas: fila.recuperadas,
       yaExistian: fila.ya_existian,
       rechazadas: fila.rechazadas,
       errores: this.parsearDetalles(fila.errores),
@@ -72,8 +76,8 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
 
   public async guardar(carga: CargaMasiva): Promise<void> {
     const query = `
-      INSERT INTO cargas_masivas (id, usuario_id, sede_id, estado, total_filas, creadas, ya_existian, rechazadas, errores, avisos, creado_en, actualizado_en)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
+      INSERT INTO cargas_masivas (id, usuario_id, sede_id, estado, total_filas, creadas, ya_existian, rechazadas, errores, avisos, creado_en, actualizado_en, ciclo_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
     `;
     await this.pool.query(query, [
       carga.id,
@@ -88,12 +92,13 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
       JSON.stringify(carga.avisos),
       carga.creadoEn,
       carga.actualizadoEn,
+      carga.cicloId,
     ]);
   }
 
   public async buscarPorId(id: string): Promise<CargaMasiva | null> {
     const query = `
-      SELECT id, usuario_id, sede_id, estado, total_filas, creadas, ya_existian, rechazadas, errores, avisos, creado_en, actualizado_en
+      SELECT id, usuario_id, sede_id, estado, total_filas, creadas, ya_existian, rechazadas, errores, avisos, creado_en, actualizado_en, ciclo_id, recuperadas
       FROM cargas_masivas
       WHERE id = $1;
     `;
@@ -107,7 +112,8 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
   public async actualizar(carga: CargaMasiva): Promise<void> {
     const query = `
       UPDATE cargas_masivas
-      SET estado = $1, creadas = $2, ya_existian = $3, rechazadas = $4, errores = $5, avisos = $6, actualizado_en = $7
+      SET estado = $1, creadas = $2, ya_existian = $3, rechazadas = $4, errores = $5, avisos = $6, actualizado_en = $7,
+          recuperadas = $9
       WHERE id = $8;
     `;
     await this.pool.query(query, [
@@ -119,6 +125,7 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
       JSON.stringify(carga.avisos),
       carga.actualizadoEn,
       carga.id,
+      carga.recuperadas,
     ]);
   }
 

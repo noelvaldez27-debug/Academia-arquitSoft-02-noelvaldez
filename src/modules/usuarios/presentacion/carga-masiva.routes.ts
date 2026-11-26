@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import multer from 'multer';
 import { ConsultarCargaMasivaUseCase } from '../aplicacion/consultar-carga-masiva.use-case';
 import { PrepararCargaMasivaUseCase } from '../aplicacion/preparar-carga-masiva.use-case';
-import { ErrorAccesoDenegado, ErrorNoEncontrado, ErrorValidacion, RolUsuario } from '../dominio';
+import { ErrorAccesoDenegado, ErrorConflicto, ErrorNoEncontrado, ErrorValidacion, RolUsuario } from '../dominio';
 import { MiddlewareAutenticacion } from './autenticacion.middleware';
 
 export function crearRutasCargaMasiva(
@@ -31,7 +31,9 @@ export function crearRutasCargaMasiva(
       if (!req.file || !/\.xlsx$/i.test(req.file.originalname)) {
         throw new ErrorValidacion('Es obligatorio adjuntar un archivo .xlsx.');
       }
-      const id = await preparar.ejecutar(req.file.buffer, req.usuario!);
+      const id = req.query.cicloId === undefined
+        ? await preparar.ejecutar(req.file.buffer, req.usuario!)
+        : await preparar.ejecutar(req.file.buffer, req.usuario!, req.query.cicloId);
       res.status(202).location('/api/usuarios/cargas-masivas/' + id).json({ id });
     } catch (error) {
       responderError(res, error);
@@ -56,5 +58,6 @@ function responderError(res: Response, error: unknown): void {
   if (error instanceof ErrorValidacion) res.status(400).json({ error: error.message });
   else if (error instanceof ErrorAccesoDenegado) res.status(403).json({ error: error.message });
   else if (error instanceof ErrorNoEncontrado) res.status(404).json({ error: error.message });
+  else if (error instanceof ErrorConflicto) res.status(409).json({ error: error.message });
   else res.status(500).json({ error: 'No se pudo procesar la solicitud.' });
 }
