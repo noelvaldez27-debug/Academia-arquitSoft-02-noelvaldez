@@ -10,3 +10,5 @@
 - [x] 6. Verificar arquitectura y contratos, corregir divergencias demostradas y consolidar evidencias API (CA-VS05).
 - [x] 7. Ejecutar pruebas controladas de PostgreSQL, Redis y recuperación y actualizar AC01–AC08 (CA-VS05).
 - [ ] 8. Solicitar autorización separada para la campaña masiva y registrar las conclusiones tras su ejecución autorizada.
+  - [x] 8a. Adaptar el guion y plan a los ciclos, la habilitación y la conciliación del padrón.
+  - [ ] 8b. Ejecutar humo y campaña escalonada con autorización explícita.

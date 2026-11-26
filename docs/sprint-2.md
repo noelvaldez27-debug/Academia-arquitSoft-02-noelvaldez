@@ -162,3 +162,11 @@ Entorno: proyecto Docker Compose aislado con datos sintéticos, 8 CPU y 3,74 GiB
 | AC08 | Parcial. Consumo base local registrado. Falta el perfil de pico y la evidencia de costo y escalado en el entorno previsto. |
 
 En la reevaluación de las ocho actividades, 1, 2, 3, 4, 5, 6 y 7 cuentan con evidencia para el alcance local del backend. La actividad 8 permanece parcial hasta obtener evidencias de carga y documentar los escenarios que se validarán en Sprint 3. El Sprint 2 sigue abierto.
+
+### Guion final para campaña autorizada
+
+El guion actualizado requiere un ciclo sintético independiente por escalón, un simulacro nuevo y un postulante distinto por VU. Preparar miembros mediante carga explícita de ciclo, consumir el Excel provisional y cambiar contraseñas antes de la medición. Guardar la lista JSON de correos y contraseñas sintéticas fuera de Git y proporcionar el administrador sintético mediante variables de entorno. Los nombres de configuración añadidos son CICLO_ID, ADMIN_SINTETICO_CORREO y ADMIN_SINTETICO_PASSWORD. El correo administrativo de prueba debe usar un dominio .invalid. La API debe escuchar en loopback y usar ambos proveedores simulados.
+
+Antes de medir, setup habilita el simulacro y exige un padrón con exactamente VUS postulantes y cero intentos. Cada VU ejecuta el flujo de examen. Después, teardown solicita el cierre general y verifica el reporte definitivo con todos los inscritos, participantes, finalizados y calificados esperados. Registra por separado la latencia hasta el ranking definitivo. Los p95 aprobados permanecen en el guion. Mantener la captura de recursos fuera de k6, conservar salidas por escalón y detener el aumento de concurrencia ante errores de integridad, saturación o backlog sin recuperación.
+
+Tras autorización, comenzar con 1–10 VU para calibrar la ventana y continuar con 50, 100, 250, 500, 1 000, 1 500 y 2 000 según capacidad del entorno. Dar por terminado cada escalón solo tras reconciliar el reporte y estabilizar los recursos. Ejecutar desde la máquina de pruebas con la CLI de k6 y el interruptor AUTORIZAR_CARGA=si. Este cambio se verificó por sintaxis de JavaScript. El humo k6 y la campaña siguen pendientes de autorización.
