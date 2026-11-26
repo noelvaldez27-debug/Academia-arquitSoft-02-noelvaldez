@@ -62,3 +62,9 @@ La prueba transversal contrasta métodos y rutas Express con Swagger servido par
 ### Tarea 7 y cobertura
 
 La validación controlada PostgreSQL/Redis y el estado actualizado de AC01–AC08 están en [Sprint 2](../../docs/sprint-2.md#resultados-controlados-de-la-etapa-de-validación). Jest aprobó 446 pruebas en 94 suites. Cobertura global 84,40 % líneas y 75,02 % ramas. Usuarios 81,58 % y 72,45 %. Rendición 75,41 % y 63,30 %. Ranking y Reportes 92,21 % y 77,62 %. Las pruebas de infraestructura real se mantienen como evidencia separada del porcentaje instrumentado por Jest.
+
+### Revisión final de cobertura
+
+Se añadieron cinco escenarios de transacción del padrón. Verifican reversión si falla la escritura de miembros, el bloqueo de habilitación para simulacros legados, inexistentes o en cierre, y la diferencia entre legado, miembro vigente y miembro desvinculado. Las evidencias Compose previas cubren descarga concurrente, vencimiento, revocación de JWT, recuperación por DNI y Excel, permisos y cierre. Esas ejecuciones no forman parte del porcentaje instrumentado.
+
+Jest aprobó 451 pruebas en 95 suites. Global: 85,16 % líneas y 76,00 % ramas. Módulos afectados, líneas/ramas: Usuarios 81,58/72,45, Rendición 81,50/73,94, Ranking 92,21/77,62, Banco 86,98/78,70. Todos superan el objetivo recomendado 80/70. El global permanece por debajo del cierre de los seis módulos. Las brechas principales de Jest están en las rutas de ciclos y archivado, la persistencia de recuperación y auditoría y ramas de autorización o cierres repetidos. Los recorridos reales aportan evidencia complementaria para los caminos funcionales, pero no sustituyen la cobertura de cada rama.
