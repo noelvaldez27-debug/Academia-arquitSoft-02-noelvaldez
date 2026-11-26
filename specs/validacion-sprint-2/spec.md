@@ -76,3 +76,9 @@ Paso de humo completado: 3 VU, 3 iteraciones, 35 solicitudes, 24 comprobaciones 
 ### Resultado de la campaña autorizada
 
 El escalón de 50 VU reconcilió HU11 y procesó los 50 resultados sin duplicados, con 0/670 errores técnicos. Se detuvo el escalado por incumplir el p95 de REST habitual (3 643,08 ms) y cierre a nota (5 910,30 ms). No se modificó el backend. La tarea 8 sigue abierta para perfilado y validación de capacidad. [Resultados y matriz AC01–AC08](../../docs/sprint-2.md#campaña-de-carga-primer-escalón-y-detención).
+
+### Diagnóstico de rendimiento a 50 VU
+
+El escalón de diagnóstico repitió 50 VU con el backend original, añadiendo instrumentación local de métricas agregadas en API y worker. Conservó la integridad de 50 intentos y resultados, y produjo p95 de REST habitual de 2,96 s y de cierre a nota de 7,33 s. La instrumentación añade coste y las cifras se registran separadas del escenario sin instrumentar.
+
+En 17 ventanas del backend se observaron 2 176 adquisiciones del pool, máximo 1 762,57 ms y máximo de los p95 por ventana de 1 676,58 ms. El worker registró máximo de pool de 100,68 ms, lectura de examen de 5,49 ms y operaciones en resultados de 29,28 ms. La API abrió 50 conexiones RabbitMQ para 50 cierres, con máximo de 373,87 ms por conexión, y el código recorría la bandeja en serie. Son dos cuellos observados. Redis alcanzó 522,31 ms medidos desde Node, pero la demora máxima de su event loop fue 477,10 ms. Esta medición de extremo a extremo no permite atribuir la demora al servidor Redis ni aislar tiempo de ejecución SQL. Las 51 comparaciones bcrypt alcanzaron máximo 826,72 ms medidos desde Node. Los planes locales anteriores respaldan los índices básicos en las lecturas revisadas; aún no hay evidencia que justifique un índice nuevo.
