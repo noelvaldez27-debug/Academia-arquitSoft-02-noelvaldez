@@ -120,8 +120,39 @@ async function verificar() {
       await esperar('POST', '/ciclos/' + cicloInicial.id + '/cierre', 409, admin);
     }
     const intento = await recurso(rendicion, '/iniciar', sesion.token, { simulacroId: sim.id });
+    if (process.env.VERIFICAR_REDIS === 'si') {
+      const url = rendicion + '/' + intento.id;
+      const headers = { authorization: 'Bearer ' + sesion.token, 'content-type': 'application/json' };
+      const marca = await fetch(url + '/respuestas', { method: 'PUT', headers, body: JSON.stringify({
+        numero: 1, alternativa: 'B', revisionBase: 0, operacionId: 'marca-sintetica-redis',
+      }) });
+      assert.equal(marca.status, 200);
+      const referencia = await marca.json();
+      console.log('LISTO_REDIS', intento.id);
+      const consultar = () => fetch(url, { headers, signal: AbortSignal.timeout(5000) });
+      let inicioInterrupcion;
+      for (let i = 0; i < 120; i++) {
+        const estado = await consultar();
+        if (estado.status === 503) { inicioInterrupcion = Date.now(); break; }
+        assert.equal(estado.status, 200);
+        await pausa(250);
+      }
+      assert.ok(inicioInterrupcion, 'No se observó la interrupción controlada de Redis.');
+      console.log('REDIS_INTERRUMPIDO 503');
+      let recuperado;
+      for (let i = 0; i < 120; i++) {
+        const estado = await consultar();
+        if (estado.ok) { recuperado = await estado.json(); break; }
+        assert.equal(estado.status, 503);
+        await pausa(250);
+      }
+      assert.ok(recuperado, 'Redis no se recuperó durante el recorrido.');
+      assert.deepEqual(recuperado.respuestas, [referencia]);
+      console.log('REDIS_RECUPERADO_MS', Date.now() - inicioInterrupcion, 'MARCAS_CONSERVADAS', recuperado.respuestas.length);
+    }
     const archivar = '/estudiantes/archivar';
     await esperar('POST', archivar, 409, admin, { ids: [perfil.id] });
+    const inicioFinalizacion = Date.now();
     await recurso(rendicion, '/' + intento.id + '/finalizar', sesion.token);
     const primerArchivo = await esperar('POST', archivar, 200, admin, { ids: [perfil.id, perfil.id] });
     assert.deepEqual(await primerArchivo.json(), { archivados: 1 });
@@ -155,6 +186,7 @@ async function verificar() {
       }
       assert.deepEqual(resumen, { inscritos: 1, participantes: 1, noParticipantes: 0,
         porcentajeParticipacion: 100, enCurso: 0, finalizados: 1, calificados: 1 });
+      if (process.env.VERIFICAR_REDIS === 'si') console.log('CIERRE_A_REPORTE_CONFIRMADO_MS', Date.now() - inicioFinalizacion);
     }
     const habituales = await (await esperar('GET', '/?rol=POSTULANTE&limite=100', 200, admin)).json();
     const archivados = await (await esperar('GET', '/?archivados=true&limite=100', 200, admin)).json();

@@ -58,3 +58,7 @@ TypeScript y Jest aprobaron 439 pruebas en 89 suites. Compose verificó doble ha
 La comprobación transversal identificó la dependencia directa de Aplicación hacia ExcelJS. Se movió la lectura de XLSX al adaptador de infraestructura, conservando la validación y conectando el puerto LectorExcel por inyección. El recorrido de arquitectura verifica capas, consumo de APIs públicas y ciclos entre módulos. Los contratos compartidos ServicioIA y AlmacenArchivos permanecen como puertos de Aplicación.
 
 La prueba transversal contrasta métodos y rutas Express con Swagger servido para los seis módulos y verifica los 401 sin sesión. Los recorridos Compose y las pruebas de las familias complementan la matriz con cuerpos, permisos, estados de conflicto y respuestas de negocio relevantes. Tarea 6 aprobada con 441 pruebas en 91 suites.
+
+### Tarea 7 y cobertura
+
+La validación controlada PostgreSQL/Redis y el estado actualizado de AC01–AC08 están en [Sprint 2](../../docs/sprint-2.md#resultados-controlados-de-la-etapa-de-validación). Jest aprobó 446 pruebas en 94 suites. Cobertura global 84,40 % líneas y 75,02 % ramas. Usuarios 81,58 % y 72,45 %. Rendición 75,41 % y 63,30 %. Ranking y Reportes 92,21 % y 77,62 %. Las pruebas de infraestructura real se mantienen como evidencia separada del porcentaje instrumentado por Jest.

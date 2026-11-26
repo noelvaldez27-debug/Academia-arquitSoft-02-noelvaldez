@@ -139,3 +139,26 @@ El seguimiento de CA-VS01–02 está en la [SDD de validación](../specs/validac
 ### HU11 y validación de cuentas
 
 Las tareas 4 y 5 implementaron y validaron la recuperación para ciclos y el padrón histórico de simulacros. Las migraciones 020–021 respetan datos existentes. Los simulacros nuevos requieren habilitación explícita y el reporte conserva como desconocidos los indicadores de padrón que no pueden verificarse en simulacros anteriores. Ver el recorrido Compose y los contratos en la [SDD de validación](../specs/validacion-sprint-2/spec.md).
+
+### Resultados controlados de la etapa de validación
+
+Entorno: proyecto Docker Compose aislado con datos sintéticos, 8 CPU y 3,74 GiB disponibles para Docker Engine 29.5.3. Se conservaron volúmenes. Las cifras observadas corresponden a muestras funcionales pequeñas, sin tráfico masivo.
+
+- **PostgreSQL.** Se analizaron lecturas con EXPLAIN (ANALYZE, BUFFERS, TIMING OFF). La consulta de cuenta usó usuarios_pkey (0,454 ms). La comprobación de intentos activos usó examenes_rendicion_vencimiento (0,049 ms y cero coincidencias). La lectura del padrón usó la clave primaria mediante Bitmap Index Scan (0,094 ms). Estos planes corresponden al conjunto pequeño de prueba. El acceso por postulante en actividad y los filtros de padrón merecen observación bajo carga antes de decidir índices.
+- **Persistencia PostgreSQL.** Tras reiniciar únicamente su contenedor, una consulta volvió a responder en 1 908 ms desde el inicio de la operación de reinicio. Coincidieron las cantidades de cuentas, intentos, notas y miembros de padrón antes y después (15, 4, 4 y 2). Las pruebas de ciclo, padrón y reactivación complementan la comprobación de integridad y preservación histórica.
+- **Redis.** Es almacenamiento temporal de marcas vigentes, con scripts atómicos, AOF activo y eliminación tras consolidación y despacho. No se añade caché de consultas. En un intento sintético la caída devolvió 503. La consulta volvió a responder 16 501 ms después del primer 503 observado y devolvió la marca exacta confirmada anteriormente. El intervalo incluye el tiempo transcurrido entre la detección y el reinicio manual. AOF e inicio de Redis reportaron estado correcto. El intervalo desde la solicitud de finalizar hasta confirmar el reporte fue de 1 956 ms en ese recorrido, incluida la consulta repetida del cierre general y del reporte.
+- **Consumo puntual sin carga.** El backend usó 41,99 MiB, PostgreSQL 48,73 MiB, Redis 5,801 MiB y RabbitMQ 127,6 MiB. La política de expiración de Redis depende del cierre y despacho del intento, con AOF para reinicio. Falta observar crecimiento y saturación durante el escenario k6.
+- **Reproducción.** En el proyecto aislado, ejecutar `pruebas/verificar-credenciales-compose.cjs` con VERIFICAR_ARCHIVO, VERIFICAR_PADRON y VERIFICAR_REDIS en si. Tras LISTO_REDIS detener solo el Redis de la prueba y reiniciarlo tras REDIS_INTERRUMPIDO. Registrar el intervalo observado, estado AOF y las marcas recuperadas. La recuperación del broker permanece respaldada por recorridos anteriores.
+
+| Atributo | Resultado actualizado y alcance |
+| --- | --- |
+| AC01 | Parcial. Consulta, cierre y proyección funcionales en Compose. Los p95 aprobados requieren la campaña escalonada. |
+| AC02 | Parcial. Recuperación de dependencias observada durante interrupciones controladas. El objetivo propuesto de 99,9 % requiere una ventana representativa de operación. |
+| AC03 | Pendiente de la campaña hasta 2 000 VU. La integración y la medición puntual tienen un alcance distinto. |
+| AC04 | Parcial. Autorización y límites por sede, hash, JWT, expiración, entrega de un uso y revocación verificadas. El cifrado del entorno desplegado sigue pendiente de su fase. |
+| AC05 | Evidencia favorable del backend. Regresión, contratos públicos, prueba de capas y alta de sede probada en la evidencia anterior. Ampliar con cambios futuros si aplica. |
+| AC06 | Pendiente de interfaz web y evaluación de tareas con usuarios. |
+| AC07 | Parcial. Recuperación de marcas confirmadas en el backend, rechazo temporal y conservación vía AOF. Guardado y sincronización automática en dispositivo dependen del Sprint 3. |
+| AC08 | Parcial. Consumo base local registrado. Falta el perfil de pico y la evidencia de costo y escalado en el entorno previsto. |
+
+En la reevaluación de las ocho actividades, 1, 2, 3, 4, 5, 6 y 7 cuentan con evidencia para el alcance local del backend. La actividad 8 permanece parcial hasta obtener evidencias de carga y documentar los escenarios que se validarán en Sprint 3. El Sprint 2 sigue abierto.
