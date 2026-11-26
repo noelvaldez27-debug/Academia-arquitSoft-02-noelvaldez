@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { usarSesion } from '../../app/sesion';
 import { Boton, Campo, Estado } from '../../compartido/controles';
 
+import { descargar } from '../../compartido/descargar';
+
 interface Sede { id: string; nombre: string }
 interface Ciclo { id: string; nombre: string; iniciaEl: string; terminaEl: string; cerradoEn: string | null }
 interface Usuario { id: string; nombre: string; dni: string | null; correo: string; rol: string; activo: boolean; sedeId: string | null; carrera: string | null }
@@ -11,7 +13,7 @@ const opciones = [{ valor: 'POSTULANTE', texto: 'Estudiantes' }, { valor: 'DOCEN
 const condiciones = [{ valor: 'MATRICULADO', texto: 'Matriculado' }, { valor: 'LIBRE', texto: 'Libre' }];
 const mensaje = (error: unknown) => error instanceof Error ? error.message : 'No se pudo completar la operación.';
 
-function Selector({ nombre, etiqueta, opciones, vacio, onChange, valor, requerido, inicial }:
+export function Selector({ nombre, etiqueta, opciones, vacio, onChange, valor, requerido, inicial }:
   { nombre: string; etiqueta: string; opciones: { valor: string; texto: string }[]; vacio?: string;
     onChange?: (valor: string) => void; valor?: string; requerido?: boolean; inicial?: string }) {
   return <label className="grid gap-2 text-sm font-semibold">{etiqueta}
@@ -197,12 +199,7 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
     </form>}
     {entrega && <Boton disabled={ocupado} onClick={() => void operar(async () => {
       const archivo = await solicitar<Blob>(api + '/estudiantes/' + entrega + '/credenciales', { method: 'POST', formato: 'archivo' });
-      const url = URL.createObjectURL(archivo);
-      const enlace = document.createElement('a');
-      enlace.href = url;
-      enlace.download = 'credenciales-provisionales.xlsx';
-      enlace.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      descargar(archivo, 'credenciales-provisionales.xlsx');
       cambiarEntrega(undefined);
     }, 'Archivo de credenciales descargado.')}>Descargar credenciales de un solo uso</Boton>}
   </div>;

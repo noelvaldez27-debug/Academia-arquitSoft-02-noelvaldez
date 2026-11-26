@@ -53,3 +53,46 @@ test('el administrador de sede registra, cambia condición y archiva en su sede'
   await page.getByRole('button', { name: 'Recuperar por DNI' }).click();
   await expect(page.getByLabel('DNI', { exact: true })).toHaveValue(alumno.dni);
 });
+
+test('la carga Excel muestra progreso real y permite elegir el historial', async ({ page }, info) => {
+  const token = 'cabecera.' + Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 90 })).toString('base64url') + '.firma';
+  const id = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+  let subida = false;
+  let consultas = 0;
+  await page.route('**/api/usuarios**', async route => {
+    const url = new URL(route.request().url());
+    if (url.pathname.endsWith('/login')) return route.fulfill({ json: { token, usuario: { id: '1', nombre: 'Administración de prueba', rol: 'ADMINISTRADOR', sedeId: null } } });
+    if (url.pathname.endsWith('/ciclos')) return route.fulfill({ json: [{ id: 'ciclo', nombre: 'Ciclo sintético', cerradoEn: null }] });
+    if (route.request().method() === 'POST') {
+      expect(url.searchParams.get('cicloId')).toBe('ciclo');
+      subida = true;
+      return route.fulfill({ status: 202, json: { id } });
+    }
+    if (url.pathname.endsWith(id)) {
+      consultas++;
+      return route.fulfill({ json: {
+        id, estado: consultas === 1 ? 'PROCESANDO' : 'COMPLETADA', totalFilas: 3, creadas: 1, recuperadas: 1,
+        yaExistian: 0, rechazadas: 1, errores: [{ fila: 3, motivo: 'DNI inválido' }], avisos: [],
+      } });
+    }
+    return route.fulfill({ json: { cargas: subida ? [{ id, creadaEl: '2026-11-26T12:00:00Z', estado: 'PENDIENTE', propia: true }] : [], pagina: 1, hayMas: false } });
+  });
+  await page.goto('/acceso');
+  await page.getByLabel('Correo institucional').fill('admin@example.test');
+  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByRole('button', { name: 'Ingresar' }).click();
+  await page.getByRole('navigation').getByRole('link', { name: 'Cargas Excel' }).click();
+  await page.getByLabel('Archivo Excel (.xlsx)').setInputFiles({
+    name: 'sintetico.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from('respuesta simulada'),
+  });
+  await page.getByLabel('Modalidad de importación').selectOption('ciclo');
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Enviar archivo' }).click();
+  const detalle = page.getByRole('region', { name: 'Detalle de carga' });
+  await expect(detalle.getByText('Procesando', { exact: true })).toBeVisible();
+  await expect(detalle.getByText('Completada', { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(detalle.getByText('Fila 3 · DNI inválido')).toBeVisible();
+  expect(consultas).toBe(2);
+  await expect(page.getByRole('region', { name: 'Historial de cargas' }).getByRole('button', { name: /Pendiente/ })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('cargas.png'), fullPage: true });
+});

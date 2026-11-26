@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Aplicacion } from './aplicacion';
@@ -73,4 +73,46 @@ it('cambia la contraseña provisional y vuelve al acceso', async () => {
   await usuario.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
   expect(await screen.findByText('Contraseña actualizada. Vuelve a ingresar.')).toBeVisible();
   expect(api).toHaveBeenLastCalledWith('/api/usuarios/password', expect.objectContaining({ method: 'PATCH' }));
+});
+
+function apiAdministrativa(sedeId: string | null, responder: (ruta: string) => unknown) {
+  const token = 'cabecera.' + btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 60 })) + '.firma';
+  const api = jest.fn(async (ruta: string) => {
+    const json = ruta.endsWith('/login') ? { token, usuario: {
+      id: '1', nombre: 'Administración de prueba', rol: 'ADMINISTRADOR', sedeId,
+    } } : responder(ruta);
+    return { status: json === undefined ? 403 : 200, ok: json !== undefined, json: async () => json };
+  });
+  Object.defineProperty(globalThis, 'fetch', { configurable: true, value: api });
+  return api;
+}
+
+it('muestra el detalle de una carga histórica sin permitir descargar una entrega ajena', async () => {
+  const api = apiAdministrativa('2', ruta => {
+    if (ruta.endsWith('/ciclos')) return [];
+    if (ruta.endsWith('?pagina=1')) return { cargas: [{ id: 'carga', estado: 'COMPLETADA', creadaEl: '2026-11-26T00:00:00Z', propia: false }], pagina: 1, hayMas: false };
+    if (ruta.endsWith('/carga')) return { id: 'carga', estado: 'COMPLETADA', totalFilas: 3, creadas: 1,
+      yaExistian: 1, rechazadas: 1, errores: [{ fila: 4, motivo: 'Dato inválido' }], avisos: [] };
+  });
+  montar('/acceso');
+  const usuario = await ingresar();
+  await usuario.click(within(await screen.findByRole('navigation')).getByRole('link', { name: 'Cargas Excel' }));
+  await usuario.click(await screen.findByRole('button', { name: /Completada/ }));
+  expect(await screen.findByText('Fila 4 · Dato inválido')).toBeVisible();
+  expect(screen.queryByRole('button', { name: /Descargar credenciales/ })).not.toBeInTheDocument();
+  expect(api.mock.calls.filter(([ruta]) => ruta.endsWith('/carga'))).toHaveLength(1);
+});
+
+it('permite consultar ciclos de sede y reserva su cierre al administrador general', async () => {
+  apiAdministrativa('2', ruta => {
+    if (ruta.endsWith('/ciclos')) return [{ id: '1', nombre: 'Ciclo sintético', iniciaEl: '2026-01-01', terminaEl: '2026-12-31', cerradoEn: null }];
+    if (ruta.endsWith('/sedes')) return [{ id: '2', nombre: 'Sede de prueba' }];
+  });
+  montar('/acceso');
+  const usuario = await ingresar();
+  const nav = await screen.findByRole('navigation');
+  await usuario.click(within(nav).getByRole('link', { name: 'Ciclos académicos' }));
+  expect(await screen.findByText('Ciclo sintético')).toBeVisible();
+  expect(screen.queryByRole('button', { name: 'Cerrar ciclo' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Guardar registro' })).not.toBeInTheDocument();
 });

@@ -311,3 +311,7 @@ Fase 0 implementada con React, TypeScript, Tailwind, Vite, React Router y nginx.
 ### Fase 1 · Acceso y cuenta
 
 F1.1 incorporó el cambio de contraseña inicial y voluntario, cambio de correo administrativo y descarte de la sesión ante 401 autenticado. Jest del frontend: 7 pruebas, 88,95 % de líneas y 57,66 % de ramas. Evidencia de esta ejecución con respuestas simuladas.
+
+### Fase 1 · Gestión de Usuarios web
+
+Acceso y cuenta, listados por rol y sede, estudiantes, docentes, administradores de sede, archivo y recuperación por DNI, sedes, ciclos y cargas Excel. Se incorporó GET /api/usuarios/cargas-masivas con alcance administrativo, paginación y OpenAPI. La regresión aprobó 458 pruebas backend y 9 frontend. Playwright aprobó 8 recorridos simulados. En Compose aislado se comprobaron la API de credenciales y el historial por sede, y se verificaron en navegador el historial y detalle de cargas y el alta y cierre de ciclos a través de nginx. La [SDD web](../specs/frontend/spec.md) registra las métricas, las limitaciones y la diferencia entre estas evidencias. La Fase 2 y el cierre del Sprint 2 quedan pendientes.

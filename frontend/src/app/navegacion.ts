@@ -10,6 +10,7 @@ export const nombresPerfil: Record<Perfil, string> = {
 interface Destino { ruta: string; titulo: string }
 
 const destinos = {
+  cargas: { ruta: 'cargas', titulo: 'Cargas Excel' },
   sedes: { ruta: 'sedes', titulo: 'Sedes' },
   ciclos: { ruta: 'ciclos', titulo: 'Ciclos académicos' },
   usuarios: { ruta: 'usuarios', titulo: 'Usuarios' },
@@ -26,12 +27,12 @@ const destinos = {
   recomendacion: { ruta: 'recomendacion', titulo: 'Recomendación' },
 } satisfies Record<string, Destino>;
 
-const { sedes, ciclos, usuarios, estudiantes, banco, simulacros, reportes, analitica, separatas, desempeno,
+const { cargas, sedes, ciclos, usuarios, estudiantes, banco, simulacros, reportes, analitica, separatas, desempeno,
   nota, ranking, historial, recomendacion } = destinos;
 
 export const navegacion: Record<Perfil, readonly Destino[]> = {
-  general: [usuarios, sedes, ciclos, banco, simulacros, reportes, analitica],
-  sede: [estudiantes, ciclos, reportes, analitica],
+  general: [usuarios, cargas, sedes, ciclos, banco, simulacros, reportes, analitica],
+  sede: [estudiantes, cargas, ciclos, reportes, analitica],
   docente: [separatas, desempeno],
   postulante: [simulacros, nota, ranking, historial, recomendacion],
 };
