@@ -43,6 +43,13 @@ function operacion(summary: string, schema: object, conId: boolean, entrada?: ob
 
 const base = '/api/v1/examenes';
 export const rutasOpenApiRendicion = {
+  [base + '/simulacros']: {
+    get: operacion('Listar simulacros habilitados por padrón e intentos propios', { type: 'array', items: objeto({
+      simulacroId: cadena, intentoId: { ...cadena, nullable: true },
+      habilitadoEn: { ...fecha, nullable: true },
+      estado: { ...cadena, enum: ['DISPONIBLE', 'EN_CURSO', 'FINALIZADO'] },
+    }) }, false),
+  },
   [base + '/simulacros/{id}/habilitar']: {
     post: {
       ...operacion('Consolidar el padrón y habilitar el simulacro como administrador general', objeto({

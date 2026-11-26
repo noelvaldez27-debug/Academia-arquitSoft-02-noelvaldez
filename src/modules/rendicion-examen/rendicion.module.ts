@@ -22,6 +22,9 @@ import { PostgresCierreSimulacro } from './infraestructura/postgres-cierre-simul
 import { CompletarCierreSimulacro } from './aplicacion/cerrar-simulacro.use-case';
 import { PostgresPadronSimulacro } from './infraestructura/postgres-padron-simulacro';
 
+import { ListarSimulacrosUseCase } from './aplicacion/listar-simulacros.use-case';
+import { consultarOpcionesRendicion } from './infraestructura/postgres-opciones-rendicion';
+
 export class RendicionModule {
   readonly rutas;
   readonly examenesFinalizados;
@@ -59,6 +62,8 @@ export class RendicionModule {
       new ConsultarExamenUseCase(transaccion, temporales, reloj),
       new RegistrarRespuestaUseCase(transaccion, temporales, reloj),
       finalizar,
+      new ListarSimulacrosUseCase(consultarOpcionesRendicion(pool),
+        fuentesPadron?.ciclos(pool).sigueVinculado ?? (async () => false)),
     );
     this.rutas = crearRutasCierreSimulacro(auth, transaccion, banco.existeSimulacro);
     this.rutas.use(crearRutasExamen(controlador, auth.autenticar, auth.requerirRol(RolUsuario.Postulante)));

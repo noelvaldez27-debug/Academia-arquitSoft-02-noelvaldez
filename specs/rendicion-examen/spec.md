@@ -28,3 +28,7 @@ El módulo conserva las cuatro capas de ADR-002. Usa los contratos públicos de 
 ## Admisión a simulacros habilitados
 
 CA-VS02 y CA-VS03 verifican que la habilitación y los inicios concurrentes respeten el padrón congelado. El cierre de ciclo comprueba intentos y simulacros sin interrumpir el procesamiento de calificaciones. Ver [SDD de validación](../validacion-sprint-2/spec.md).
+
+## Consulta de simulacros para el cliente web
+
+GET /api/v1/examenes/simulacros enumera intentos propios y simulacros nuevos cuyo padrón contiene al postulante, con vínculo vigente al ciclo y sin cierre general solicitado. Los simulacros legados sin padrón aparecen cuando hay un intento propio. El listado no inicia el intento, no obtiene preguntas ni claves y no sustituye las verificaciones de POST /iniciar.

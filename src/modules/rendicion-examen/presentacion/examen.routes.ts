@@ -5,6 +5,7 @@ export function crearRutasExamen(controlador: ExamenController, ...autorizar: Re
   const router = Router();
   router.use(...autorizar);
   router.post('/iniciar', controlador.iniciar);
+  router.get('/simulacros', controlador.listar);
   router.get('/:id', controlador.consultar);
   router.put('/:id/respuestas', controlador.registrar);
   router.post('/:id/finalizar', controlador.finalizar);

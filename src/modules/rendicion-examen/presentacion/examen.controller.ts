@@ -5,6 +5,8 @@ import { IniciarExamenUseCase } from '../aplicacion/iniciar-examen.use-case';
 import { RegistrarRespuestaUseCase } from '../aplicacion/registrar-respuesta.use-case';
 import { ErrorRendicion } from '../dominio/error-rendicion';
 
+import type { ListarSimulacrosUseCase } from '../aplicacion/listar-simulacros.use-case';
+
 const estados = { invalido: 400, 'no-encontrado': 404, conflicto: 409, vencido: 409 };
 
 function responder(ejecutar: (req: Request, postulanteId: string) => Promise<unknown>): RequestHandler {
@@ -32,7 +34,10 @@ export class ExamenController {
     private readonly consultarExamen: ConsultarExamenUseCase,
     private readonly registrarRespuesta: RegistrarRespuestaUseCase,
     private readonly finalizarExamen: FinalizarExamenUseCase,
+    private readonly listarSimulacros?: ListarSimulacrosUseCase,
   ) {}
+
+  listar = responder(async (_req, postulanteId) => this.listarSimulacros?.ejecutar(postulanteId) ?? []);
 
   iniciar = responder(async (req, postulanteId) => {
     const id: unknown = req.body?.simulacroId;

@@ -97,3 +97,7 @@ F2.2 añade historial de separatas paginado por curso y estado. El administrador
 Validación de Fase 2: backend 461 pruebas en 100 suites, 84,59 % de líneas y 74,86 % de ramas. Frontend 15 pruebas en 3 suites, 63,14 % de líneas y 50,99 % de ramas globales. El directorio Banco de Preguntas obtuvo 44,96 % de líneas y 31,79 % de ramas en Jest. Playwright aprobó 12 recorridos en escritorio y móvil emulado, con API simulada. El script verificar-banco-compose.cjs comprobó la API real y PostgreSQL, RabbitMQ, extracción sintética PDF e imagen con IA simulada, historial con aislamiento por autor, autorización, revalidación, descarte, asignaciones y orden sin claves. Se verificó en navegador el acceso a Banco y Separatas por nginx. Las capturas con datos sintéticos se conservaron localmente.
 
 Consolidación F2.C: pruebas de edición, alternativas en blanco, cambio de clave, reintento, revalidación y descarte confirmado. Jest web 17 pruebas, global 64,42 % de líneas y 52,80 % de ramas; en Banco 47,98 % y 36,40 %. La cobertura instrumentada sigue por debajo del objetivo; los recorridos Playwright y Compose verifican flujos adicionales.
+
+### Rendición de Exámenes
+
+F3.1 usa GET /api/v1/examenes/simulacros, POST /iniciar y GET /{id}. La ficha impresa y la vista virtual comparten intento y orden. La cuenta regresiva usa el tiempo restante informado por el servidor y un reloj monotónico local; el backend sigue decidiendo vigencia y cierre. El catálogo muestra referencia y fecha disponible, porque el modelo de simulacro no tiene título.

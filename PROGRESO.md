@@ -176,3 +176,5 @@ La consolidación se publicó por avance directo hasta 4d474c5. CI 45823085433 a
 Validación final de Fase 2: backend 461 pruebas, 84,59 % de líneas y 74,86 % de ramas. Frontend 15 pruebas, 63,14 % de líneas y 50,99 % de ramas globales. Playwright 12 recorridos simulados. Compose comprobó PDF e imagen mediante IA simulada y nginx mostró Banco y Separatas con datos sintéticos. Siguiente paso exacto: esperar autorización e iniciar F3.1 en specs/frontend/tasks.md.
 
 F2.C consolidada localmente. Siguiente paso: publicar Fase 2 y comprobar ambos trabajos de CI antes de F3.1.
+
+Fase 2 publicada hasta 0e7c8e0. La primera CI falló en el selector Playwright al cambiar de vista, se acotó al editor y CI 45872738322 aprobó ambos trabajos. F3.1 lista elegibilidad y permite iniciar/reanudar en ambas modalidades. Siguiente paso: F3.2, IndexedDB, sincronización por revisión, cierre y validación real.

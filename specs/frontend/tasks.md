@@ -26,7 +26,7 @@
 
 ## Fase 3 · Rendición (depende de F1 y F2)
 
-- [ ] F3.1. Implementar habilitación, acceso, reanudación y ambas modalidades. Verificar elegibilidad, versión congelada y cronómetro.
+- [x] F3.1. Implementar habilitación, acceso, reanudación y ambas modalidades. Verificar elegibilidad, versión congelada y cronómetro.
 - [ ] F3.2. Implementar persistencia local y sincronización por revisiones, finalizar y mostrar estados del cierre general. Verificar AC07 en conexión intermitente, caducidad, recarga y sesión expirada.
 
 ## Fase 4 · Procesamiento de Resultados (depende de F3)
