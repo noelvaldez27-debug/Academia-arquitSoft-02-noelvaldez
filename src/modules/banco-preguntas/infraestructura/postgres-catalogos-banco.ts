@@ -2,12 +2,21 @@ import { createHash } from 'node:crypto';
 import type { Pool } from 'pg';
 import type { CacheConsultas } from '../../../compartido/aplicacion/cache-consultas.port';
 import { consultarCatalogo } from '../../../compartido/infraestructura/cache-catalogo';
-import type { OpcionesPagina } from '../aplicacion/consultar-catalogos-banco';
+import type { OpcionesPagina, ResumenSeparata } from '../aplicacion/consultar-catalogos-banco';
 import type { ConfiguracionSimulacro, Curso } from '../dominio/pregunta';
 
 export function crearCatalogosBanco(bd: Pick<Pool, 'query'>, cache?: CacheConsultas) {
   const parametros = ({ pagina, limite, q }: OpcionesPagina) => [q, limite + 1, (pagina - 1) * limite];
   return {
+    async separatas(docenteId: string | null, cursoId: string, estado: string, opciones: OpcionesPagina) {
+      const [, limite, desplazamiento] = parametros(opciones);
+      return (await bd.query<ResumenSeparata>(
+        `SELECT id, curso_id AS "cursoId", estado, mime FROM separatas
+        WHERE ($1::text IS NULL OR docente_id = $1)
+          AND ($2 = '' OR curso_id = $2) AND ($3 = '' OR estado = $3)
+        ORDER BY id LIMIT $4 OFFSET $5`, [docenteId, cursoId, estado, limite, desplazamiento],
+      )).rows;
+    },
     cursos(opciones: OpcionesPagina) {
       const args = parametros(opciones);
       return consultarCatalogo(bd, cache, {

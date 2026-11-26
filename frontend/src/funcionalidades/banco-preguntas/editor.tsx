@@ -45,7 +45,10 @@ export function EditorPregunta({ inicial, temas, habilitada, guardar, cancelar }
       </div>)}
     </fieldset>
     <Selector nombre="temaId" etiqueta="Tema" inicial={inicial?.temaId ?? undefined} vacio="Sin tema"
-      opciones={temas.map(t => ({ valor: t.id, texto: t.nombre }))} />
+      opciones={[
+        ...(inicial?.temaId && !temas.some(t => t.id === inicial.temaId) ? [{ valor: inicial.temaId, texto: 'Tema actual' }] : []),
+        ...temas.map(t => ({ valor: t.id, texto: t.nombre })),
+      ]} />
     {habilitada !== undefined && <label className="flex gap-2"><input type="checkbox" name="habilitada" defaultChecked={habilitada} /> Habilitada</label>}
     <div className="flex flex-wrap gap-3"><Boton disabled={ocupado}>{ocupado ? 'Guardando…' : 'Guardar pregunta'}</Boton>
       {cancelar && <Boton type="button" className="boton-secundario" onClick={cancelar}>Cancelar</Boton>}

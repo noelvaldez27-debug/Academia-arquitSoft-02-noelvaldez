@@ -182,3 +182,34 @@ it('evita enviar una confirmación de contraseña distinta a la nueva', async ()
   expect(await screen.findByRole('alert')).toHaveTextContent('deben coincidir');
   expect(api).toHaveBeenCalledTimes(1);
 });
+
+it('exige alcance de transferencia y conserva la aprobación para el autor', async () => {
+  const resumen = { id: 'doc', cursoId: 'curso', estado: 'PREGUNTAS_PROPUESTAS', mime: 'application/pdf' };
+  const api = apiAdministrativa(null, ruta => {
+    if (ruta.includes('/cursos?')) return { datos: [{ id: 'curso', nombre: 'Curso sintético' }], pagina: 1, hayMas: false };
+    if (ruta.includes('/separatas?')) return { datos: [resumen], pagina: 1, hayMas: false };
+    if (ruta.endsWith('/temas')) return [];
+    if (ruta.endsWith('/doc/autorizacion')) return { estado: 'AUTORIZADA' };
+    if (ruta.endsWith('/doc')) return {
+      ...resumen, motivo: 'Pendiente de autorización anterior', autorizacion: null,
+      propuestas: [{ id: 'p1', estado: 'PROPUESTA', enunciado: 'Pregunta sintética',
+        alternativas: { A: '1', B: '2', C: '3', D: '4', E: '5' }, correcta: 'A' }],
+    };
+  });
+  montar('/acceso');
+  const usuario = await ingresar();
+  await usuario.click(within(await screen.findByRole('navigation')).getByRole('link', { name: 'Separatas' }));
+  await usuario.click(await screen.findByRole('button', { name: 'Revisar separata' }));
+  expect(await screen.findByText('Pregunta sintética')).toBeVisible();
+  expect(screen.queryByText('Pendiente de autorización anterior')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /^Aprobar$/ })).not.toBeInTheDocument();
+  await usuario.click(screen.getByRole('checkbox', { name: /Verifiqué los permisos/ }));
+  await usuario.click(screen.getByRole('button', { name: 'Autorizar transferencia' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('selecciona el alcance');
+  expect(api.mock.calls.some(([ruta]) => ruta.endsWith('/autorizacion'))).toBe(false);
+  await usuario.click(screen.getByRole('checkbox', { name: 'Texto extraído' }));
+  await usuario.click(screen.getByRole('button', { name: 'Autorizar transferencia' }));
+  expect(await screen.findByText('Autorización registrada.')).toBeVisible();
+  const operacion = api.mock.calls.find(([ruta]) => ruta.endsWith('/autorizacion'))?.[1];
+  expect(operacion).toMatchObject({ method: 'PUT', body: JSON.stringify({ estado: 'AUTORIZADA', alcance: ['texto'], contenidoApto: true }) });
+});

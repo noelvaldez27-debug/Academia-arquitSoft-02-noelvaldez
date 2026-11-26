@@ -52,3 +52,47 @@ test('el administrador crea una pregunta con cinco alternativas y ordena el simu
   await page.getByRole('button', { name: 'Guardar configuración' }).click();
   await expect(page.getByText('Configuración guardada.')).toBeVisible();
 });
+
+test('el docente sube una separata y aprueba su propuesta sin autorización externa en su interfaz', async ({ page }, info) => {
+  const token = 'cabecera.' + Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 120 })).toString('base64url') + '.firma';
+  let recibida = false;
+  let aprobada = false;
+  const resumen = { id: 'separata', cursoId: 'c1', estado: 'PREGUNTAS_PROPUESTAS', mime: 'application/pdf' };
+  await page.route('**/api/**', async route => {
+    const ruta = new URL(route.request().url()).pathname;
+    const metodo = route.request().method();
+    if (ruta.endsWith('/login')) return route.fulfill({ json: { token,
+      usuario: { id: '2', nombre: 'Docente sintético', rol: 'DOCENTE', sedeId: null } } });
+    if (ruta.endsWith('/cursos')) return route.fulfill({ json: { datos: [{ id: 'c1', nombre: 'Matemática' }], pagina: 1, hayMas: false } });
+    if (ruta.endsWith('/temas')) return route.fulfill({ json: [] });
+    if (ruta.endsWith('/separatas') && metodo === 'POST') {
+      recibida = true;
+      return route.fulfill({ status: 202, json: { id: 'separata', estado: 'SUBIDA' } });
+    }
+    if (ruta.endsWith('/separatas')) return route.fulfill({ json: { datos: recibida ? [resumen] : [], pagina: 1, hayMas: false } });
+    if (ruta.endsWith('/aprobar')) { aprobada = true; return route.fulfill({ json: { id: 'propuesta' } }); }
+    if (ruta.endsWith('/separata')) return route.fulfill({ json: {
+      ...resumen, motivo: null, autorizacion: { estado: 'AUTORIZADA', alcance: ['texto'] },
+      propuestas: [{ id: 'propuesta', enunciado: '¿Cuánto es dos más dos?', alternativas: { A: 'Cuatro', B: 'Cinco', C: 'Seis', D: 'Siete', E: 'Ocho' },
+        correcta: 'A', estado: aprobada ? 'APROBADA' : 'PROPUESTA' }],
+    } });
+    return route.fulfill({ status: 404 });
+  });
+  await page.goto('/acceso');
+  await page.getByLabel('Correo institucional').fill('docente@example.test');
+  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByRole('button', { name: 'Ingresar' }).click();
+  await page.getByRole('navigation').getByRole('link', { name: 'Separatas' }).click();
+  await page.getByRole('combobox', { name: 'Curso', exact: true }).selectOption('c1');
+  await page.getByLabel('Archivo DOCX, PDF, JPG, JPEG o PNG').setInputFiles({
+    name: 'material-sintetico.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-sintetico'),
+  });
+  await page.getByRole('button', { name: 'Subir separata' }).click();
+  const revision = page.getByRole('region', { name: 'Revisión de separata' });
+  await expect(revision.getByText('Propuestas disponibles')).toBeVisible();
+  await expect(revision.getByRole('button', { name: 'Autorizar transferencia' })).toHaveCount(0);
+  await revision.getByRole('button', { name: 'Aprobar', exact: true }).click();
+  await expect(revision.getByText('Propuesta aprobada.')).toBeVisible();
+  await expect(revision.getByText('Aprobada', { exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('separatas.png'), fullPage: true });
+});

@@ -319,3 +319,9 @@ Acceso y cuenta, listados por rol y sede, estudiantes, docentes, administradores
 ### Consolidación de Gestión de Usuarios
 
 La búsqueda de usuarios usa PostgreSQL antes de paginar, con el alcance administrativo vigente. Regresión local: backend 459 pruebas, 84,95 % de líneas y 75,48 % de ramas; frontend 13 pruebas, 76,19 % de líneas y 63,23 % de ramas; Playwright 8 recorridos. Se añadió el trabajo de CI para compilación, Jest con cobertura y Playwright Chromium. La cobertura de frontend permanece por debajo del objetivo técnico recomendado. [SDD](../specs/frontend/spec.md).
+
+La consolidación de Fase 1 quedó publicada por avance directo en 4d474c5. Los trabajos de backend y frontend aprobaron en [GitHub Actions 45823085433](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45823085433).
+
+### Fase 2 · Banco de Preguntas web
+
+F2.1 y F2.2 completadas localmente. Se incorporaron catálogos paginados de cursos, simulacros y asignaciones, e historial de separatas con filtros y alcance por autor. Se verificó el editor de cinco alternativas, orden de preguntas, configuración, autorización de material, revisión y aprobación por el docente responsable. La regresión aprobó 461 pruebas de backend y 15 de frontend. Playwright aprobó 12 recorridos simulados. Compose aislado verificó PostgreSQL, RabbitMQ, PDF e imagen con IA simulada. Las pantallas de Banco y Separatas se verificaron en navegador por nginx. La [SDD](../specs/frontend/spec.md) registra coberturas y limitaciones. Los commits de Fase 2 quedan locales y Fase 3 espera autorización.

@@ -18,7 +18,7 @@ test('protege rutas, muestra el panel del rol y deja una captura local', async (
   await expect(page.getByRole('link', { name: 'Usuarios' })).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('panel.png'), fullPage: true });
   await page.getByRole('navigation').getByRole('link', { name: 'Separatas' }).click();
-  await expect(page.getByRole('heading', { name: 'Separatas' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Separatas', exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 });

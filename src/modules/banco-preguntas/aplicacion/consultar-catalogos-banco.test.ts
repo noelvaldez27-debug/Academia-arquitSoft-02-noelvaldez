@@ -2,6 +2,7 @@ import { ConsultarCatalogosBanco } from './consultar-catalogos-banco';
 
 it('autoriza catálogo docente y reserva asignaciones y configuraciones al administrador general', async () => {
   const consultas = {
+    separatas: jest.fn().mockResolvedValue([]),
     cursos: jest.fn().mockResolvedValue([{ id: 'a', nombre: 'Curso A' }, { id: 'b', nombre: 'Curso B' }]),
     simulacros: jest.fn().mockResolvedValue([]),
     docentes: jest.fn().mockResolvedValue([]),
@@ -19,4 +20,15 @@ it('autoriza catálogo docente y reserva asignaciones y configuraciones al admin
   await caso.simulacros(general, opciones);
   await caso.docentes(general, 'curso', opciones);
   expect(consultas.docentes).toHaveBeenCalledWith('curso', opciones);
+});
+
+it('acota la consulta de separatas al docente autenticado y permite la revisión general', async () => {
+  const separatas = jest.fn().mockResolvedValue([]);
+  const caso = new ConsultarCatalogosBanco({ separatas, cursos: jest.fn(), simulacros: jest.fn(), docentes: jest.fn() });
+  const opciones = { pagina: 1, limite: 20, q: '' };
+  await caso.separatas({ id: '5', permiso: 'docente' }, 'curso', 'TEXTO_EXTRAIDO', opciones);
+  expect(separatas).toHaveBeenCalledWith('5', 'curso', 'TEXTO_EXTRAIDO', opciones);
+  await caso.separatas({ id: '6', permiso: 'general' }, '', '', opciones);
+  expect(separatas).toHaveBeenLastCalledWith(null, '', '', opciones);
+  expect(() => caso.separatas({ id: '7', permiso: 'ninguno' }, '', '', opciones)).toThrow();
 });

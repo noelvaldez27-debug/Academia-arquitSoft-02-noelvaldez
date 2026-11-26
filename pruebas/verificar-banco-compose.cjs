@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
-const { randomUUID } = require('node:crypto');
+const { randomInt, randomUUID } = require('node:crypto');
 const { setTimeout: esperar } = require('node:timers/promises');
 const { rutasOpenApiBanco } = require(require('node:path').resolve('dist/modules/banco-preguntas'));
 
@@ -43,21 +43,33 @@ function pdfSintetico() {
 }
 
 async function ejecutar() {
-  const password = randomUUID();
-  const correo = 'admin-banco@prueba.invalid';
-  execFileSync(process.execPath, ['dist/scripts/migrar.js'], { stdio: 'inherit' });
-  execFileSync(process.execPath, ['dist/scripts/seed-admin.js'], { env: {
+  const reutilizar = process.env.REUTILIZAR_ADMIN_SINTETICO === 'si';
+  const password = reutilizar ? process.env.ADMIN_GENERAL_PASSWORD : randomUUID();
+  const correo = reutilizar ? process.env.ADMIN_GENERAL_CORREO : 'admin-banco@prueba.invalid';
+  if (!reutilizar) execFileSync(process.execPath, ['dist/scripts/migrar.js'], { stdio: 'inherit' });
+  if (!reutilizar) execFileSync(process.execPath, ['dist/scripts/seed-admin.js'], { env: {
     ...process.env, ADMIN_GENERAL_NOMBRE: 'Administrador Banco',
     ADMIN_GENERAL_CORREO: correo, ADMIN_GENERAL_PASSWORD: password,
   } });
   const login = async (correo, password) =>
     (await (await http(usuarios + '/login', 'POST', 200, null, { correo, password })).json()).token;
   const admin = await login(correo, password);
-  await http(usuarios + '/docentes', 'POST', 201, admin, { nombre: 'Docente de prueba', dni: '45111111' });
-  await http(usuarios + '/docentes', 'POST', 201, admin, { nombre: 'Otro docente', dni: '45111112' });
-  const docente = await login('45111111@sofia.edu', '45111111');
-  const otro = await login('45111112@sofia.edu', '45111112');
-  const curso = await (await http(banco + '/cursos', 'POST', 201, admin, { nombre: 'Matemática' })).json();
+  async function registrarDocente(nombre) {
+    const dni = String(randomInt(10_000_000, 100_000_000));
+    const perfil = await (await http(usuarios + '/docentes', 'POST', 201, admin, { nombre, dni })).json();
+    return { id: perfil.id, token: await login(perfil.correo, dni) };
+  }
+  const { id: docenteId, token: docente } = await registrarDocente('Docente sintético de Banco');
+  const { token: otro } = await registrarDocente('Otro docente sintético de Banco');
+  const nombreCurso = 'Matemática sintética ' + randomUUID();
+  const curso = await (await http(banco + '/cursos', 'POST', 201, admin, { nombre: nombreCurso })).json();
+  const catalogo = await (await http(banco + '/cursos?q=' + encodeURIComponent(nombreCurso), 'GET', 200, docente)).json();
+  assert.equal(catalogo.datos[0].id, curso.id);
+  const rutaAsignaciones = banco + '/cursos/' + curso.id + '/docentes';
+  await http(rutaAsignaciones + '/' + docenteId, 'PUT', 200, admin);
+  assert.deepEqual((await (await http(rutaAsignaciones, 'GET', 200, admin)).json()).datos, [{ id: docenteId }]);
+  await http(rutaAsignaciones, 'GET', 403, docente);
+  await http(banco + '/simulacros', 'GET', 403, docente);
   await http(banco + '/cursos', 'POST', 403, docente, { nombre: 'Curso' });
   const contenido = { enunciado: '¿Cuánto es dos más dos?', correcta: 'A',
     alternativas: { A: 'Cuatro', B: 'Cinco', C: 'Seis', D: 'Siete', E: 'Ocho' } };
@@ -68,6 +80,13 @@ async function ejecutar() {
   const formato = new FormData();
   formato.append('archivo', new Blob([pdf]), 'separata.pdf');
   const subida = await (await http(banco + '/cursos/' + curso.id + '/separatas', 'POST', 202, docente, formato)).json();
+  const historial = banco + '/separatas?cursoId=' + curso.id;
+  for (const token of [admin, docente]) {
+    const pagina = await (await http(historial + '&limite=1', 'GET', 200, token)).json();
+    assert.equal(pagina.datos[0].id, subida.id);
+    assert.equal(pagina.hayMas, false);
+  }
+  assert.deepEqual((await (await http(historial, 'GET', 200, otro)).json()).datos, []);
   const ruta = banco + '/separatas/' + subida.id;
   const esperarEstado = async (estado, motivo) => {
     for (let intento = 0; intento < 40; intento++) {
@@ -97,6 +116,8 @@ async function ejecutar() {
   assert.equal(extraida.habilitada, true);
   const configuracion = { duracionMinutos: 35, preguntas: [extraida.id, manual.id] };
   const simulacro = await (await http(banco + '/simulacros', 'POST', 201, admin, configuracion)).json();
+  const simulacros = await (await http(banco + '/simulacros?q=' + simulacro.id, 'GET', 200, admin)).json();
+  assert.deepEqual(simulacros.datos[0], { id: simulacro.id, ...configuracion });
   const rutaSimulacro = banco + '/simulacros/' + simulacro.id;
   await http(rutaSimulacro, 'PUT', 200, admin, configuracion);
   const visible = await (await http(rutaSimulacro, 'GET', 200, admin)).json();

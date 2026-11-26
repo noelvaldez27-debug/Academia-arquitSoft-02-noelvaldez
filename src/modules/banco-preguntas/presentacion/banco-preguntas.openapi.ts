@@ -71,7 +71,16 @@ function listadoBanco(titulo: string, propiedades: object, parametros: string[] 
   ] };
 }
 
+const listadoSeparatas = listadoBanco('Consultar separatas según autoría o alcance general', {
+  id: texto, cursoId: texto, estado: texto, mime: texto,
+});
 export const rutasOpenApiBanco = {
+  '/api/banco-preguntas/separatas': {
+    get: { ...listadoSeparatas, parameters: [...listadoSeparatas.parameters,
+      { name: 'cursoId', in: 'query', schema: texto },
+      { name: 'estado', in: 'query', schema: { ...texto, enum: ['SUBIDA', 'EN_EXTRACCION', 'TEXTO_EXTRAIDO', 'PREGUNTAS_PROPUESTAS', 'ERROR_EXTRACCION'] } },
+    ] },
+  },
   '/api/banco-preguntas/cursos/{cursoId}/docentes': {
     get: listadoBanco('Listar docentes asignados como administrador general', { id: texto }, ['cursoId']),
   },

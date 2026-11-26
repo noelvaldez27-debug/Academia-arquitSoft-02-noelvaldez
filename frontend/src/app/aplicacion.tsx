@@ -1,3 +1,4 @@
+import { GestionSeparatas } from '../funcionalidades/banco-preguntas/separatas';
 import { GestionBanco } from '../funcionalidades/banco-preguntas/banco';
 import { GestionSimulacros } from '../funcionalidades/banco-preguntas/simulacros';
 import { Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom';
@@ -78,7 +79,7 @@ function Panel() {
                 <section className="grid gap-4"><h2 className="text-lg font-semibold">Correo</h2><FormularioCuenta correo /></section>
               )}
             </div>
-          ) : seccion === 'banco' ? <GestionBanco /> : seccion === 'simulacros' && perfil === 'general' ? <GestionSimulacros /> : seccion === 'cargas' ? <CargasExcel /> : seccion && ['usuarios', 'estudiantes', 'sedes', 'ciclos'].includes(seccion) ? <GestionUsuarios key={seccion} seccion={seccion} /> : activa ? <div className="mt-6"><Estado>Esta sección se habilitará en su fase de desarrollo.</Estado></div> : (
+          ) : seccion === 'separatas' ? <GestionSeparatas /> : seccion === 'banco' ? <GestionBanco /> : seccion === 'simulacros' && perfil === 'general' ? <GestionSimulacros /> : seccion === 'cargas' ? <CargasExcel /> : seccion && ['usuarios', 'estudiantes', 'sedes', 'ciclos'].includes(seccion) ? <GestionUsuarios key={seccion} seccion={seccion} /> : activa ? <div className="mt-6"><Estado>Esta sección se habilitará en su fase de desarrollo.</Estado></div> : (
             <>
               <p className="mt-2 text-slate-600">Selecciona una sección de tu área de trabajo.</p>
               <ul className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

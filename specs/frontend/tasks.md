@@ -20,7 +20,7 @@
 ## Fase 2 · Banco de Preguntas (depende de F1)
 
 - [x] F2.1. Implementar cursos, temas, asignaciones, preguntas y configuración de simulacros. Verificar permisos, orden y edición.
-- [ ] F2.2. Implementar separatas, autorización, estado y revisión. Verificar formatos, procesamiento simulado, error y aprobación por propietario.
+- [x] F2.2. Implementar separatas, autorización, estado y revisión. Verificar formatos, procesamiento simulado, error y aprobación por propietario.
 
 ## Fase 3 · Rendición (depende de F1 y F2)
 

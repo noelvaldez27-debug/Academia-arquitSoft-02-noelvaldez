@@ -27,11 +27,11 @@ const destinos = {
   recomendacion: { ruta: 'recomendacion', titulo: 'Recomendación' },
 } satisfies Record<string, Destino>;
 
-const { cargas, sedes, ciclos, usuarios, estudiantes, banco, simulacros, reportes, analitica, separatas, desempeno,
+const { cargas, sedes, ciclos, usuarios, estudiantes, banco, separatas, simulacros, reportes, analitica, desempeno,
   nota, ranking, historial, recomendacion } = destinos;
 
 export const navegacion: Record<Perfil, readonly Destino[]> = {
-  general: [usuarios, cargas, sedes, ciclos, banco, simulacros, reportes, analitica],
+  general: [usuarios, cargas, sedes, ciclos, banco, separatas, simulacros, reportes, analitica],
   sede: [estudiantes, cargas, ciclos, reportes, analitica],
   docente: [separatas, desempeno],
   postulante: [simulacros, nota, ranking, historial, recomendacion],

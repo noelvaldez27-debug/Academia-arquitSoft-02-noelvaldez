@@ -21,6 +21,14 @@ export function paginaBanco(req: Request) {
 
 export function crearRutasCatalogos(catalogos: ConsultarCatalogosBanco) {
   const router = Router();
+  router.get('/separatas', responder(req => {
+    const { cursoId = '', estado = '' } = req.query;
+    if (typeof cursoId !== 'string' || cursoId.length > 160 || typeof estado !== 'string'
+      || !['', 'SUBIDA', 'EN_EXTRACCION', 'TEXTO_EXTRAIDO', 'PREGUNTAS_PROPUESTAS', 'ERROR_EXTRACCION'].includes(estado)) {
+      throw new ErrorBancoPreguntas('validacion', 'Filtro de separatas no válido.');
+    }
+    return catalogos.separatas(actorBanco(req), cursoId, estado, paginaBanco(req));
+  }));
   router.get('/cursos', responder(req => catalogos.cursos(actorBanco(req), paginaBanco(req))));
   router.get('/simulacros', responder(req => catalogos.simulacros(actorBanco(req), paginaBanco(req))));
   router.get('/cursos/:cursoId/docentes', responder(req =>
