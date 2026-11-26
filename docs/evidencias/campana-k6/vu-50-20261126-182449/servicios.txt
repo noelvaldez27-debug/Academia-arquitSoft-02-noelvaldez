@@ -1,0 +1,7 @@
+evalua-campana-k6-f62c-worker-separatas-1|Up About a minute|3000/tcp
+evalua-campana-k6-f62c-backend-1|Up About a minute|3000/tcp
+evalua-campana-k6-f62c-worker-resultados-1|Up About a minute|3000/tcp
+evalua-campana-k6-f62c-postgres-1|Up About a minute (healthy)|5432/tcp
+evalua-campana-k6-f62c-rabbitmq-1|Up About a minute (healthy)|4369/tcp, 5671-5672/tcp, 15671-15672/tcp, 15691-15692/tcp, 25672/tcp
+evalua-campana-k6-f62c-redis-cache-1|Up About a minute|6379/tcp
+evalua-campana-k6-f62c-redis-1|Up About a minute (healthy)|6379/tcp

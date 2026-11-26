@@ -19,3 +19,5 @@
   - [x] 8g. Comparar pools de 10 y 20 y perfilar la autenticación por separado.
   - [x] 8h. Revalidar la configuración elegida sin perfilado. Humo de 3 VU conforme y 50 VU fuera de los límites de REST y registro.
   - [ ] 8i. Resolver el incumplimiento de AC01 y completar los escalones restantes con autorización. Conservar el criterio de parada en 50 VU.
+
+Registro de 8i (26 de noviembre de 2026). Humo de 3 VU conforme y 50 VU con fallo de REST habitual. Conciliación completa en ambos. La revalidación acotada terminó y los escalones superiores siguen pendientes. Consultar la evidencia de Sprint 2 antes de proponer otro ensayo.

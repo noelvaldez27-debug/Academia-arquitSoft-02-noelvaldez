@@ -211,7 +211,7 @@ En las muestras HTTP, por percentil de rango cercano, iniciar el examen alcanzó
 
 **Máximo ejecutado: 50 VU.** Ningún escalón de campaña cumplió todos los criterios. El mayor ensayo que los cumplió sigue siendo el humo de 3 VU, fuera de la campaña. Se omitieron 100, 250, 500, 1 000, 1 500 y 2 000 VU según el criterio de interrupción. La tarea 8 permanece abierta.
 
-Para reproducir bajo autorización, levantar Docker Compose con la sobreescritura `pruebas/carga/compose.aislado.yml`, proyecto `evalua-campana-k6`, credenciales sintéticas con dominio .invalid y ambos proveedores simulados. Sembrar el administrador y ejecutar `pruebas/carga/ejecutar-escalon.ps1 -Usuarios 50 -Autorizado` desde el repositorio. El guion prepara cohortes nuevas, conserva métricas crudas y revierte los archivos temporales de credenciales. Comparar cada intento posterior con el original y mantener el avance condicionado a los umbrales, integridad y estabilidad.
+Para reproducir bajo autorización, levantar Docker Compose con la sobreescritura `pruebas/carga/compose.aislado.yml`, proyecto `evalua-campana-k6`, credenciales sintéticas con dominio .invalid y ambos proveedores simulados. Sembrar el administrador, esperar /health y proporcionar ADMIN_SINTETICO_CORREO y ADMIN_SINTETICO_PASSWORD en el entorno del proceso. Ejecutar primero `pruebas/carga/ejecutar-escalon.ps1 -Usuarios 3 -Autorizado` desde el repositorio. El parámetro Proyecto permite un proyecto aislado con sufijo. Solo repetir con 50 si el humo y la conciliación pasan y la corrida está autorizada. El guion prepara cohortes nuevas, conserva métricas crudas y revierte los archivos temporales de credenciales. Comparar cada intento posterior con el original y mantener el avance condicionado a los umbrales, integridad y estabilidad.
 
 | Atributo | Estado tras el escalón y criterio pendiente |
 | --- | --- |
@@ -376,3 +376,27 @@ F6.1 implementada con historial, evolución y rendimiento propio, recomendación
 | AC06 | Pendiente de evaluación humana. [Protocolo e instrumento](../specs/frontend/usabilidad-ac06.md). |
 | AC07 | Validado para el escenario local de desconexión y retorno. IndexedDB conserva marcas y se comprueba la sincronización y persistencia tras el cierre. |
 | AC08 | Parcial. Se conserva el consumo base local. Queda pendiente evaluar costo y escalado en el entorno previsto. |
+
+### Revalidación acotada de 3 y 50 VU · 26 de noviembre de 2026
+
+Compose interno sin puertos publicados, VM Docker de 8 CPU y 3,74 GiB, Engine 29.5.3 y k6 1.0.0. Se reutilizaron las imágenes locales con dist de e0b4416 montado en solo lectura, migraciones vigentes, pool API de 10, proveedores simulados y un proyecto nuevo. A diferencia de la línea histórica, Redis de consultas estaba habilitado y el volumen se inició limpio. La comparación entre ejecuciones orienta el diagnóstico. El diseño no permite atribuir los cambios a la caché o a una sola variable. Dos arranques de preparación fallaron antes de iniciar k6. Se resolvieron al sembrar la cuenta sintética y esperar /health en el mismo arranque.
+
+Cada celda de latencia muestra p50 / p95 / p99 en ms, obtenidos por interpolación lineal de las muestras NDJSON. Los umbrales se evalúan con el p95 de k6.
+
+| VU y muestra | REST habitual | Registro | Cierre a nota | Ranking HTTP | HTTP/s | Errores técnicos |
+| --- | --- | --- | --- | --- | ---: | --- |
+| 3 histórica | 49 / 245 / 305 | 65 / 72 / 72 | 1071 / 1073 / 1073 | 9 / 11 / 12 | 7,76 | 0/33 |
+| 3 actual | 58 / 133 / 134 | 72 / 75 / 75 | 612 / 628 / 630 | 14 / 19 / 19 | 6,71 | 0/31 |
+| 50 histórica | 898 / 7899 / 8415 | 877 / 1056 / 1124 | 4571 / 4873 / 5048 | 209 / 236 / 262 | 25,41 | 0/540 |
+| 50 actual | 487 / 3451 / 5624 | 341 / 571 / 1898 | 1844 / 2248 / 2283 | 11 / 35 / 46 | 36,78 | 0/493 |
+
+Límites vigentes en ms: REST 2000, registro 1000, nota 5000 y ranking HTTP 3000. Error técnico inferior al 1 % y todas las comprobaciones correctas. Humo conforme. A 50 VU falló solo REST habitual (código 99). El inicio acumuló 38 de las 41 muestras REST habituales por encima de 2 s y tuvo p95 de 5373,40 ms. Consultar el intento tuvo p95 de 2302,71 ms y finalizar 195,37 ms. Login p95 fue 6614,86 ms, frente a 11208,31 ms en la muestra histórica. El cierre general a ranking definitivo tomó 2054 ms a 3 VU y 2040 ms a 50 VU. Es una observación por escalón y el sondeo forma parte del tiempo. Las solicitudes por segundo incluyen sondeos y distintas duraciones de ejecución.
+
+A 50 VU completaron 50 de 50 iteraciones y 353 de 353 comprobaciones. PostgreSQL concilió 50 inscritos, 50 intentos finalizados, 50 calificaciones esperadas y cero intentos o resultados duplicados. Redis respondió PONG con pico de 1422200 bytes. RabbitMQ terminó con cero mensajes listos y cero sin confirmar en todas las colas listadas. Máximos muestreados de CPU y memoria del contenedor a 50 VU: API 113,51 % y 68,50 MiB, PostgreSQL 17,67 % y 79,63 MiB, Redis de respuestas 2,34 % y 4,99 MiB, Redis de caché 1,56 % y 4,74 MiB, RabbitMQ 156,29 % y 186,10 MiB, worker de resultados 1,24 % y 29,40 MiB, k6 12,71 % y 34,42 MiB. CPU de Docker se expresa respecto de un núcleo. Las muestras no atribuyen el retraso a un proceso concreto.
+
+El inicio y su solapamiento con autenticación siguen siendo el punto a aislar. La espera del pool y la demora del event loop ya se observaron en los perfiles históricos. Esta corrida sin perfil no proporciona una causa nueva para cambiar SQL, índices, seguridad, Redis, RabbitMQ o paginación del ranking. La consulta de ranking propio del guion tampoco representa la carga de una proyección administrativa voluminosa. Se mantuvieron el backend y los umbrales. Cambió solo el ejecutor para recibir credenciales sintéticas y conciliar duplicados.
+
+AC01 sigue parcial por REST a 50 VU y AC03 sigue pendiente de capacidad. Se mantienen AC02, AC04, AC05 y AC08 parciales, AC07 validado para el escenario local y AC06 pendiente de voluntarios. Actividades 1–7 conservan evidencia local. Actividad 8 y tarea 8i siguen abiertas. Mayor ensayo íntegramente conforme: 3 VU. Máximo ejecutado: 50 VU.
+
+Evidencia asignada a esta revalidación: [3 VU](evidencias/campana-k6/vu-3-20261126-182410/) y [50 VU](evidencias/campana-k6/vu-50-20261126-182449/).
+Regresión posterior a k6: compilación backend, 462 pruebas Jest backend, 43 frontend y dos pruebas del exportador. Cobertura backend de 84,66 % de líneas y 74,90 % de ramas. Frontend 64,60 % y 52,94 %. La verificación de credenciales del exportador aprobó para ambas carpetas.
