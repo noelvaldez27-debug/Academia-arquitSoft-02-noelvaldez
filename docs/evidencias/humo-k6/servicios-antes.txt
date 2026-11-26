@@ -1,0 +1,6 @@
+evalua-humo-k6-backend-1|Up 46 seconds|3000/tcp
+evalua-humo-k6-worker-resultados-1|Up 46 seconds|3000/tcp
+evalua-humo-k6-worker-separatas-1|Up 46 seconds|3000/tcp
+evalua-humo-k6-postgres-1|Up About a minute (healthy)|5432/tcp
+evalua-humo-k6-rabbitmq-1|Up About a minute (healthy)|4369/tcp, 5671-5672/tcp, 15671-15672/tcp, 15691-15692/tcp, 25672/tcp
+evalua-humo-k6-redis-1|Up About a minute (healthy)|6379/tcp

@@ -13,6 +13,7 @@ const adminPassword = __ENV.ADMIN_SINTETICO_PASSWORD || '';
 const etapa = Number(__ENV.MARCA_SEGUNDOS || '0');
 if (__ENV.AUTORIZAR_CARGA !== 'si' || !/^http:\/\/127\.0\.0\.1:\d{1,5}$/.test(origen) ||
     !Number.isInteger(cantidad) || cantidad < 1 || cantidad > 2000 || !simulacroId ||
+    (__ENV.MODO_HUMO === 'si' && cantidad > 10) ||
     !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(cicloId) ||
     !adminCorreo.endsWith('.invalid') || !adminPassword ||
     !Number.isInteger(etapa) || etapa < 1 || etapa > 300 || !__ENV.USUARIOS_SINTETICOS) {

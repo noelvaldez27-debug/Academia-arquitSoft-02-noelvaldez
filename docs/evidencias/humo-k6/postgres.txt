@@ -1,0 +1,4 @@
+ inscritos | intentos | finalizados | calificados
+-----------+----------+-------------+-------------
+         3 |        3 |           3 |           3
+(1 row)
