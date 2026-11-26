@@ -12,7 +12,7 @@
 ## Fase 1 · Gestión de Usuarios (depende de F0)
 
 - [x] F1.1. Implementar login, cambio inicial, cuenta, expiración y guardas por rol y sede. Verificar sesión revocada y acceso directo.
-- [ ] F1.2. Implementar sedes, altas, padrón de usuarios, condición, archivo, reactivación y ciclos. Verificar los permisos de ambos administradores.
+- [x] F1.2. Implementar sedes, altas, padrón de usuarios, condición, archivo, reactivación y ciclos. Verificar los permisos de ambos administradores.
 - [ ] F1.3. Implementar Excel normal y de nuevo ciclo, estados por fila y entregas temporales. Verificar test de un uso y recuperación de ID e historial.
 
 ## Fase 2 · Banco de Preguntas (depende de F1)

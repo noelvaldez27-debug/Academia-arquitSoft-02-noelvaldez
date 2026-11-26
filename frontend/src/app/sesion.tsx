@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ErrorApi, solicitarApi } from '../compartido/cliente-rest';
 import type { Perfil } from './navegacion';
 
@@ -11,6 +11,8 @@ interface RespuestaAcceso {
 interface Sesion {
   token: string;
   nombre: string;
+  id: string;
+  sedeId: string | null;
   perfil: Perfil;
   cambioInicial: boolean;
   vence: number;
@@ -78,9 +80,20 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
     const perfil = perfilDe(usuario);
     tokenActivo.current = token;
     avisar('');
-    guardar({ token, nombre: usuario.nombre, perfil, vence, cambioInicial: Boolean(cambioPasswordRequerido) });
+    guardar({ token, id: usuario.id, sedeId: usuario.sedeId, nombre: usuario.nombre, perfil, vence, cambioInicial: Boolean(cambioPasswordRequerido) });
     avisarVencimiento(false);
   }
+
+  const solicitar = useCallback<EstadoSesion['solicitar']>(async (ruta, opciones) => {
+      if (!sesion) throw new ErrorApi(401, 'Tu sesión terminó. Vuelve a ingresar.');
+      const { token } = sesion;
+      return solicitarApi(ruta, { ...opciones, sesion: { token, alVencer: () => {
+        if (tokenActivo.current !== token) return;
+        tokenActivo.current = null;
+        guardar(null);
+        avisarVencimiento(true);
+      } } });
+  }, [sesion]);
 
   return <Contexto.Provider value={{
     sesion, vencida, aviso, ingresar,
@@ -91,16 +104,7 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
       avisar(mensaje + ' Vuelve a ingresar.');
       avisarVencimiento(false);
     },
-    solicitar: async (ruta, opciones) => {
-      if (!sesion) throw new ErrorApi(401, 'Tu sesión terminó. Vuelve a ingresar.');
-      const { token } = sesion;
-      return solicitarApi(ruta, { ...opciones, sesion: { token, alVencer: () => {
-        if (tokenActivo.current !== token) return;
-        tokenActivo.current = null;
-        guardar(null);
-        avisarVencimiento(true);
-      } } });
-    },
+    solicitar,
   }}>{children}</Contexto.Provider>;
 }
 

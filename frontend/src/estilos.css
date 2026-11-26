@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --color-marino: #14243a;
   --color-accion: #1d4ed8;
   --color-fondo: #f8fafc;
