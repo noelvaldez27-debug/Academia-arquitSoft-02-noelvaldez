@@ -56,4 +56,4 @@
 
 ## Mejoras aprobadas de importación (adición; no reemplaza tareas cerradas)
 - [x] 26. Lectura flexible XLSX: aliases aprobados, búsqueda en las primeras 20 filas, columnas extra ignoradas, normalización segura de DNI/sede y conservación de fila Excel; pruebas sintéticas y reglas/límites intactos.
-- [ ] 27. Mostrar mensajes estructurados seguros solo en la subida Excel, sin alterar el cliente REST para otras funcionalidades; pruebas específicas y actualización OpenAPI/SDD.
+- [x] 27. Mostrar mensajes estructurados seguros solo en la subida Excel, sin alterar el cliente REST para otras funcionalidades; pruebas específicas y actualización OpenAPI/SDD.

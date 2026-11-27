@@ -16,3 +16,25 @@ it('distingue un fallo de red de un error HTTP', async () => {
   await expect(solicitarApi('/api/usuarios/sedes')).rejects.toBeInstanceOf(ErrorApi);
   await expect(solicitarApi('/api/usuarios/sedes')).rejects.toMatchObject({ estado: 0 });
 });
+
+it('permite mostrar una validación segura solo cuando la operación lo solicita', async () => {
+  const fetchSimulado = jest.fn().mockResolvedValue({
+    ok: false, status: 400,
+    clone: () => ({ json: async () => ({ error: 'No se reconocen los encabezados obligatorios.' }) }),
+  });
+  Object.defineProperty(globalThis, 'fetch', { configurable: true, value: fetchSimulado });
+  await expect(solicitarApi('/api/usuarios/cargas-masivas', { mensajeValidacionSeguro: true }))
+    .rejects.toMatchObject({ estado: 400, message: 'No se reconocen los encabezados obligatorios.' });
+  await expect(solicitarApi('/api/usuarios/cargas-masivas'))
+    .rejects.toMatchObject({ estado: 400, message: 'Revisa los datos ingresados.' });
+});
+
+it('no muestra mensajes de validación que puedan contener datos sensibles', async () => {
+  const fetchSimulado = jest.fn().mockResolvedValue({
+    ok: false, status: 422,
+    clone: () => ({ json: async () => ({ error: 'Token inválido para usuario' }) }),
+  });
+  Object.defineProperty(globalThis, 'fetch', { configurable: true, value: fetchSimulado });
+  await expect(solicitarApi('/api/usuarios/cargas-masivas', { mensajeValidacionSeguro: true }))
+    .rejects.toMatchObject({ estado: 422, message: 'Revisa los datos ingresados.' });
+});

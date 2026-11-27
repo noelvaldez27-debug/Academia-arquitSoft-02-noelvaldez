@@ -100,7 +100,7 @@ export function CargasExcel() {
     cuerpo.append('archivo', archivo);
     void operar(async signal => {
       const creada = await solicitar<{ id: string }>(ruta + (ciclo ? '?cicloId=' + encodeURIComponent(String(ciclo)) : ''), {
-        method: 'POST', datos: cuerpo, signal,
+        method: 'POST', datos: cuerpo, signal, mensajeValidacionSeguro: true,
       });
       if (signal.aborted) return;
       guardarDetalle(undefined);

@@ -152,6 +152,7 @@ export const especificacionOpenApi = {
       post: {
         tags: ['Usuarios'],
         summary: 'Aceptar un Excel para registro masivo en segundo plano',
+        description: 'Busca encabezados equivalentes en las primeras 20 filas. Reconoce NOMBRE/NOMBRES/NOMBRE COMPLETO/NOMBRES COMPLETOS/APELLIDOS Y NOMBRES; DNI/D.N.I./DOCUMENTO DE IDENTIDAD; CARRERA/CARRERA PROFESIONAL; SEDE/CEDE. Omite filas vacías y columnas adicionales. El administrador general requiere sede por fila; el administrador de sede puede omitirla y se usa su sede autenticada. El DNI debe representar exactamente ocho dígitos.',
         parameters: [{ name: 'cicloId', in: 'query', schema: { type: 'string', format: 'uuid' },
           description: 'Selecciona la modalidad explícita de nuevo ciclo. Si se omite, se ignoran todos los DNI existentes.' }],
         security: [{ bearerAuth: [] }],
@@ -171,7 +172,7 @@ export const especificacionOpenApi = {
               properties: { id: { type: 'string', format: 'uuid' } },
             } } },
           },
-          '400': { description: 'Archivo XLSX inválido, sin columnas requeridas o fuera de los límites' },
+          '400': { description: 'Archivo XLSX inválido, encabezados faltantes/ambiguos o archivo fuera de los límites', content: { 'application/json': { schema: { type: 'object', required: ['error'], properties: { error: { type: 'string', description: 'Mensaje seguro de validación' } } } } } },
           '401': { description: 'Sesión inválida o ausente' },
           '403': { description: 'Se requiere rol de administrador' },
           '404': { description: 'Ciclo no encontrado' },

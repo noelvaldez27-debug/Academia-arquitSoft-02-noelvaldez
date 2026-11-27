@@ -9,6 +9,7 @@ interface Solicitud extends Omit<RequestInit, 'body'> {
   sesion?: { token: string; alVencer: () => void };
   formato?: 'json' | 'archivo';
   recibirCabeceras?: (cabeceras: Headers) => void;
+  mensajeValidacionSeguro?: boolean;
 }
 
 const mensajes: Record<number, string> = {
@@ -24,7 +25,7 @@ const mensajes: Record<number, string> = {
 
 export async function solicitarApi<T>(ruta: string, opciones: Solicitud = {}): Promise<T> {
   if (!ruta.startsWith('/api/') || ruta.includes('\\')) throw new Error('Ruta REST inválida.');
-  const { datos, sesion, formato = 'json', recibirCabeceras, ...init } = opciones;
+  const { datos, sesion, formato = 'json', recibirCabeceras, mensajeValidacionSeguro = false, ...init } = opciones;
   const headers = new Headers(init.headers);
   if (sesion) headers.set('Authorization', 'Bearer ' + sesion.token);
   const formulario = datos instanceof FormData;
@@ -42,9 +43,12 @@ export async function solicitarApi<T>(ruta: string, opciones: Solicitud = {}): P
   }
   if (respuesta.status === 401 && sesion) sesion.alVencer();
   if (!respuesta.ok) {
+    const mensajeServidor = mensajeValidacionSeguro && (respuesta.status === 400 || respuesta.status === 422)
+      ? await leerMensajeValidacion(respuesta)
+      : undefined;
     throw new ErrorApi(respuesta.status, respuesta.status === 401 && sesion
       ? 'Tu sesión terminó. Vuelve a ingresar.'
-      : mensajes[respuesta.status] ?? 'El servicio no está disponible en este momento.');
+      : mensajeServidor ?? mensajes[respuesta.status] ?? 'El servicio no está disponible en este momento.');
   }
   recibirCabeceras?.(respuesta.headers);
   if (respuesta.status === 204) return undefined as T;
@@ -53,5 +57,18 @@ export async function solicitarApi<T>(ruta: string, opciones: Solicitud = {}): P
     return await respuesta.json() as T;
   } catch {
     throw new ErrorApi(respuesta.status, 'El servicio devolvió una respuesta inesperada.');
+  }
+}
+
+async function leerMensajeValidacion(respuesta: Response): Promise<string | undefined> {
+  try {
+    const cuerpo: unknown = await respuesta.clone().json();
+    if (typeof cuerpo !== 'object' || cuerpo === null || !('error' in cuerpo)) return undefined;
+    const mensaje = (cuerpo as { error?: unknown }).error;
+    if (typeof mensaje !== 'string' || !mensaje.trim() || mensaje.length > 300) return undefined;
+    if (/password|contraseñ|hash|token|stack|trace|credencial|secret/i.test(mensaje)) return undefined;
+    return mensaje;
+  } catch {
+    return undefined;
   }
 }
