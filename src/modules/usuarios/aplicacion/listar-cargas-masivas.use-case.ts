@@ -6,6 +6,7 @@ export interface ResumenCarga {
   estado: string;
   creadaEl: Date;
   propia: boolean;
+  cicloNombre?: string | null;
 }
 
 export class ListarCargasMasivasUseCase {

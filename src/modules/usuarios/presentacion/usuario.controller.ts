@@ -42,6 +42,7 @@ export class UsuarioController {
   public registrarEstudiante = async (req: Request, res: Response): Promise<void> => {
     try {
       const { nombre, dni, sedeId, carrera, condicion, cicloId } = req.body ?? {};
+      let resultadoCiclo: 'creada' | 'recuperada' | 'vinculada' | 'existente' | undefined;
       const estudiante = await this.registrarEstudianteUseCase.ejecutar({
         nombre,
         dni,
@@ -49,6 +50,7 @@ export class UsuarioController {
         carrera,
         condicion,
         cicloId,
+        modoAutomatico: true,
         ejecutor: req.usuario
           ? {
               id: req.usuario.id,
@@ -57,7 +59,7 @@ export class UsuarioController {
               alcanceAdministrador: req.usuario.alcanceAdministrador,
             }
           : undefined,
-      });
+      }, undefined, resultado => { resultadoCiclo = resultado; });
 
       res.status(201).json({
         id: estudiante.id,
@@ -69,6 +71,8 @@ export class UsuarioController {
         carrera: estudiante.carrera,
         condicion: estudiante.condicion,
         activo: estudiante.activo,
+        cicloResultado: resultadoCiclo,
+        credencialesDisponibles: resultadoCiclo === 'creada' || resultadoCiclo === 'recuperada',
       });
     } catch (error) {
       this.manejarError(error, res);

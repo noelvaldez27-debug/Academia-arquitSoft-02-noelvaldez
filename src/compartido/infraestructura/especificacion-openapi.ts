@@ -140,6 +140,7 @@ export const especificacionOpenApi = {
                 properties: {
                   id: { type: 'string', format: 'uuid' }, estado: { type: 'string' },
                   creadaEl: { type: 'string', format: 'date-time' }, propia: { type: 'boolean' },
+                  cicloNombre: { type: 'string', nullable: true },
                 } } },
             },
           } } } },
@@ -152,9 +153,9 @@ export const especificacionOpenApi = {
       post: {
         tags: ['Usuarios'],
         summary: 'Aceptar un Excel para registro masivo en segundo plano',
-        description: 'Busca encabezados equivalentes en las primeras 20 filas. Reconoce NOMBRE/NOMBRES/NOMBRE COMPLETO/NOMBRES COMPLETOS/APELLIDOS Y NOMBRES; DNI/D.N.I./DOCUMENTO DE IDENTIDAD; CARRERA/CARRERA PROFESIONAL; SEDE/CEDE. Omite filas vacías y columnas adicionales. El administrador general requiere sede por fila; el administrador de sede puede omitirla y se usa su sede autenticada. El DNI debe representar exactamente ocho dígitos.',
-        parameters: [{ name: 'cicloId', in: 'query', schema: { type: 'string', format: 'uuid' },
-          description: 'Selecciona la modalidad explícita de nuevo ciclo. Si se omite, se ignoran todos los DNI existentes.' }],
+        description: 'Requiere un ciclo académico abierto de destino. Clasifica cada DNI como alta, recuperación elegible, vínculo, existente en el ciclo o rechazo. Busca encabezados equivalentes en las primeras 20 filas; omite filas vacías y columnas adicionales. El administrador general requiere sede; el administrador de sede puede omitirla y se usa su sede autenticada. El DNI debe representar exactamente ocho dígitos.',
+        parameters: [{ name: 'cicloId', in: 'query', required: true, schema: { type: 'string', format: 'uuid' },
+          description: 'Ciclo académico abierto de destino.' }],
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -199,7 +200,9 @@ export const especificacionOpenApi = {
                 totalFilas: { type: 'integer' },
                 creadas: { type: 'integer' },
                 recuperadas: { type: 'integer' },
+                vinculadas: { type: 'integer' },
                 cicloId: { type: 'string', format: 'uuid' },
+                cicloNombre: { type: 'string', nullable: true },
                 yaExistian: { type: 'integer' },
                 rechazadas: { type: 'integer' },
                 errores: esquemaDetallesCarga,
@@ -340,7 +343,7 @@ export const especificacionOpenApi = {
       post: {
         summary: 'Registrar estudiante (postulante)',
         description:
-          'Registra un postulante con nombre, DNI, sede y carrera. Requiere rol Administrador (general o de sede propia). Genera credenciales automáticas con formato dni@sofia.edu y hash de contraseña.',
+          'Registra o clasifica un postulante dentro de un ciclo abierto. Requiere rol Administrador (general o de sede propia). Una nueva cuenta o recuperación elegible emite credenciales provisionales; el vínculo de una cuenta activa conserva sus credenciales.',
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -348,14 +351,14 @@ export const especificacionOpenApi = {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['nombre', 'dni', 'sedeId', 'carrera'],
+                required: ['nombre', 'dni', 'sedeId', 'carrera', 'cicloId'],
                 properties: {
                   nombre: { type: 'string', example: 'Juan Alumno' },
                   dni: { type: 'string', example: '71234567' },
                   sedeId: { type: 'string', example: 'Hana' },
                   carrera: { type: 'string', example: 'Medicina Humana' },
                   cicloId: { type: 'string', format: 'uuid',
-                    description: 'Vincula el alta o recupera el postulante archivado para este ciclo.' },
+                    description: 'Ciclo académico abierto donde se vinculará o registrará al estudiante.' },
                   condicion: { type: 'string', enum: ['MATRICULADO', 'LIBRE'] },
                 },
               },
@@ -372,6 +375,8 @@ export const especificacionOpenApi = {
                   type: 'object',
                   properties: {
                     id: { type: 'string' },
+                    cicloResultado: { type: 'string', enum: ['creada', 'recuperada', 'vinculada', 'existente'] },
+                    credencialesDisponibles: { type: 'boolean' },
                     nombre: { type: 'string' },
                     dni: { type: 'string' },
                     correo: { type: 'string' },
@@ -385,18 +390,14 @@ export const especificacionOpenApi = {
               },
             },
           },
-          '400': {
-            description: 'Error de validación (campos requeridos, formato DNI o sede inexistente)',
-          },
+          '400': { description: 'Campos requeridos, formato DNI, sede o ciclo abierto inválidos' },
           '401': {
             description: 'Acceso no autorizado (token no proporcionado o expirado)',
           },
           '403': {
             description: 'Acceso denegado (rol sin permisos o administrador de otra sede)',
           },
-          '409': {
-            description: 'Conflicto: el DNI ya se encuentra registrado',
-          },
+          '409': { description: 'Conflicto de identidad, DNI o ciclo académico' },
         },
       },
     },

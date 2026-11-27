@@ -6,12 +6,12 @@ import { Selector } from './gestion';
 
 type EstadoCarga = 'PENDIENTE' | 'PROCESANDO' | 'COMPLETADA' | 'FALLIDA';
 interface Ciclo { id: string; nombre: string; cerradoEn: string | null }
-interface Resumen { id: string; estado: EstadoCarga; creadaEl: string; propia: boolean }
+interface Resumen { id: string; estado: EstadoCarga; creadaEl: string; propia: boolean; cicloNombre?: string | null }
 interface Historial { cargas: Resumen[]; pagina: number; hayMas: boolean }
 interface DetalleFila { fila: number; motivo: string }
 interface Carga {
   id: string; estado: EstadoCarga; totalFilas: number; creadas: number; recuperadas?: number;
-  yaExistian: number; rechazadas: number; errores: DetalleFila[]; avisos: DetalleFila[];
+  vinculadas?: number; cicloNombre?: string | null; yaExistian: number; rechazadas: number; errores: DetalleFila[]; avisos: DetalleFila[];
 }
 const ruta = '/api/usuarios/cargas-masivas';
 const etiquetas: Record<EstadoCarga, string> = {
@@ -62,6 +62,7 @@ export function CargasExcel() {
         if (control.signal.aborted) return;
         guardarDetalle(carga);
         if (activa(carga.estado)) temporizador = setTimeout(consultar, 3000);
+        else refrescar(n => n + 1);
       } catch (e) {
         if (!control.signal.aborted) avisar(detalleError(e));
       }
@@ -88,18 +89,17 @@ export function CargasExcel() {
     const formulario = evento.currentTarget;
     const datos = new FormData(formulario);
     const archivo = datos.get('archivo');
-    if (!(archivo instanceof File) || !archivo.size || !/\.xlsx$/i.test(archivo.name)) {
+    if (!archivo || typeof archivo === 'string' || !archivo.size || !/\.xlsx$/i.test(archivo.name)) {
       avisar('Selecciona un archivo .xlsx con contenido.');
       return;
     }
     const ciclo = datos.get('cicloId');
-    if (!window.confirm(ciclo
-      ? 'La importación puede reactivar estudiantes archivados que pertenezcan a tu alcance. ¿Continuar?'
-      : 'La importación registrará estudiantes nuevos y omitirá los DNI existentes. ¿Continuar?')) return;
+    if (!ciclo) { avisar('Selecciona un ciclo académico abierto.'); return; }
+    if (!window.confirm('La importación clasificará los DNI del archivo para este ciclo. Puede crear cuentas, vincular cuentas activas sin ciclo o recuperar cuentas archivadas elegibles. ¿Continuar?')) return;
     const cuerpo = new FormData();
     cuerpo.append('archivo', archivo);
     void operar(async signal => {
-      const creada = await solicitar<{ id: string }>(ruta + (ciclo ? '?cicloId=' + encodeURIComponent(String(ciclo)) : ''), {
+      const creada = await solicitar<{ id: string }>(ruta + '?cicloId=' + encodeURIComponent(String(ciclo)), {
         method: 'POST', datos: cuerpo, signal, mensajeValidacionSeguro: true,
       });
       if (signal.aborted) return;
@@ -118,9 +118,10 @@ export function CargasExcel() {
     <form className="grid max-w-xl gap-4 rounded-xl border border-slate-200 bg-white p-5" onSubmit={enviar}>
       <h2 className="text-lg font-bold">Importar estudiantes</h2>
       <Campo id="archivo-estudiantes" etiqueta="Archivo Excel (.xlsx)" name="archivo" type="file" accept=".xlsx" required />
-      <Selector nombre="cicloId" etiqueta="Modalidad de importación" vacio="Normal · solo altas"
-        opciones={(ciclos ?? []).filter(c => !c.cerradoEn).map(c => ({ valor: c.id, texto: 'Nuevo ciclo · ' + c.nombre }))} />
-      <Boton disabled={ocupado} type="submit">{ocupado ? 'Procesando solicitud…' : 'Enviar archivo'}</Boton>
+      <Selector nombre="cicloId" etiqueta="Ciclo académico destino" vacio={(ciclos ?? []).filter(c => !c.cerradoEn).length === 1 ? undefined : 'Selecciona un ciclo'}
+        inicial={(ciclos ?? []).filter(c => !c.cerradoEn).length === 1 ? (ciclos ?? []).find(c => !c.cerradoEn)?.id : undefined}
+        opciones={(ciclos ?? []).filter(c => !c.cerradoEn).map(c => ({ valor: c.id, texto: c.nombre }))} requerido />
+      <Boton disabled={ocupado || !(ciclos ?? []).some(c => !c.cerradoEn)} type="submit">{ocupado ? 'Procesando solicitud…' : 'Enviar archivo'}</Boton>
     </form>
     {actual && <section className="grid gap-3" aria-label="Detalle de carga">
       <h2 className="text-lg font-bold">Estado de la carga</h2>
@@ -129,9 +130,11 @@ export function CargasExcel() {
       {detalle && <>
         <Estado tipo={detalle.estado === 'FALLIDA' ? 'error' : 'info'}>{etiquetas[detalle.estado]}</Estado>
         <dl className="grid gap-3 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2">
+          <div><dt>Ciclo</dt><dd>{detalle.cicloNombre ?? 'Carga histórica sin ciclo'}</dd></div>
           <div><dt>Filas recibidas</dt><dd>{detalle.totalFilas}</dd></div>
           <div><dt>Creadas</dt><dd>{detalle.creadas}</dd></div>
           <div><dt>Recuperadas</dt><dd>{detalle.recuperadas ?? 0}</dd></div>
+          <div><dt>Vinculadas</dt><dd>{detalle.vinculadas ?? 0}</dd></div>
           <div><dt>Ya existentes</dt><dd>{detalle.yaExistian}</dd></div>
           <div><dt>Rechazadas</dt><dd>{detalle.rechazadas}</dd></div>
         </dl>
@@ -159,7 +162,8 @@ export function CargasExcel() {
           if (actual?.id === c.id) { reintentar(n => n + 1); return; }
           guardarDetalle(undefined);
           seleccionar({ id: c.id, propia: c.propia });
-        }}>{fecha.format(new Date(c.creadaEl))} <span>{etiquetas[c.estado]}</span></button></li>)}</ul>}
+        }}>{fecha.format(new Date(c.creadaEl))} <span>{etiquetas[c.estado]}</span>
+          <span> · {c.cicloNombre ?? 'Carga histórica sin ciclo'}</span></button></li>)}</ul>}
       <div className="flex flex-wrap gap-2">
         <Boton className="boton-secundario" disabled={pagina === 1} onClick={() => guardarPagina(n => n - 1)}>Anterior</Boton>
         <Boton className="boton-secundario" disabled={!historial?.hayMas} onClick={() => guardarPagina(n => n + 1)}>Siguiente</Boton>

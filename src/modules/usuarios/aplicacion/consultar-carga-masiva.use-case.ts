@@ -18,7 +18,8 @@ export class ConsultarCargaMasivaUseCase {
       id: carga.id, estado: carga.estado, totalFilas: carga.totalFilas,
       creadas: carga.creadas, yaExistian: carga.yaExistian, rechazadas: carga.rechazadas,
       errores: carga.errores, avisos: carga.avisos,
-      ...(carga.cicloId && { cicloId: carga.cicloId, recuperadas: carga.recuperadas }),
+      ...(carga.cicloId && { cicloId: carga.cicloId, cicloNombre: carga.cicloNombre,
+        recuperadas: carga.recuperadas, vinculadas: carga.vinculadas }),
     };
   }
 }

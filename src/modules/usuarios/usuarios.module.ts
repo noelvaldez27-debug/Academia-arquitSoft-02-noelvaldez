@@ -105,7 +105,15 @@ export class UsuariosModule {
       provisionales.emitir.bind(provisionales),
       (cicloId, postulante, actor, emision) => enTransaccionUsuarios(config.pool,
         bd => new PostgresRegistroCiclo(bd).guardar(cicloId, postulante, actor, emision)),
+      (cicloId, datos, actor, emitirCredenciales) => enTransaccionUsuarios(config.pool,
+        bd => new PostgresRegistroCiclo(bd).ejecutarAutomaticoDesdeDatos(cicloId, { ...datos, condicion: datos.condicion ?? null }, actor, emitirCredenciales)),
     );
+    this.registrarEstudianteUseCase.modoAutomatico = async (cicloId, datos, actor, cargaId) => {
+      const resultado = await enTransaccionUsuarios(config.pool, bd => new PostgresRegistroCiclo(bd)
+        .ejecutarAutomaticoDesdeDatos(cicloId, { ...datos, condicion: datos.condicion ?? null }, actor,
+          () => provisionales.emitir(actor.id, cargaId)));
+      return { resultado: resultado.resultado };
+    };
     this.registrarDocenteUseCase = new RegistrarDocenteUseCase(
       usuarioRepo,
       generadorCredenciales

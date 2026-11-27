@@ -81,7 +81,7 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
     return () => control.abort();
   }, [controla, solicitar, rol, sede, pagina, archivados, termino, version]);
 
-  async function operar(accion: () => Promise<void>, texto: string) {
+  async function operar(accion: () => Promise<void>, texto: string | (() => string)) {
     if (mutacion.current) return;
     mutacion.current = true;
     ocupar(true);
@@ -89,7 +89,7 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
     cambiarExito('');
     try {
       await accion();
-      cambiarExito(texto);
+      cambiarExito(typeof texto === 'function' ? texto() : texto);
       seleccionar([]);
       refrescar(n => n + 1);
     } catch (e) { cambiarError(mensaje(e)); }
@@ -103,13 +103,20 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
     const valores = Object.fromEntries(Object.entries(campos).filter(([, valor]) => valor !== ''));
     if (controla && estudiantes && !general) valores.sedeId = sesion?.sedeId ?? '';
     const recurso = controla ? estudiantes ? 'estudiantes' : rol === 'DOCENTE' ? 'docentes' : 'administradores-sede' : seccion;
+    let textoResultado = 'Registro guardado.';
     void operar(async () => {
       cambiarEntrega(undefined);
-      const creado = await solicitar<{ id: string }>(api + '/' + recurso, { method: 'POST', datos: valores });
-      if (recurso === 'estudiantes') cambiarEntrega(creado.id);
+      const creado = await solicitar<{ id: string; credencialesDisponibles?: boolean; cicloResultado?: string }>(api + '/' + recurso, { method: 'POST', datos: valores });
+      if (recurso === 'estudiantes' && creado.credencialesDisponibles) cambiarEntrega(creado.id);
+      if (recurso === 'estudiantes') textoResultado = ({
+        creada: 'Estudiante registrado en el ciclo.',
+        recuperada: 'Cuenta archivada recuperada para el ciclo.',
+        vinculada: 'Cuenta activa vinculada al ciclo sin cambiar sus credenciales.',
+        existente: 'La cuenta ya estaba vinculada a este ciclo.',
+      } as Record<string, string>)[creado.cicloResultado ?? ''] ?? textoResultado;
       cambiarRecuperacion(undefined);
       formulario.reset();
-    }, 'Registro guardado.');
+    }, () => textoResultado);
   }
 
   const sedesVisibles = (sedes ?? []).filter(s => general || String(s.id) === String(sesion?.sedeId));
@@ -195,14 +202,16 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
       {controla && estudiantes && <>
         <Campo id="gestion-carrera" name="carrera" etiqueta="Carrera" defaultValue={recuperar?.carrera ?? undefined} maxLength={100} required />
         <Selector nombre="condicion" etiqueta="Condición opcional" opciones={condiciones} vacio="Sin indicar" />
-        <Selector nombre="cicloId" etiqueta="Ciclo para alta o recuperación por DNI" opciones={ciclosOpciones} vacio={recuperar ? "Selecciona un ciclo" : "Alta sin ciclo"} requerido={Boolean(recuperar)} />
+        <Selector nombre="cicloId" etiqueta="Ciclo académico" opciones={ciclosOpciones}
+          vacio={ciclosOpciones.length === 1 ? undefined : 'Selecciona un ciclo'}
+          inicial={ciclosOpciones.length === 1 ? ciclosOpciones[0].valor : undefined} requerido />
       </>}
       {seccion === 'ciclos' && <>
         <Campo id="gestion-inicio" name="iniciaEl" etiqueta="Fecha de inicio" type="date" required />
         <Campo id="gestion-fin" name="terminaEl" etiqueta="Fecha de fin" type="date" required />
       </>}
       {recuperar && <Boton type="button" className="boton-secundario" onClick={() => cambiarRecuperacion(undefined)}>Cancelar recuperación</Boton>}
-      <Boton type="submit" disabled={ocupado}>{ocupado ? 'Guardando…' : 'Guardar registro'}</Boton>
+      <Boton type="submit" disabled={ocupado || (estudiantes && ciclosOpciones.length === 0)}>{ocupado ? 'Guardando…' : 'Guardar registro'}</Boton>
     </form>}
     {entrega && <Boton disabled={ocupado} onClick={() => void operar(async () => {
       const archivo = await solicitar<Blob>(api + '/estudiantes/' + entrega + '/credenciales', { method: 'POST', formato: 'archivo' });

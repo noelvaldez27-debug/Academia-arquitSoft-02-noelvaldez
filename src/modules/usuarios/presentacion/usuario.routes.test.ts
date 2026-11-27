@@ -208,7 +208,10 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
         carrera: 'MEDICINA',
         activo: true,
       });
-      (mockEstudianteUseCase.ejecutar as jest.Mock).mockResolvedValueOnce(postulanteCreado);
+      (mockEstudianteUseCase.ejecutar as jest.Mock).mockImplementationOnce(async (_command, _recovery, resultado) => {
+        resultado('creada');
+        return postulanteCreado;
+      });
 
       const res = await request(app)
         .post('/api/usuarios/estudiantes')
@@ -218,6 +221,7 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
           dni: '71234567',
           sedeId: 'Hana',
           carrera: 'Medicina', condicion: 'LIBRE',
+          cicloId: '12345678-1234-1234-1234-123456789012',
         });
 
       expect(res.status).toBe(201);
@@ -226,6 +230,10 @@ describe('Rutas de Usuario (ADR-008, CA-U01, CA-U03, CA-U05, CA-U06)', () => {
       expect(res.body.correo).toBe('71234567@sofia.edu');
       expect(res.body.carrera).toBe('MEDICINA');
       expect(res.body.passwordHash).toBeUndefined();
+      expect(res.body).toMatchObject({ cicloResultado: 'creada', credencialesDisponibles: true });
+      expect(mockEstudianteUseCase.ejecutar).toHaveBeenCalledWith(expect.objectContaining({
+        modoAutomatico: true, cicloId: '12345678-1234-1234-1234-123456789012',
+      }), undefined, expect.any(Function));
     });
 
     it('(CA-U01) debe responder 400 si faltan datos de validación', async () => {
