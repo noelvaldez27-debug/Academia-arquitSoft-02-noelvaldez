@@ -45,6 +45,8 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
         carga.creadoEn,
         carga.actualizadoEn,
         null,
+        0,
+        false,
       ]);
     });
   });
@@ -56,7 +58,7 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
       const resultado = await repository.buscarPorId('no-existe');
 
       expect(resultado).toBeNull();
-      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('SELECT id, usuario_id'), ['no-existe']);
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('SELECT c.id, c.usuario_id'), ['no-existe']);
     });
 
     it('debe devolver la CargaMasiva mapeada cuando existe', async () => {
@@ -74,6 +76,11 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
             errores: JSON.stringify([{ fila: 2, motivo: 'DNI repetido' }]),
             creado_en: new Date('2026-11-20T10:00:00Z'),
             actualizado_en: new Date('2026-11-20T10:05:00Z'),
+            ciclo_id: '00000000-0000-4000-8000-000000000001',
+            recuperadas: 2,
+            vinculadas: 3,
+            importacion_automatica: true,
+            ciclo_nombre: 'Ciclo sintético',
           },
         ],
       });
@@ -88,6 +95,11 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
       expect(resultado?.creadas).toBe(40);
       expect(resultado?.yaExistian).toBe(5);
       expect(resultado?.rechazadas).toBe(5);
+      expect(resultado?.cicloId).toBe('00000000-0000-4000-8000-000000000001');
+      expect(resultado?.cicloNombre).toBe('Ciclo sintético');
+      expect(resultado?.recuperadas).toBe(2);
+      expect(resultado?.vinculadas).toBe(3);
+      expect(resultado?.importacionAutomatica).toBe(true);
       expect(resultado?.errores).toEqual([{ fila: 2, motivo: 'DNI repetido' }]);
     });
   });
@@ -101,6 +113,7 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
       });
       carga.marcarComoProcesando();
       carga.incrementarCreadas(10);
+      carga.incrementarVinculadas();
       carga.agregarRechazo(3, 'Sede invalida');
 
       mockQuery.mockResolvedValueOnce({ rows: [] });
@@ -120,6 +133,7 @@ describe('PostgresCargaMasivaRepository (CA-U13)', () => {
         carga.actualizadoEn,
         'c-1',
         0,
+        1,
       ]);
     });
   });
