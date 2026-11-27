@@ -4,6 +4,7 @@ test('el administrador de sede registra, cambia condición y archiva en su sede'
   const token = 'cabecera.' + Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 90 })).toString('base64url') + '.firma';
   const alumno = { id: '20', nombre: 'Estudiante sintético', dni: '87654321', correo: 'cuenta@example.test',
     rol: 'POSTULANTE', activo: true, sedeId: '2', carrera: 'Ingeniería' };
+  const cicloId = 'ciclo-sintetico';
   let registrado = false;
   let archivado = false;
   await page.route('**/api/usuarios**', async route => {
@@ -12,9 +13,9 @@ test('el administrador de sede registra, cambia condición y archiva en su sede'
     if (recurso === '/login') return route.fulfill({ json: { token, usuario: { id: '10', nombre: 'Sede sintética',
       correo: 'sede@example.test', rol: 'ADMINISTRADOR', sedeId: '2' } } });
     if (recurso === '/sedes') return route.fulfill({ json: [{ id: '2', nombre: 'Sede de prueba' }, { id: '3', nombre: 'Otra sede' }] });
-    if (recurso === '/ciclos') return route.fulfill({ json: [] });
+    if (recurso === '/ciclos') return route.fulfill({ json: [{ id: cicloId, nombre: 'Ciclo sintético', cerradoEn: null }] });
     if (recurso === '/estudiantes') {
-      expect(route.request().postDataJSON()).toMatchObject({ sedeId: '2', dni: alumno.dni });
+      expect(route.request().postDataJSON()).toMatchObject({ sedeId: '2', dni: alumno.dni, cicloId });
       registrado = true;
       return route.fulfill({ status: 201, json: alumno });
     }
@@ -85,7 +86,7 @@ test('la carga Excel muestra progreso real y permite elegir el historial', async
   await page.getByLabel('Archivo Excel (.xlsx)').setInputFiles({
     name: 'sintetico.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from('respuesta simulada'),
   });
-  await page.getByLabel('Modalidad de importación').selectOption('ciclo');
+  await expect(page.getByLabel('Ciclo académico destino')).toHaveValue('ciclo');
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Enviar archivo' }).click();
   const detalle = page.getByRole('region', { name: 'Detalle de carga' });
