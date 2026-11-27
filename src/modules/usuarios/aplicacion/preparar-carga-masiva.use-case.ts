@@ -18,9 +18,9 @@ export class PrepararCargaMasivaUseCase {
     if (!administrador.id || !administrador.activo || administrador.rol !== RolUsuario.Administrador) {
       throw new ErrorAccesoDenegado('Solo un administrador activo puede registrar estudiantes.');
     }
-    if (cicloId !== undefined && (typeof cicloId !== 'string' ||
-        !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(cicloId))) {
-      throw new ErrorValidacion('Identificador de ciclo inválido.');
+    if (typeof cicloId !== 'string' || !cicloId ||
+        !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(cicloId)) {
+      throw new ErrorValidacion('Selecciona un ciclo académico abierto para la importación.');
     }
     const sedeId = administrador.sedeId ?? null;
     const sedeAdmin = sedeId ? await this.sedes.buscarPorId(sedeId) : null;
@@ -28,13 +28,14 @@ export class PrepararCargaMasivaUseCase {
       throw new ErrorAccesoDenegado('La sede del administrador no está disponible.');
     }
     const lectura = await this.leerExcel(archivo, {
-      ...this.limites, exigirColumnaSede: true, sedeAdminNombre: sedeAdmin?.nombre,
+      ...this.limites, exigirColumnaSede: administrador.sedeId === null, sedeAdminNombre: sedeAdmin?.nombre,
     });
     const carga = new CargaMasiva({
       id: this.generarId(),
       usuarioId: Number(administrador.id),
       sedeId: sedeId ? Number(sedeId) : null,
       cicloId: cicloId?.toLowerCase(),
+      importacionAutomatica: true,
       totalFilas: lectura.filasValidas.length + lectura.filaRechazadas.length,
     });
     for (const rechazo of lectura.filaRechazadas) {
@@ -63,10 +64,8 @@ export class PrepararCargaMasivaUseCase {
       carga.marcarComoCompletada();
     }
     await this.persistencia.transaccion(async ({ cargas, guardarEnvios, verificarCiclo }) => {
-      if (carga.cicloId) {
-        if (!verificarCiclo) throw new Error('Registro por ciclo no disponible.');
-        await verificarCiclo(carga.cicloId);
-      }
+      if (!verificarCiclo) throw new Error('Registro por ciclo no disponible.');
+      await verificarCiclo(carga.cicloId!);
       await cargas.guardar(carga);
       await cargas.guardarFilas(filas);
       await guardarEnvios(carga.id, Math.ceil(filas.length / FILAS_POR_LOTE));

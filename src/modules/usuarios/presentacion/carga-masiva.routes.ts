@@ -34,9 +34,11 @@ export function crearRutasCargaMasiva(
       if (!req.file || !/\.xlsx$/i.test(req.file.originalname)) {
         throw new ErrorValidacion('Es obligatorio adjuntar un archivo .xlsx.');
       }
-      const id = req.query.cicloId === undefined
-        ? await preparar.ejecutar(req.file.buffer, req.usuario!)
-        : await preparar.ejecutar(req.file.buffer, req.usuario!, req.query.cicloId);
+      if (typeof req.query.cicloId !== 'string' ||
+          !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(req.query.cicloId)) {
+        throw new ErrorValidacion('Selecciona un ciclo académico abierto para la importación.');
+      }
+      const id = await preparar.ejecutar(req.file.buffer, req.usuario!, req.query.cicloId);
       res.status(202).location('/api/usuarios/cargas-masivas/' + id).json({ id });
     } catch (error) {
       responderError(res, error);

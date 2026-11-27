@@ -19,11 +19,21 @@ export class PostgresCargaMasivaAdapter implements PersistenciaCargaMasiva {
       const cargas = new PostgresCargaMasivaRepository(cliente);
       const usuarios = new PostgresUsuarioRepository(cliente, true);
       const ciclos = new PostgresRegistroCiclo(cliente);
+      const emitir = this.provisionales?.emitir.bind(this.provisionales);
+      const registro = new RegistrarEstudianteUseCase(usuarios, new PostgresSedeRepository(cliente), this.credenciales,
+        emitir, ciclos.guardar.bind(ciclos));
+      registro.modoAutomatico = async (cicloId, datos, actor, cargaId) => {
+        const resultado = await ciclos.ejecutarAutomaticoDesdeDatos(cicloId, { ...datos, condicion: datos.condicion ?? null }, actor,
+          async () => {
+            if (!this.provisionales) throw new Error('Credenciales provisionales no configuradas.');
+            return this.provisionales.emitir(actor.id, cargaId);
+          });
+        return { resultado: resultado.resultado };
+      };
       const resultado = await operacion({
         cargas,
         usuarios,
-        registro: new RegistrarEstudianteUseCase(usuarios, new PostgresSedeRepository(cliente), this.credenciales,
-          this.provisionales?.emitir.bind(this.provisionales), ciclos.guardar.bind(ciclos)),
+        registro,
         verificarCiclo: id => ciclos.verificarAbierto(id),
         bloquearCarga: async id => {
           await cliente.query('SELECT id FROM cargas_masivas WHERE id = $1 FOR UPDATE', [id]);

@@ -36,18 +36,36 @@ export class ProcesarCargaMasivaUseCase {
             condicion: fila.condicion,
             cargaId: carga.id,
           };
-          if (carga.cicloId) await registro.ejecutar({ ...datos, cicloId: carga.cicloId }, () => { recuperado = true; });
-          else await registro.ejecutar(datos);
-          if (recuperado) carga.incrementarRecuperadas();
-          else carga.incrementarCreadas();
+          if (carga.importacionAutomatica && carga.cicloId && registro.modoAutomatico) {
+            const resultado = await registro.modoAutomatico(carga.cicloId, {
+              nombre: fila.nombre, dni: fila.dni, sedeId: String(fila.sedeId), carrera: fila.carrera, condicion: fila.condicion,
+            }, datos.ejecutor, carga.id);
+            if (resultado.resultado === 'recuperada') carga.incrementarRecuperadas();
+            else if (resultado.resultado === 'vinculada') carga.incrementarVinculadas();
+            else if (resultado.resultado === 'existente') carga.incrementarYaExistian();
+            else carga.incrementarCreadas();
+          } else if (carga.importacionAutomatica) {
+            throw new ErrorValidacion('La carga automática no tiene ciclo académico de destino.');
+          } else if (carga.cicloId) {
+            await registro.ejecutar({ ...datos, cicloId: carga.cicloId }, () => { recuperado = true; });
+            if (recuperado) carga.incrementarRecuperadas(); else carga.incrementarCreadas();
+          } else {
+            await registro.ejecutar(datos);
+            carga.incrementarCreadas();
+          }
         } catch (error) {
           if (error instanceof ErrorConflicto) {
-            const existente = await usuarios.buscarPorDni(fila.dni);
-            if (!existente) throw error;
-            carga.incrementarYaExistian();
-            if (carga.cicloId && existente.activo) carga.agregarAviso(fila.numeroFila, 'El DNI ya tiene una cuenta activa.');
-            if (existente.nombre !== fila.nombre) {
-              carga.agregarAviso(fila.numeroFila, 'El DNI ya existe con un nombre diferente.');
+            if (carga.cicloId) {
+              estado = 'ERROR';
+              carga.agregarRechazo(fila.numeroFila, error.message);
+              if (error.message.includes('discrepancia de identidad')) {
+                carga.agregarAviso(fila.numeroFila, 'El DNI requiere revisión manual; no se vinculó ni recuperó la cuenta.');
+              }
+            } else {
+              const existente = await usuarios.buscarPorDni(fila.dni);
+              if (!existente) throw error;
+              carga.incrementarYaExistian();
+              if (existente.nombre !== fila.nombre) carga.agregarAviso(fila.numeroFila, 'El DNI ya existe con un nombre diferente.');
             }
           } else if (error instanceof ErrorValidacion || error instanceof ErrorAccesoDenegado || error instanceof ErrorNoEncontrado) {
             estado = 'ERROR';

@@ -1,4 +1,6 @@
 import ExcelJS from 'exceljs';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { leerYValidarExcel } from './leer-excel';
 import { ErrorValidacion } from '../dominio/errores';
 
@@ -19,6 +21,16 @@ async function crearBufferXlsx(
 }
 
 describe('leerYValidarExcel (CA-U13)', () => {
+  it('lee el fixture XLSX sintético con filas vacías, numeración, aliases y DNI texto/número', async () => {
+    const archivo = await readFile(resolve(process.cwd(), 'pruebas/fixtures/estudiantes-ciclo-sinteticos.xlsx'));
+    const resultado = await leerYValidarExcel(archivo);
+    expect(resultado.filasValidas).toEqual([
+      { numeroFila: 4, nombre: 'Estudiante Sintético Uno', dni: '90000001', sede: 'hAnA', carrera: 'MEDICINA' },
+      { numeroFila: 5, nombre: 'Estudiante Sintético Dos', dni: '90000002', sede: 'URIN', carrera: 'DERECHO' },
+    ]);
+    expect(resultado.filaRechazadas).toEqual([]);
+  });
+
   describe('validaciones del archivo completo', () => {
     it('debe rechazar un buffer que no tiene firma PK (no es xlsx)', async () => {
       const bufferFalso = Buffer.from([0x00, 0x01, 0x02, 0x03]);

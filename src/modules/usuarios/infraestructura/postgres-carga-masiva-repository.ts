@@ -16,6 +16,9 @@ interface FilaCargaMasivaBD {
   total_filas: number;
   creadas: number;
   recuperadas?: number;
+  vinculadas?: number;
+  importacion_automatica?: boolean;
+  ciclo_nombre?: string | null;
   ya_existian: number;
   rechazadas: number;
   errores: string | DetalleErrorFila[];
@@ -41,10 +44,12 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
   constructor(private readonly pool: Pick<Pool, 'query'>) {}
 
   async listar(sedeId: string | null, actorId: string, pagina: number, limiteConExtra: number) {
-    const { rows } = await this.pool.query<{ id: string; estado: string; creadaEl: Date; propia: boolean }>(
-      `SELECT id, estado, creado_en AS "creadaEl", (usuario_id = $2::integer) AS propia
-       FROM cargas_masivas WHERE ($1::integer IS NULL OR sede_id = $1::integer)
-       ORDER BY creado_en DESC, id DESC LIMIT $3 OFFSET $4`,
+    const { rows } = await this.pool.query<{ id: string; estado: string; creadaEl: Date; propia: boolean; cicloNombre: string | null }>(
+      `SELECT c.id, c.estado, c.creado_en AS "creadaEl", (c.usuario_id = $2::integer) AS propia,
+              ca.nombre AS "cicloNombre"
+       FROM cargas_masivas c LEFT JOIN ciclos_academicos ca ON ca.id = c.ciclo_id
+       WHERE ($1::integer IS NULL OR c.sede_id = $1::integer)
+       ORDER BY c.creado_en DESC, c.id DESC LIMIT $3 OFFSET $4`,
       [sedeId, actorId, limiteConExtra, (pagina - 1) * (limiteConExtra - 1)],
     );
     return rows;
@@ -75,6 +80,9 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
       totalFilas: fila.total_filas,
       creadas: fila.creadas,
       recuperadas: fila.recuperadas,
+      vinculadas: fila.vinculadas,
+      cicloNombre: fila.ciclo_nombre,
+      importacionAutomatica: fila.importacion_automatica,
       yaExistian: fila.ya_existian,
       rechazadas: fila.rechazadas,
       errores: this.parsearDetalles(fila.errores),
@@ -86,8 +94,8 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
 
   public async guardar(carga: CargaMasiva): Promise<void> {
     const query = `
-      INSERT INTO cargas_masivas (id, usuario_id, sede_id, estado, total_filas, creadas, ya_existian, rechazadas, errores, avisos, creado_en, actualizado_en, ciclo_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+      INSERT INTO cargas_masivas (id, usuario_id, sede_id, estado, total_filas, creadas, ya_existian, rechazadas, errores, avisos, creado_en, actualizado_en, ciclo_id, vinculadas, importacion_automatica)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);
     `;
     await this.pool.query(query, [
       carga.id,
@@ -103,14 +111,18 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
       carga.creadoEn,
       carga.actualizadoEn,
       carga.cicloId,
+      carga.vinculadas,
+      carga.importacionAutomatica,
     ]);
   }
 
   public async buscarPorId(id: string): Promise<CargaMasiva | null> {
     const query = `
-      SELECT id, usuario_id, sede_id, estado, total_filas, creadas, ya_existian, rechazadas, errores, avisos, creado_en, actualizado_en, ciclo_id, recuperadas
-      FROM cargas_masivas
-      WHERE id = $1;
+      SELECT c.id, c.usuario_id, c.sede_id, c.estado, c.total_filas, c.creadas, c.ya_existian, c.rechazadas,
+        c.errores, c.avisos, c.creado_en, c.actualizado_en, c.ciclo_id, c.recuperadas, c.vinculadas,
+        c.importacion_automatica, ca.nombre AS ciclo_nombre
+      FROM cargas_masivas c LEFT JOIN ciclos_academicos ca ON ca.id = c.ciclo_id
+      WHERE c.id = $1;
     `;
     const res = await this.pool.query<FilaCargaMasivaBD>(query, [id]);
     if (res.rows.length === 0) {
@@ -123,7 +135,7 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
     const query = `
       UPDATE cargas_masivas
       SET estado = $1, creadas = $2, ya_existian = $3, rechazadas = $4, errores = $5, avisos = $6, actualizado_en = $7,
-          recuperadas = $9
+          recuperadas = $9, vinculadas = $10
       WHERE id = $8;
     `;
     await this.pool.query(query, [
@@ -136,6 +148,7 @@ export class PostgresCargaMasivaRepository implements CargaMasivaRepository {
       carga.actualizadoEn,
       carga.id,
       carga.recuperadas,
+      carga.vinculadas,
     ]);
   }
 

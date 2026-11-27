@@ -57,3 +57,5 @@
 ## Mejoras aprobadas de importación (adición; no reemplaza tareas cerradas)
 - [x] 26. Lectura flexible XLSX: aliases aprobados, búsqueda en las primeras 20 filas, columnas extra ignoradas, normalización segura de DNI/sede y conservación de fila Excel; pruebas sintéticas y reglas/límites intactos.
 - [x] 27. Mostrar mensajes estructurados seguros solo en la subida Excel, sin alterar el cliente REST para otras funcionalidades; pruebas específicas y actualización OpenAPI/SDD.
+- [x] 28. Importación automática con ciclo destino obligatorio: alta, recuperación archivada elegible, vínculo de activo sin ciclo sin cambiar cuenta/credenciales, ya existente y conflictos; persistencia transaccional, idempotencia, identidad, permisos y revalidación del ciclo en worker.
+- [ ] 29. Exigir ciclo abierto para el registro individual y la importación; eliminar selección de modalidades, reflejar ciclo y nuevos contadores en historial y OpenAPI, preservando cargas históricas sin ciclo y pendientes RabbitMQ.

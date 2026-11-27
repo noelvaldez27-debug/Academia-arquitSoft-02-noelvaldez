@@ -13,7 +13,6 @@ export interface TransaccionCargaMasiva {
   bloquearCarga(id: string): Promise<CargaMasiva | null>;
   guardarEnvios(id: string, lotes: number): Promise<void>;
   verificarCiclo?(id: string): Promise<void>;
-
 }
 
 export interface PersistenciaCargaMasiva {

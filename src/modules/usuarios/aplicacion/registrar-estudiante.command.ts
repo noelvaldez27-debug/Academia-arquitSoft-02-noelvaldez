@@ -15,5 +15,6 @@ export interface RegistrarEstudianteCommand {
   condicion?: unknown;
   cargaId?: string;
   cicloId?: string;
+  modoAutomatico?: boolean;
   ejecutor?: EjecutorAccion;
 }

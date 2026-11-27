@@ -24,10 +24,13 @@ export interface CargaMasivaProps {
   usuarioId: number;
   sedeId: number | null;
   cicloId?: string | null;
+  cicloNombre?: string | null;
+  importacionAutomatica?: boolean;
   estado?: EstadoCargaMasiva;
   totalFilas?: number;
   creadas?: number;
   recuperadas?: number;
+  vinculadas?: number;
   yaExistian?: number;
   rechazadas?: number;
   errores?: DetalleErrorFila[];
@@ -38,6 +41,8 @@ export interface CargaMasivaProps {
 
 export class CargaMasiva {
   readonly cicloId: string | null;
+  private readonly _cicloNombre: string | null;
+  readonly importacionAutomatica: boolean;
   private readonly _id: string;
   private readonly _usuarioId: number;
   private readonly _sedeId: number | null;
@@ -45,6 +50,7 @@ export class CargaMasiva {
   private _totalFilas: number;
   private _creadas: number;
   private _recuperadas: number;
+  private _vinculadas: number;
   private _yaExistian: number;
   private _rechazadas: number;
   private _errores: DetalleErrorFila[];
@@ -64,10 +70,13 @@ export class CargaMasiva {
     this._usuarioId = props.usuarioId;
     this._sedeId = props.sedeId ?? null;
     this.cicloId = props.cicloId ?? null;
+    this._cicloNombre = props.cicloNombre ?? null;
+    this.importacionAutomatica = props.importacionAutomatica ?? false;
     this._estado = props.estado ?? 'PENDIENTE';
     this._totalFilas = props.totalFilas ?? 0;
     this._creadas = props.creadas ?? 0;
     this._recuperadas = props.recuperadas ?? 0;
+    this._vinculadas = props.vinculadas ?? 0;
     this._yaExistian = props.yaExistian ?? 0;
     this._rechazadas = props.rechazadas ?? 0;
     this._errores = props.errores ? [...props.errores] : [];
@@ -88,6 +97,8 @@ export class CargaMasiva {
     return this._sedeId;
   }
 
+  get cicloNombre(): string | null { return this._cicloNombre; }
+
   get estado(): EstadoCargaMasiva {
     return this._estado;
   }
@@ -101,6 +112,10 @@ export class CargaMasiva {
   }
   get recuperadas(): number {
     return this._recuperadas;
+  }
+
+  get vinculadas(): number {
+    return this._vinculadas;
   }
 
   get yaExistian(): number {
@@ -148,6 +163,11 @@ export class CargaMasiva {
   }
   public incrementarRecuperadas(): void {
     this._recuperadas++;
+    this._actualizadoEn = new Date();
+  }
+
+  public incrementarVinculadas(): void {
+    this._vinculadas++;
     this._actualizadoEn = new Date();
   }
 

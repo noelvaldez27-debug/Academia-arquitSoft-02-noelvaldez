@@ -44,11 +44,20 @@ describe('Rutas de carga masiva (CA-U13)', () => {
   it('acepta XLSX por multipart y retorna 202 con la ubicación', async () => {
     const { app, ejecutar } = preparar();
     const archivo = Buffer.from('xlsx de prueba');
-    const respuesta = await request(app).post('/cargas-masivas').set('X-Sede', '1').attach('archivo', archivo, 'alumnos.xlsx');
+    const respuesta = await request(app).post('/cargas-masivas').query({ cicloId: id })
+      .set('X-Sede', '1').attach('archivo', archivo, 'alumnos.xlsx');
     expect(respuesta.status).toBe(202);
     expect(respuesta.body).toEqual({ id });
     expect(respuesta.headers.location).toBe('/api/usuarios/cargas-masivas/' + id);
-    expect(ejecutar).toHaveBeenCalledWith(archivo, expect.objectContaining({ sedeId: '1' }));
+    expect(ejecutar).toHaveBeenCalledWith(archivo, expect.objectContaining({ sedeId: '1' }), id);
+  });
+
+  it('exige un ciclo destino válido antes de aceptar el archivo', async () => {
+    const { app, ejecutar } = preparar();
+    await request(app).post('/cargas-masivas').set('X-Sede', '1')
+      .attach('archivo', Buffer.from('xlsx sintético'), 'alumnos.xlsx')
+      .expect(400).expect(({ body }) => expect(body.error).toContain('ciclo académico abierto'));
+    expect(ejecutar).not.toHaveBeenCalled();
   });
 
   it('rechaza archivos con extensión incorrecta y solicitantes sin permisos', async () => {

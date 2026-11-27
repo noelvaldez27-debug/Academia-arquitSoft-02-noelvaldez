@@ -136,6 +136,33 @@ describe('RegistrarEstudianteUseCase (CA-U01, RF01, RF22, HU01)', () => {
     expect(mockUsuarioRepo.guardar).toHaveBeenCalled();
   });
 
+  it('la ruta automática de registro individual requiere un ciclo y devuelve el resultado clasificado', async () => {
+    const emision = { administradorId: 'admin-gen-1', referencia: 'ref-sintetica', passwordHash: 'hash-temporal' };
+    const clasificar = jest.fn(async (_ciclo, _datos, _actor, emitirCredenciales) => {
+      await emitirCredenciales();
+      return {
+      usuario: Usuario.crearPostulante({ nombre: 'Ana Sintética', dni: '71234567', correo: '71234567@sofia.edu',
+        passwordHash: 'hash-temporal', sedeId: 'sede-uuid-hana', carrera: 'MEDICINA' }),
+      resultado: 'creada' as const,
+      };
+    });
+    const emitir = jest.fn().mockResolvedValue(emision);
+    const casoAutomatico = new RegistrarEstudianteUseCase(
+      mockUsuarioRepo, mockSedeRepo, generadorCredenciales, emitir, undefined, clasificar,
+    );
+    await expect(casoAutomatico.ejecutar({
+      nombre: 'Ana Sintética', dni: '71234567', sedeId: 'sede-uuid-hana', carrera: 'Medicina',
+      cicloId: '12345678-1234-1234-1234-123456789012', modoAutomatico: true, ejecutor: ejecutorAdminGeneral,
+    }, undefined, resultado => expect(resultado).toBe('creada'))).resolves.toMatchObject({ dni: '71234567' });
+    expect(emitir).toHaveBeenCalledTimes(1);
+    expect(clasificar).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ dni: '71234567' }),
+      ejecutorAdminGeneral, expect.any(Function));
+    await expect(casoAutomatico.ejecutar({
+      nombre: 'Ana Sintética', dni: '71234567', sedeId: 'sede-uuid-hana', carrera: 'Medicina',
+      modoAutomatico: true, ejecutor: ejecutorAdminGeneral,
+    })).rejects.toThrow('Selecciona un ciclo académico abierto');
+  });
+
   it('(CA-U01) debe permitir registrar estudiante indicando el nombre de la sede', async () => {
     const cmd: RegistrarEstudianteCommand = {
       nombre: 'Lucia Gomez',

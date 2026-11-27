@@ -11,7 +11,7 @@ import {
 } from '../dominio';
 import { GeneradorCredenciales } from './generar-credenciales';
 import { RegistrarEstudianteCommand } from './registrar-estudiante.command';
-import { esCondicionPostulante } from '../dominio/usuario';
+import { CondicionPostulante, esCondicionPostulante } from '../dominio/usuario';
 import type { EmisionProvisional } from '../dominio/emision-provisional';
 
 /**
@@ -21,6 +21,10 @@ import type { EmisionProvisional } from '../dominio/emision-provisional';
  * Reutilizable internamente tanto para registro individual como para carga masiva (tarea 21).
  */
 export class RegistrarEstudianteUseCase {
+  modoAutomatico?: (cicloId: string, datos: { nombre: string; dni: string; sedeId: string; carrera: string; condicion?: CondicionPostulante | null },
+    actor: NonNullable<RegistrarEstudianteCommand['ejecutor']>, cargaId: string) => Promise<{
+      resultado: 'creada' | 'recuperada' | 'vinculada' | 'existente'; advertencia?: string;
+    }>;
   constructor(
     private readonly usuarioRepository: UsuarioRepository,
     private readonly sedeRepository: SedeRepository,
@@ -29,9 +33,13 @@ export class RegistrarEstudianteUseCase {
     private readonly registrarEnCiclo?: (cicloId: string, postulante: Usuario,
       actor: NonNullable<RegistrarEstudianteCommand['ejecutor']>, emision: EmisionProvisional) =>
       Promise<{ usuario: Usuario; recuperado: boolean }>,
+    private readonly registrarAutomaticamenteEnCiclo?: (cicloId: string, datos: { nombre: string; dni: string; sedeId: string; carrera: string; condicion: CondicionPostulante | null },
+      actor: NonNullable<RegistrarEstudianteCommand['ejecutor']>, emitir: () => Promise<EmisionProvisional>) =>
+      Promise<{ usuario: Usuario; resultado: 'creada' | 'recuperada' | 'vinculada' | 'existente' }>,
   ) {}
 
-  public async ejecutar(command: RegistrarEstudianteCommand, informarRecuperacion?: () => void): Promise<Usuario> {
+  public async ejecutar(command: RegistrarEstudianteCommand, informarRecuperacion?: () => void,
+    informarResultadoAutomatico?: (resultado: 'creada' | 'recuperada' | 'vinculada' | 'existente') => void): Promise<Usuario> {
     if (!command.ejecutor) {
       throw new ErrorNoAutenticado('Acceso no autorizado.');
     }
@@ -75,20 +83,30 @@ export class RegistrarEstudianteUseCase {
       }
     }
 
+    if (command.modoAutomatico && (typeof command.cicloId !== 'string' || !command.cicloId)) {
+      throw new ErrorValidacion('Selecciona un ciclo académico abierto para el estudiante.');
+    }
     if (command.cicloId !== undefined && (typeof command.cicloId !== 'string' ||
         !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(command.cicloId))) {
       throw new ErrorValidacion('Identificador de ciclo inválido.');
     }
-    const usuarioExistente = command.cicloId ? null : await this.usuarioRepository.buscarPorDni(command.dni.trim());
-    if (usuarioExistente) {
-      throw new ErrorConflicto('El DNI ya se encuentra registrado.');
-    }
-
     const condicion = command.condicion;
     if (condicion != null && !esCondicionPostulante(condicion)) {
       throw new ErrorValidacion('La condición del postulante debe ser MATRICULADO o LIBRE.');
     }
 
+    if (command.modoAutomatico) {
+      if (!command.cicloId || !this.registrarAutomaticamenteEnCiclo || !this.emitir) throw new ErrorValidacion('No se pudo preparar el registro por ciclo.');
+      const resultado = await this.registrarAutomaticamenteEnCiclo(command.cicloId.toLowerCase(), {
+        nombre: command.nombre.trim(), dni: command.dni.trim(), sedeId: sede.id ?? sede.nombre,
+        carrera: command.carrera, condicion: esCondicionPostulante(command.condicion) ? command.condicion : null,
+      }, command.ejecutor, () => this.emitir!(command.ejecutor!.id, command.cargaId));
+      informarResultadoAutomatico?.(resultado.resultado);
+      if (resultado.resultado === 'recuperada') informarRecuperacion?.();
+      return resultado.usuario;
+    }
+    const usuarioExistente = await this.usuarioRepository.buscarPorDni(command.dni.trim());
+    if (usuarioExistente) throw new ErrorConflicto('El DNI ya se encuentra registrado.');
     const emision = await this.emitir?.(command.ejecutor.id, command.cargaId);
     const credenciales = emision
       ? { correo: GeneradorCredenciales.generarCorreoDni(command.dni), passwordHash: emision.passwordHash }
