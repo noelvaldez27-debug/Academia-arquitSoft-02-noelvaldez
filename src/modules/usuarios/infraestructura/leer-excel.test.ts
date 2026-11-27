@@ -132,6 +132,67 @@ describe('leerYValidarExcel (CA-U13)', () => {
     });
   });
 
+  describe('formatos habituales de Excel', () => {
+    it('lee una plantilla sintética con filas vacías, numeración, aliases y orden diferente', async () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Ficticio');
+      ws.addRow([]);
+      ws.addRow(['   ']);
+      ws.addRow(['N°', ' CEDE ', ' documento de identidad ', ' Nombres ', ' Carrera profesional ', 'Comentario extra']);
+      ws.addRow([1, ' hAnA ', 12345678, '  Estudiante   Ficticio Uno ', ' medicina   humana ', 'ignorar']);
+      ws.addRow([2, 'URIN', '87654321', 'Estudiante Ficticio Dos', 'DERECHO', 'ignorar']);
+      const buffer = Buffer.from(await wb.xlsx.writeBuffer());
+
+      const resultado = await leerYValidarExcel(buffer, { sedeAdminNombre: null, exigirColumnaSede: true });
+
+      expect(resultado.filasValidas).toEqual([
+        { numeroFila: 4, nombre: 'Estudiante Ficticio Uno', dni: '12345678', sede: 'hAnA', carrera: 'MEDICINA HUMANA' },
+        { numeroFila: 5, nombre: 'Estudiante Ficticio Dos', dni: '87654321', sede: 'URIN', carrera: 'DERECHO' },
+      ]);
+      expect(resultado.filaRechazadas).toEqual([]);
+    });
+
+    it('mantiene el formato original', async () => {
+      const buffer = await crearBufferXlsx([{ Nombre: 'Estudiante Ficticio', DNI: '12345678', Sede: 'Hana', Carrera: 'medicina' }]);
+      const resultado = await leerYValidarExcel(buffer, { sedeAdminNombre: null, exigirColumnaSede: true });
+      expect(resultado.filasValidas[0]).toMatchObject({ numeroFila: 2, nombre: 'Estudiante Ficticio', dni: '12345678', sede: 'Hana', carrera: 'MEDICINA' });
+    });
+
+    it('rechaza encabezados duplicados equivalentes con una explicación', async () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Ficticio');
+      ws.addRow(['NOMBRE', 'NOMBRES', 'DNI', 'CARRERA', 'SEDE']);
+      ws.addRow(['Ficticio', 'Ficticio', '12345678', 'MEDICINA', 'Hana']);
+      const buffer = Buffer.from(await wb.xlsx.writeBuffer());
+      await expect(leerYValidarExcel(buffer, { sedeAdminNombre: null, exigirColumnaSede: true }))
+        .rejects.toThrow('Encabezados duplicados o ambiguos para: NOMBRE');
+    });
+
+    it('rechaza DNI numérico que perdió dígitos y no rellena ceros', async () => {
+      const buffer = await crearBufferXlsx([{ Nombre: 'Estudiante Ficticio', DNI: 1234567, Sede: 'Hana', Carrera: 'MEDICINA' }]);
+      const resultado = await leerYValidarExcel(buffer, { sedeAdminNombre: null, exigirColumnaSede: true });
+      expect(resultado.filaRechazadas[0]).toMatchObject({ fila: 2 });
+      expect(resultado.filaRechazadas[0].motivo).toContain('DNI inválido');
+    });
+
+    it('rechaza discrepancia de sede y conserva el número físico de fila', async () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Ficticio');
+      ws.addRow(['NOMBRES', 'DNI', 'CARRERA', 'CEDE']);
+      ws.addRow(['Estudiante Ficticio', '12345678', 'MEDICINA', 'Urin']);
+      const buffer = Buffer.from(await wb.xlsx.writeBuffer());
+      const resultado = await leerYValidarExcel(buffer, { sedeAdminNombre: 'Hana' });
+      expect(resultado.filaRechazadas[0]).toMatchObject({ fila: 2 });
+      expect(resultado.filaRechazadas[0].motivo).toContain('no coincide');
+    });
+
+    it('permite omitir sede a un administrador de sede y la asigna desde su sesión', async () => {
+      const buffer = await crearBufferXlsx([{ Nombre: 'Estudiante Ficticio', DNI: '12345678', Carrera: 'MEDICINA' }], ['Nombre', 'DNI', 'Carrera']);
+      const resultado = await leerYValidarExcel(buffer, { sedeAdminNombre: 'Hana' });
+      expect(resultado.filasValidas[0].sede).toBe('Hana');
+    });
+  });
+
   describe('alcance por sede del administrador', () => {
     it('administrador de sede: fila sin columna sede usa la sede del administrador', async () => {
       const buffer = await crearBufferXlsx(
@@ -172,10 +233,8 @@ describe('leerYValidarExcel (CA-U13)', () => {
         ['Nombre', 'DNI', 'Carrera']
       );
 
-      const resultado = await leerYValidarExcel(buffer, { sedeAdminNombre: null });
-
-      expect(resultado.filasValidas).toHaveLength(0);
-      expect(resultado.filaRechazadas[0].motivo).toContain('Sede es obligatoria');
+      await expect(leerYValidarExcel(buffer, { sedeAdminNombre: null, exigirColumnaSede: true }))
+        .rejects.toThrow('El archivo debe contener la columna Sede.');
     });
   });
 });

@@ -53,3 +53,7 @@
 - Nombre en un solo campo o en nombres y apellidos
 - Duración del JWT (propuesta: 8 horas, configurable) y largo mínimo de contraseña (propuesta: 8 caracteres)
 - Si el administrador podrá restablecer la contraseña de quien la olvide (hoy no está incluido)
+
+## Mejoras aprobadas de importación (adición; no reemplaza tareas cerradas)
+- [x] 26. Lectura flexible XLSX: aliases aprobados, búsqueda en las primeras 20 filas, columnas extra ignoradas, normalización segura de DNI/sede y conservación de fila Excel; pruebas sintéticas y reglas/límites intactos.
+- [ ] 27. Mostrar mensajes estructurados seguros solo en la subida Excel, sin alterar el cliente REST para otras funcionalidades; pruebas específicas y actualización OpenAPI/SDD.

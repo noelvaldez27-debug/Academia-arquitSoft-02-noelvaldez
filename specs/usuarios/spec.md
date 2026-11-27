@@ -142,3 +142,11 @@ Formato: Dado / Cuando / Entonces.
 ## Ampliación aprobada para ciclos
 
 CA-U13 distingue importación normal (omite todo DNI existente) y nuevo ciclo explícito (omite activos y puede recuperar archivados autorizados). Ambas modalidades conservan la validación por fila y sede. CA-U02 y CA-U08 adoptan emisión provisional aleatoria, expiración y cambio obligatorio para postulantes que reciben nueva credencial. CA-U11 requiere invalidación permanente de JWT anteriores al archivado. La entrega masiva se reserva al administrador responsable mediante Excel temporal de un solo uso. Los criterios detallados CA-VS01–04 se encuentran en la [SDD de validación](../validacion-sprint-2/spec.md).
+
+## Ampliación aprobada: tolerancia de formato para Excel
+
+La carga masiva reconoce estos encabezados equivalentes, con independencia de mayúsculas, tildes y espacios repetidos: Nombre (`NOMBRE`, `NOMBRES`, `NOMBRE COMPLETO`, `NOMBRES COMPLETOS`, `APELLIDOS Y NOMBRES`); DNI (`DNI`, `D.N.I.`, `DOCUMENTO DE IDENTIDAD`); Carrera (`CARRERA`, `CARRERA PROFESIONAL`); Sede (`SEDE`, `CEDE`). Se conservan encabezados opcionales existentes. La fila de encabezados se busca entre las primeras 20 filas; filas vacías, columnas numeradas/sin encabezado y columnas adicionales se ignoran. Si dos columnas representan un mismo campo reconocido, se informa la ambigüedad y se rechaza el archivo.
+
+El DNI se acepta como texto o número únicamente si representa exactamente ocho dígitos; nunca se completan ceros ni se inventan dígitos. Los nombres personales no se corrigen automáticamente. Se recortan y compactan espacios en valores; la sede se consulta en el catálogo existente sin distinguir mayúsculas/minúsculas. El administrador general requiere columna Sede. El administrador de sede puede omitirla y se asigna exclusivamente su sede autenticada; si especifica otra, se rechaza la fila. Se conservan permisos, duplicados, ciclos, límites y procesamiento asíncrono.
+
+Ante errores HTTP de validación al subir Excel, la interfaz puede presentar el mensaje seguro de validación enviado por el servidor. No se muestran detalles internos, secretos, credenciales ni trazas, y no cambia el manejo de errores de otras funciones REST.
