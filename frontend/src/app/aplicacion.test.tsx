@@ -49,11 +49,31 @@ it('inicia, muestra el menú docente y limpia la sesión al salir', async () => 
   expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 });
 
+it('mantiene oculta por defecto la contraseña en el login y ofrece alternancia con teclado', async () => {
+  simularAcceso();
+  montar('/acceso');
+  const usuario = userEvent.setup();
+  const campo = await screen.findByLabelText('Contraseña');
+  expect(campo).toHaveAttribute('type', 'password');
+  await usuario.tab();
+  await usuario.tab();
+  await usuario.tab();
+  const mostrar = screen.getByRole('button', { name: 'Mostrar contraseña: Contraseña' });
+  expect(mostrar).toHaveFocus();
+  await usuario.keyboard(' ');
+  expect(campo).toHaveAttribute('type', 'text');
+  await usuario.keyboard('{Enter}');
+  expect(campo).toHaveAttribute('type', 'password');
+});
+
 it('separa la credencial provisional de las rutas del panel', async () => {
   simularAcceso(true);
   montar('/acceso');
   await ingresar();
   expect(await screen.findByRole('heading', { name: 'Cambia tu contraseña provisional' })).toBeVisible();
+  for (const etiqueta of ['Contraseña provisional', 'Nueva contraseña', 'Confirmar nueva contraseña']) {
+    expect(screen.getByLabelText(etiqueta)).toHaveAttribute('type', 'password');
+  }
   expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
 });
 
@@ -190,9 +210,13 @@ it('permite cambiar voluntariamente la contraseña desde Mi cuenta', async () =>
   montar('/acceso');
   const usuario = await ingresar();
   await usuario.click(within(await screen.findByRole('navigation')).getByRole('link', { name: 'Mi cuenta' }));
-  await usuario.type((await screen.findAllByLabelText('Contraseña actual'))[0], 'clave actual sintética');
-  await usuario.type(screen.getByLabelText('Nueva contraseña', { exact: true }), 'clave nueva sintética');
-  await usuario.type(screen.getByLabelText('Confirmar nueva contraseña'), 'clave nueva sintética');
+  const actual = (await screen.findAllByLabelText('Contraseña actual'))[0];
+  const nueva = screen.getByLabelText('Nueva contraseña', { exact: true });
+  const confirmacion = screen.getByLabelText('Confirmar nueva contraseña');
+  for (const campo of [actual, nueva, confirmacion]) expect(campo).toHaveAttribute('type', 'password');
+  await usuario.type(actual, 'clave actual sintética');
+  await usuario.type(nueva, 'clave nueva sintética');
+  await usuario.type(confirmacion, 'clave nueva sintética');
   await usuario.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
   expect(await screen.findByText('Contraseña actualizada. Vuelve a ingresar.')).toBeVisible();
   expect(api).toHaveBeenCalledWith('/api/usuarios/password', expect.objectContaining({ method: 'PATCH',

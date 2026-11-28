@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Boton, Campo, Estado } from '../compartido/controles';
+import { Boton, Campo, CampoPassword, Estado } from '../compartido/controles';
 import { Marca } from '../compartido/marca';
 import { usarSesion } from './sesion';
 
@@ -50,7 +50,7 @@ export function Acceso() {
             {vencida && <Estado>Tu sesión terminó. Vuelve a ingresar.</Estado>}
             {error && <Estado tipo="error">{error}</Estado>}
             <Campo etiqueta="Correo institucional" id="correo" name="correo" type="email" autoComplete="username" required />
-            <Campo etiqueta="Contraseña" id="password" name="password" type="password" autoComplete="current-password" required />
+            <CampoPassword etiqueta="Contraseña" id="password" name="password" autoComplete="current-password" required />
             <Boton type="submit" disabled={ocupado}>{ocupado ? 'Ingresando…' : 'Ingresar'}</Boton>
           </form>
           <p className="mt-7 border-t border-slate-200 pt-5 text-sm text-slate-600">Si tienes problemas de acceso, comunícate con la academia.</p>

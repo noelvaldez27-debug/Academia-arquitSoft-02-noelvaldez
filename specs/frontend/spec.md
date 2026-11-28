@@ -159,6 +159,8 @@ La cobertura global Jest web pasó de 62,33 % a 64,60 % de líneas y de 51,16 % 
 
 El login dirige a cambio inicial solo cuando una credencial temporal conserva el indicador obligatorio pendiente, incluidas credenciales provisionales emitidas antes de esta política y restablecimientos administrativos. La contraseña inicial nueva permite entrar directamente al panel. Mi cuenta conserva el cambio voluntario con contraseña actual, nueva y confirmación para todos los perfiles. Gestión de estudiantes muestra historial y estado obligatorio solo a administradores autorizados por sede; un restablecimiento exige confirmar que se verificó la identidad y muestra la contraseña temporal una vez, sin opción de recuperarla.
 
+Los campos de contraseña en login, cambio voluntario y obligatorio permanecen ocultos inicialmente. Un control compartido de ojo permite mostrar u ocultar el valor, con nombre accesible, estado anunciado y soporte de teclado.
+
 ## Ampliación aprobada: credenciales de estudiantes
 
 El login dirige a cambio inicial solo cuando una credencial temporal conserva el indicador obligatorio pendiente, incluidas credenciales provisionales emitidas antes de esta política y restablecimientos administrativos. La contraseña inicial nueva permite entrar directamente al panel. Mi cuenta conserva el cambio voluntario con contraseña actual, nueva y confirmación para todos los perfiles. Gestión de estudiantes muestra historial y estado obligatorio solo a administradores autorizados por sede; un restablecimiento exige confirmar que se verificó la identidad y muestra la contraseña temporal una vez, sin opción de recuperarla.
