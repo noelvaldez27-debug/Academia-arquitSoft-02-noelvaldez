@@ -50,6 +50,31 @@ describe('MiddlewareAutenticacion (AC04, ADR-007, RC15, CA-U06)', () => {
   });
 
   describe('autenticar', () => {
+    it('permite el acceso normal con contraseña inicial sin cambio obligatorio', async () => {
+      mockReq.headers = { authorization: 'Bearer token_inicial' };
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({ id: 'estudiante-inicial', rol: RolUsuario.Postulante, sedeId: 'sede-hana' });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(Usuario.crearPostulante({
+        id: 'estudiante-inicial', nombre: 'Estudiante Sintético', correo: '12345678@sofia.edu', dni: '12345678',
+        passwordHash: 'hash', sedeId: 'sede-hana', carrera: 'MEDICINA',
+      }));
+      await middleware.autenticar(mockReq as Request, mockRes as Response, mockNext);
+      expect(mockNext).toHaveBeenCalledTimes(1);
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
+    it('mantiene restringido el acceso cuando sigue pendiente el cambio provisional heredado', async () => {
+      mockReq.headers = { authorization: 'Bearer token_provisional' };
+      (mockServicioToken.verificarToken as jest.Mock).mockResolvedValueOnce({ id: 'estudiante-provisional', rol: RolUsuario.Postulante, sedeId: 'sede-hana' });
+      (mockUsuarioRepo.buscarPorId as jest.Mock).mockResolvedValueOnce(new Usuario({
+        id: 'estudiante-provisional', nombre: 'Estudiante Sintético', correo: '12345678@sofia.edu', dni: '12345678',
+        passwordHash: 'hash', rol: RolUsuario.Postulante, sedeId: 'sede-hana', carrera: 'MEDICINA',
+        passwordProvisionalHasta: new Date(Date.now() + 60_000), passwordCambioObligatorio: true,
+      }));
+      await middleware.autenticar(mockReq as Request, mockRes as Response, mockNext);
+      expect(statusMock).toHaveBeenCalledWith(403);
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
     it('CA-VS01 rechaza el JWT anterior tras reactivar y acepta el emitido para la nueva versión', async () => {
       mockReq.headers = { authorization: 'Bearer sesion' };
       const usuario = Usuario.crearPostulante({

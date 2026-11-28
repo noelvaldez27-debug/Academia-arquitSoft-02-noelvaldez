@@ -64,15 +64,13 @@ export class MiddlewareAutenticacion {
         res.status(401).json({ error: 'Acceso no autorizado: sesión revocada.' });
         return;
       }
-      if (usuario.passwordProvisionalHasta) {
-        if (usuario.passwordProvisionalHasta.getTime() <= Date.now()) {
-          res.status(401).json({ error: 'Acceso no autorizado: credencial provisional vencida.' });
-          return;
-        }
-        if (!permitirProvisional) {
-          res.status(403).json({ error: 'Debes cambiar la contraseña provisional antes de continuar.' });
-          return;
-        }
+      if (usuario.passwordProvisionalHasta && usuario.passwordProvisionalHasta.getTime() <= Date.now()) {
+        res.status(401).json({ error: 'Acceso no autorizado: credencial provisional vencida.' });
+        return;
+      }
+      if (usuario.passwordCambioObligatorio && !permitirProvisional) {
+        res.status(403).json({ error: 'Debes cambiar la contraseña provisional antes de continuar.' });
+        return;
       }
 
       req.usuario = {

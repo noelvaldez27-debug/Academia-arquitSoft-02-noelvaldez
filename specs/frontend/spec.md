@@ -154,3 +154,11 @@ Las tablas desplazables de Nota, Ranking y Analítica reciben foco de teclado y 
 La inspección de cuatro pares de colores de la interfaz base dio contrastes de 6,70:1 (botón primario), 17,06:1 (texto y fondo general), 5,91:1 (mensaje de error) y 14,27:1 (menú lateral). La muestra no cubre todos los estados o componentes.
 
 La cobertura global Jest web pasó de 62,33 % a 64,60 % de líneas y de 51,16 % a 52,94 % de ramas. Se probó el bloqueo del inicio duplicado y el archivado cancelado o rechazado. La regresión aprobó 43 pruebas Jest web y 30 Playwright. Persisten brechas de instrumentación en cola y sincronización, gestión de simulacros y ramas de cargas, aunque parte de estos recorridos tiene evidencia en navegador. El objetivo recomendado de 80 % y 70 % sigue pendiente.
+
+## Ampliación aprobada: credenciales de estudiantes
+
+El login dirige a cambio inicial solo cuando una credencial temporal conserva el indicador obligatorio pendiente, incluidas credenciales provisionales emitidas antes de esta política y restablecimientos administrativos. La contraseña inicial nueva permite entrar directamente al panel. Mi cuenta conserva el cambio voluntario con contraseña actual, nueva y confirmación para todos los perfiles. Gestión de estudiantes muestra historial y estado obligatorio solo a administradores autorizados por sede; un restablecimiento exige confirmar que se verificó la identidad y muestra la contraseña temporal una vez, sin opción de recuperarla.
+
+## Ampliación aprobada: credenciales de estudiantes
+
+El login dirige a cambio inicial solo cuando una credencial temporal conserva el indicador obligatorio pendiente, incluidas credenciales provisionales emitidas antes de esta política y restablecimientos administrativos. La contraseña inicial nueva permite entrar directamente al panel. Mi cuenta conserva el cambio voluntario con contraseña actual, nueva y confirmación para todos los perfiles. Gestión de estudiantes muestra historial y estado obligatorio solo a administradores autorizados por sede; un restablecimiento exige confirmar que se verificó la identidad y muestra la contraseña temporal una vez, sin opción de recuperarla.

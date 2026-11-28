@@ -86,6 +86,18 @@ describe('IniciarSesionUseCase (CA-U05, ADR-007, HU20, RF20)', () => {
       rol: RolUsuario.Postulante,
       sedeId: 'sede-hana',
     });
+    expect(resultado.cambioPasswordRequerido).toBeUndefined();
+  });
+
+  it('solicita cambio solo a credenciales provisionales pendientes', async () => {
+    const provisional = new Usuario({
+      id: 'post-prov', nombre: 'Estudiante Sintético', dni: '72223334', correo: '72223334@sofia.edu',
+      passwordHash: 'hash_credencial', rol: RolUsuario.Postulante, sedeId: 'sede-hana', carrera: 'MEDICINA',
+      passwordProvisionalHasta: new Date(Date.now() + 60_000), passwordCambioObligatorio: true,
+    });
+    usuariosEnMemoria.push(provisional);
+    const resultado = await useCase.ejecutar({ correo: provisional.correo, password: 'credencial' });
+    expect(resultado.cambioPasswordRequerido).toBe(true);
   });
 
   it('(CA-U05) debe permitir iniciar sesión al administrador general sin sede', async () => {

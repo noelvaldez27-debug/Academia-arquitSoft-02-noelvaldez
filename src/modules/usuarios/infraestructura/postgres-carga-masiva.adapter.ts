@@ -24,9 +24,11 @@ export class PostgresCargaMasivaAdapter implements PersistenciaCargaMasiva {
         emitir, ciclos.guardar.bind(ciclos));
       registro.modoAutomatico = async (cicloId, datos, actor, cargaId) => {
         const resultado = await ciclos.ejecutarAutomaticoDesdeDatos(cicloId, { ...datos, condicion: datos.condicion ?? null }, actor,
-          async () => {
+          async tipo => {
             if (!this.provisionales) throw new Error('Credenciales provisionales no configuradas.');
-            return this.provisionales.emitir(actor.id, cargaId);
+            return tipo === 'INICIAL'
+              ? this.provisionales.emitirInicial(actor.id, datos.dni, cargaId)
+              : this.provisionales.emitir(actor.id, cargaId);
           });
         return { resultado: resultado.resultado };
       };

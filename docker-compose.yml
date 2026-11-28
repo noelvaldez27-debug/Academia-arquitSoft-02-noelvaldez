@@ -119,6 +119,7 @@ services:
       # Clave JWT (AC04: nunca en texto plano en logs)
       JWT_SECRET: ${JWT_SECRET:-cambiar_en_produccion}
       JWT_DURACION: ${JWT_DURACION:-8h}
+      USUARIOS_PASSWORD_INICIAL_DNI: ${USUARIOS_PASSWORD_INICIAL_DNI:-false}
 
       # Almacenamiento de archivos (separatas — ADR-012)
       ALMACEN_LOCAL_PATH: /app/uploads

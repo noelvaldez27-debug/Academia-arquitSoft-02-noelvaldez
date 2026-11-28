@@ -78,7 +78,7 @@ export class PostgresRegistroCiclo {
 
   async ejecutarAutomaticoDesdeDatos(cicloId: string,
     datos: { nombre: string; dni: string; sedeId: string; carrera: string; condicion: CondicionPostulante | null },
-    actor: EjecutorAccion, emitirCredenciales: () => Promise<EmisionProvisional>) {
+    actor: EjecutorAccion, emitirCredenciales: (tipo: 'INICIAL' | 'RECUPERACION') => Promise<EmisionProvisional>) {
     await this.verificarAbierto(cicloId, true);
     const { rows: [responsable] } = await this.bd.query<{ alcance: string; sedeId: string | null }>(
       `SELECT alcance_administrador AS alcance, sede_id::text AS "sedeId" FROM usuarios
@@ -123,7 +123,7 @@ export class PostgresRegistroCiclo {
             AND r.operacion = 'RECUPERADO' AND r.id > a.id)) AS elegible`, [actual.id],
       );
       if (actual.alcance || !elegible?.elegible) throw new ErrorConflicto('La cuenta inactiva no es elegible para recuperación académica.');
-      const emision = await emitirCredenciales();
+      const emision = await emitirCredenciales('RECUPERACION');
       await this.bd.query(`WITH recuperado AS (
           UPDATE usuarios SET password_hash = $2, password_provisional_hasta = now() + interval '24 hours',
             activo = true, version_sesion = version_sesion + 1, actualizado_en = now()
@@ -139,7 +139,7 @@ export class PostgresRegistroCiclo {
       await this.bd.query('INSERT INTO postulantes_ciclo (postulante_id,ciclo_id) VALUES ($1,$2)', [actual.id, cicloId]);
       return { usuario: await usuarioRequerido(usuarios, actual.id), resultado: 'recuperada' as const };
     }
-    const emision = await emitirCredenciales();
+    const emision = await emitirCredenciales('INICIAL');
     const postulante = Usuario.crearPostulante({
       nombre: datos.nombre, dni: datos.dni, correo: `${datos.dni}@sofia.edu`,
       passwordHash: emision.passwordHash, sedeId: datos.sedeId, carrera: datos.carrera, condicion: datos.condicion,

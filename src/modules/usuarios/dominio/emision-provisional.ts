@@ -3,4 +3,6 @@ export interface EmisionProvisional {
   referencia: string;
   administradorId: string;
   cargaId?: string;
+  tipoPassword?: 'ALEATORIA' | 'DNI';
+  requiereCambio?: boolean;
 }

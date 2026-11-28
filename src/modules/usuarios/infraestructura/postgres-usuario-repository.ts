@@ -21,6 +21,8 @@ interface FilaUsuario {
   activo: boolean;
   version_sesion: number;
   password_provisional_hasta: Date | null;
+  password_cambio_obligatorio?: boolean;
+  password_cambio_motivo?: Usuario['passwordCambioMotivo'];
   sede_id: number | null;
   carrera: string | null;
   condicion: Usuario['condicion'];
@@ -61,6 +63,8 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
       activo: fila.activo,
       versionSesion: fila.version_sesion,
       passwordProvisionalHasta: fila.password_provisional_hasta,
+      passwordCambioObligatorio: fila.password_cambio_obligatorio,
+      passwordCambioMotivo: fila.password_cambio_motivo,
       sedeId: fila.sede_id !== null && fila.sede_id !== undefined ? String(fila.sede_id) : null,
       carrera: fila.carrera,
       condicion: fila.condicion,
@@ -76,14 +80,14 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     const res = await this.pool.query<FilaUsuario>(
       `${emision ? 'WITH alta AS (' : ''}
        INSERT INTO usuarios (nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion
-         ${emision ? ', password_provisional_hasta' : ''})
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10 ${emision ? ", now() + interval '24 hours'" : ''})
+         ${emision ? ', password_provisional_hasta, password_cambio_obligatorio, password_cambio_motivo' : ''})
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10 ${emision ? ", CASE WHEN $15 THEN now() + interval '24 hours' ELSE NULL END, $15, CASE WHEN $15 THEN 'CREDENCIAL_PROVISIONAL_EXISTENTE' ELSE NULL END" : ''})
        ${this.idempotente ? "ON CONFLICT DO NOTHING" : ""}
        RETURNING id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion,
-         version_sesion, password_provisional_hasta
+         version_sesion, password_provisional_hasta, password_cambio_obligatorio, password_cambio_motivo
        ${emision ? `), entrega AS (
-         INSERT INTO entregas_credenciales_usuarios (usuario_id, administrador_id, carga_id, referencia, version_sesion, vence)
-         SELECT id, $11, $12, $13, version_sesion, password_provisional_hasta FROM alta
+         INSERT INTO entregas_credenciales_usuarios (usuario_id, administrador_id, carga_id, referencia, version_sesion, vence, tipo_password)
+         SELECT id, $11, $12, $13, version_sesion, now() + interval '24 hours', $14 FROM alta
        ) SELECT * FROM alta` : ''};`,
       [
         usuario.nombre,
@@ -96,7 +100,8 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
         usuario.carrera || null,
         usuario.alcanceAdministrador || null,
         usuario.condicion ?? null,
-        ...(emision ? [emision.administradorId, emision.cargaId ?? null, emision.referencia] : []),
+        ...(emision ? [emision.administradorId, emision.cargaId ?? null, emision.referencia,
+          emision.tipoPassword ?? 'ALEATORIA', emision.requiereCambio ?? true] : []),
       ]
     );
 
@@ -127,6 +132,8 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
            correo = $2,
            password_hash = $3,
            password_provisional_hasta = CASE WHEN password_hash IS DISTINCT FROM $3 THEN NULL ELSE password_provisional_hasta END,
+           password_cambio_obligatorio = CASE WHEN password_hash IS DISTINCT FROM $3 THEN false ELSE password_cambio_obligatorio END,
+           password_cambio_motivo = CASE WHEN password_hash IS DISTINCT FROM $3 THEN NULL ELSE password_cambio_motivo END,
            activo = $4,
            sede_id = $5,
            actualizado_en = CURRENT_TIMESTAMP
@@ -149,7 +156,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     }
 
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta, password_cambio_obligatorio, password_cambio_motivo
        FROM usuarios
        WHERE id = $1;`,
       [idNumerico]
@@ -164,7 +171,9 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
 
   public async cambiarPassword(id: string, versionSesion: number, hash: string): Promise<boolean> {
     const resultado = await this.pool.query(
-      `UPDATE usuarios SET password_hash = $3, password_provisional_hasta = NULL, actualizado_en = now()
+      `UPDATE usuarios SET password_hash = $3, password_provisional_hasta = NULL,
+         password_cambio_obligatorio = false, password_cambio_motivo = NULL,
+         version_sesion = version_sesion + 1, actualizado_en = now()
        WHERE id = $1 AND activo AND version_sesion = $2
          AND (password_provisional_hasta IS NULL OR password_provisional_hasta > now())`,
       [id, versionSesion, hash],
@@ -174,7 +183,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
 
   public async buscarPorDni(dni: string): Promise<Usuario | null> {
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta, password_cambio_obligatorio, password_cambio_motivo
        FROM usuarios
        WHERE dni = $1;`,
       [dni.trim()]
@@ -189,7 +198,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
 
   public async buscarPorCorreo(correo: string): Promise<Usuario | null> {
     const res = await this.pool.query<FilaUsuario>(
-      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta
+      `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta, password_cambio_obligatorio, password_cambio_motivo
        FROM usuarios
        WHERE LOWER(correo) = LOWER($1);`,
       [correo.trim().toLowerCase()]
@@ -251,7 +260,7 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     queryParams.push(offset);
     const offsetIdx = queryParams.length;
 
-    const selectSql = `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta
+    const selectSql = `SELECT id, nombre, dni, correo, password_hash, rol, activo, sede_id, carrera, alcance_administrador, condicion, version_sesion, password_provisional_hasta, password_cambio_obligatorio, password_cambio_motivo
                FROM usuarios${whereSql}
                ORDER BY id ASC
                LIMIT $${limitIdx} OFFSET $${offsetIdx};`;

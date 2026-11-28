@@ -45,7 +45,7 @@ export class IniciarSesionUseCase {
 
     return {
       token,
-      ...(usuario.passwordProvisionalHasta && { cambioPasswordRequerido: true }),
+      ...(usuario.passwordCambioObligatorio && { cambioPasswordRequerido: true }),
       usuario: {
         id: usuario.id ?? '',
         nombre: usuario.nombre,

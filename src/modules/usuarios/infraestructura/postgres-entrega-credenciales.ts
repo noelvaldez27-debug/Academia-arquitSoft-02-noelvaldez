@@ -5,6 +5,8 @@ import type { CredencialesProvisionales } from './credenciales-provisionales';
 interface Entrega {
   correo: string;
   referencia: string;
+  dni: string;
+  tipoPassword: 'ALEATORIA' | 'DNI';
 }
 
 export class PostgresEntregaCredenciales {
@@ -25,7 +27,7 @@ export class PostgresEntregaCredenciales {
            AND ${masiva
              ? "e.carga_id = $3 AND EXISTS (SELECT 1 FROM cargas_masivas c WHERE c.id = e.carga_id AND c.estado = 'COMPLETADA')"
              : 'e.carga_id IS NULL AND e.usuario_id = $3::integer'}
-         RETURNING u.correo, e.referencia`,
+         RETURNING u.correo, u.dni, e.referencia, e.tipo_password AS "tipoPassword"`,
         [administradorId, sedeId, id],
       );
       if (!rows.length) {
@@ -35,7 +37,8 @@ export class PostgresEntregaCredenciales {
       const libro = new ExcelJS.Workbook();
       const hoja = libro.addWorksheet('Credenciales provisionales');
       hoja.addRow(['Correo', 'Contraseña provisional']);
-      for (const fila of rows) hoja.addRow([fila.correo, this.provisionales.derivar(fila.referencia)]);
+      for (const fila of rows) hoja.addRow([fila.correo,
+        fila.tipoPassword === 'DNI' ? fila.dni : this.provisionales.derivar(fila.referencia)]);
       const archivo = Buffer.from(await libro.xlsx.writeBuffer());
       await cliente.query('COMMIT');
       return archivo;

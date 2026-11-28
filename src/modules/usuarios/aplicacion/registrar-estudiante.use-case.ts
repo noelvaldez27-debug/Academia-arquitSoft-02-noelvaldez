@@ -29,12 +29,13 @@ export class RegistrarEstudianteUseCase {
     private readonly usuarioRepository: UsuarioRepository,
     private readonly sedeRepository: SedeRepository,
     private readonly generadorCredenciales: GeneradorCredenciales,
-    private readonly emitir?: (administradorId: string, cargaId?: string) => Promise<EmisionProvisional>,
+    private readonly emitir?: (administradorId: string, cargaId?: string, dni?: string,
+      tipo?: 'INICIAL' | 'RECUPERACION') => Promise<EmisionProvisional>,
     private readonly registrarEnCiclo?: (cicloId: string, postulante: Usuario,
       actor: NonNullable<RegistrarEstudianteCommand['ejecutor']>, emision: EmisionProvisional) =>
       Promise<{ usuario: Usuario; recuperado: boolean }>,
     private readonly registrarAutomaticamenteEnCiclo?: (cicloId: string, datos: { nombre: string; dni: string; sedeId: string; carrera: string; condicion: CondicionPostulante | null },
-      actor: NonNullable<RegistrarEstudianteCommand['ejecutor']>, emitir: () => Promise<EmisionProvisional>) =>
+      actor: NonNullable<RegistrarEstudianteCommand['ejecutor']>, emitir: (tipo: 'INICIAL' | 'RECUPERACION') => Promise<EmisionProvisional>) =>
       Promise<{ usuario: Usuario; resultado: 'creada' | 'recuperada' | 'vinculada' | 'existente' }>,
   ) {}
 
@@ -100,7 +101,7 @@ export class RegistrarEstudianteUseCase {
       const resultado = await this.registrarAutomaticamenteEnCiclo(command.cicloId.toLowerCase(), {
         nombre: command.nombre.trim(), dni: command.dni.trim(), sedeId: sede.id ?? sede.nombre,
         carrera: command.carrera, condicion: esCondicionPostulante(command.condicion) ? command.condicion : null,
-      }, command.ejecutor, () => this.emitir!(command.ejecutor!.id, command.cargaId));
+      }, command.ejecutor, tipo => this.emitir!(command.ejecutor!.id, command.cargaId, command.dni.trim(), tipo));
       informarResultadoAutomatico?.(resultado.resultado);
       if (resultado.resultado === 'recuperada') informarRecuperacion?.();
       return resultado.usuario;

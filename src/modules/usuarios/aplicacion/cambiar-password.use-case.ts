@@ -48,7 +48,7 @@ export class CambiarPasswordUseCase {
     if (!passwordValida) {
       throw new ErrorAutenticacion('Credenciales invalidas.');
     }
-    if (usuario.passwordProvisionalHasta && comando.passwordActual === comando.passwordNueva) {
+    if (usuario.passwordCambioObligatorio && comando.passwordActual === comando.passwordNueva) {
       throw new ErrorValidacion('La contraseña nueva debe ser diferente de la provisional.');
     }
 

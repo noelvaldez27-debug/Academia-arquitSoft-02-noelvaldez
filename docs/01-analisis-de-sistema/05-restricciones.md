@@ -21,3 +21,7 @@
 ## Revisión de RC09 para postulantes
 
 Las nuevas emisiones de credenciales de postulante usan una contraseña provisional aleatoria y con vigencia. Exigen cambio inicial y mantienen el correo derivado del DNI. La regla original se conserva arriba para trazabilidad; se mantiene la política de docentes y administradores.
+
+### Revisión posterior de credenciales de estudiantes
+
+Para las nuevas cuentas de postulantes, la contraseña inicial aleatoria es válida sin cambio forzado y el cambio desde Mi cuenta es voluntario. La alternativa basada en DNI solo se permite con configuración explícita para `test`/`development`, deshabilitada por defecto y rechazada en otros entornos. Los cambios obligatorios de credenciales provisionales ya emitidas se preservan. El restablecimiento administrativo emite una contraseña criptográficamente aleatoria de 24 horas, exige cambio e invalida sesiones previas. El docente y los administradores no cambian su flujo.

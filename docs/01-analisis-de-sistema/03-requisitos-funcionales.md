@@ -62,3 +62,7 @@
 - RF02 y RF26. Las nuevas emisiones de credenciales para postulantes mantienen el usuario por DNI, generan una contraseña provisional aleatoria y exigen su cambio tras el primer ingreso. El texto anterior conserva la decisión original y el cambio posterior sigue disponible para todos.
 - RF21. Importación normal mantiene la omisión de todos los DNI existentes. La modalidad explícita para nuevo ciclo recupera solo postulantes archivados, previa validación del alcance administrativo y del vínculo con el ciclo. Los DNI activos se omiten en ambos modos.
 - RF09 y RF24. El cierre académico archiva las cuentas afectadas e invalida sus sesiones, conservando los registros históricos y los vínculos de ciclo.
+
+### Revisión posterior de credenciales para postulantes
+
+La contraseña inicial nueva se genera aleatoriamente por defecto, no obliga a cambiarla y puede cambiarse voluntariamente desde Mi cuenta. La opción de DNI inicial solo se habilita con configuración explícita en `test` o `development`, apagada por defecto y destinada a datos sintéticos. Un restablecimiento administrativo genera credencial temporal de 24 horas y exige cambio antes de continuar. Las credenciales provisionales pendientes ya emitidas conservan su vigencia y obligación hasta resolverse. Esta revisión modifica para postulantes la ampliación previa de RF02/RF26; docentes y administradores mantienen su política.

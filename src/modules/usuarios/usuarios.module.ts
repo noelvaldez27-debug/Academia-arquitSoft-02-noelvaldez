@@ -41,6 +41,7 @@ import { enTransaccionUsuarios, PostgresRegistroCiclo } from './infraestructura/
 import { PostgresCiclosAcademicos } from './infraestructura/postgres-ciclos-academicos';
 import { crearRutasCiclos } from './presentacion/ciclos.routes';
 import { leerYValidarExcel } from './infraestructura/leer-excel';
+import { resolverPasswordInicialDni } from './infraestructura/politica-password-inicial';
 
 import type { CacheConsultas } from '../../compartido/aplicacion/cache-consultas.port';
 
@@ -51,6 +52,7 @@ export interface ConfigModuloUsuarios {
   jwtDuracion?: string;
   consultarIntentosActivos?: ConsultarActivos;
   consultarSimulacrosPorCerrar?: (bd: Pick<Pool, 'query'>, cicloId: string) => Promise<boolean>;
+  passwordInicialDni?: boolean;
 }
 
 /**
@@ -86,7 +88,12 @@ export class UsuariosModule {
       duracion: config.jwtDuracion,
     });
     const generadorCredenciales = new GeneradorCredenciales(hashAdapter);
-    const provisionales = new CredencialesProvisionales((config.jwtSecret ?? process.env.JWT_SECRET!).trim(), hashAdapter);
+    const passwordInicialDni = resolverPasswordInicialDni(
+      config.passwordInicialDni ?? process.env.USUARIOS_PASSWORD_INICIAL_DNI,
+    );
+    const provisionales = new CredencialesProvisionales(
+      (config.jwtSecret ?? process.env.JWT_SECRET!).trim(), hashAdapter, passwordInicialDni,
+    );
 
     const persistenciaCarga = new PostgresCargaMasivaAdapter(config.pool, generadorCredenciales, provisionales);
     const maxMb = Number(process.env.CARGA_MASIVA_MAX_MB) || 10;
@@ -102,7 +109,9 @@ export class UsuariosModule {
       usuarioRepo,
       sedeRepo,
       generadorCredenciales,
-      provisionales.emitir.bind(provisionales),
+      (administradorId, cargaId, dni, tipo) => tipo === 'INICIAL' && dni
+        ? provisionales.emitirInicial(administradorId, dni, cargaId)
+        : provisionales.emitir(administradorId, cargaId),
       (cicloId, postulante, actor, emision) => enTransaccionUsuarios(config.pool,
         bd => new PostgresRegistroCiclo(bd).guardar(cicloId, postulante, actor, emision)),
       (cicloId, datos, actor, emitirCredenciales) => enTransaccionUsuarios(config.pool,
@@ -111,7 +120,9 @@ export class UsuariosModule {
     this.registrarEstudianteUseCase.modoAutomatico = async (cicloId, datos, actor, cargaId) => {
       const resultado = await enTransaccionUsuarios(config.pool, bd => new PostgresRegistroCiclo(bd)
         .ejecutarAutomaticoDesdeDatos(cicloId, { ...datos, condicion: datos.condicion ?? null }, actor,
-          () => provisionales.emitir(actor.id, cargaId)));
+          tipo => tipo === 'INICIAL'
+            ? provisionales.emitirInicial(actor.id, datos.dni, cargaId)
+            : provisionales.emitir(actor.id, cargaId)));
       return { resultado: resultado.resultado };
     };
     this.registrarDocenteUseCase = new RegistrarDocenteUseCase(

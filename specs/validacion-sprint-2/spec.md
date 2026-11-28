@@ -39,6 +39,10 @@ La importación nueva siempre selecciona un ciclo abierto autorizado. Clasifica 
 
 La recuperación por DNI, la modalidad Excel de nuevo ciclo y el padrón de HU11 permanecen abiertas. Mientras se implementa la recuperación de ciclo, la ruta histórica de reactivación aún conserva su semántica de RF24 y no emite una nueva credencial.
 
+### Revisión aprobada posterior: credenciales de estudiantes
+
+Para altas nuevas de postulantes, la credencial inicial aleatoria no fuerza cambio y permanece utilizable; su canal de entrega de un uso sigue venciendo a las 24 horas. El DNI inicial se permite solo con opt-in en `NODE_ENV=test` o `development`, apagado por defecto, únicamente para datos sintéticos y no habilitable en otros entornos. Restablecer es una operación administrativa separada: contraseña criptográfica temporal, hash bcrypt, expiración en 24 horas, cambio obligatorio, invalidación de sesiones y auditoría transaccional. La migración conserva los cambios obligatorios pendientes de credenciales provisionales anteriores sin crear historial ficticio. La recuperación académica conserva la contraseña existente. Véase `specs/usuarios/spec.md`.
+
 Evidencia del avance de tarea 4: Jest 432 pruebas en 87 suites. Cobertura global 87,34 % líneas y 79,74 % ramas, y Usuarios 85,46 % y 77,55 %. Docker Compose ejecutó el recorrido de credenciales y archivado con PostgreSQL, Redis y RabbitMQ. Se comprobó alta habitual sin condición, alta Excel, consumo concurrente de la entrega, vigencia, alcance, rotación de sesión, rechazo de archivado durante un intento activo, archivado idempotente y consulta diferenciada de archivados.
 
 ### Tarea 4 completada

@@ -18,6 +18,8 @@ export interface PropiedadesUsuario {
   activo?: boolean;
   versionSesion?: number;
   passwordProvisionalHasta?: Date | null;
+  passwordCambioObligatorio?: boolean;
+  passwordCambioMotivo?: 'CREDENCIAL_PROVISIONAL_EXISTENTE' | 'RESTABLECIMIENTO_ADMINISTRATIVO' | null;
   sedeId?: string | null;
   carrera?: string | null;
   condicion?: CondicionPostulante | null;
@@ -27,7 +29,9 @@ export interface PropiedadesUsuario {
 export class Usuario {
   readonly condicion: PropiedadesUsuario['condicion'];
   readonly versionSesion: number;
-  readonly passwordProvisionalHasta: Date | null;
+  private _passwordProvisionalHasta: Date | null;
+  private _passwordCambioObligatorio: boolean;
+  private _passwordCambioMotivo: PropiedadesUsuario['passwordCambioMotivo'];
   private readonly _id?: string;
   private _nombre: string;
   private readonly _dni?: string | null;
@@ -58,7 +62,9 @@ export class Usuario {
     this.condicion = props.rol === RolUsuario.Postulante ? props.condicion ?? null : null;
     this._activo = props.activo !== undefined ? props.activo : true;
     this.versionSesion = props.versionSesion ?? 0;
-    this.passwordProvisionalHasta = props.passwordProvisionalHasta ?? null;
+    this._passwordProvisionalHasta = props.passwordProvisionalHasta ?? null;
+    this._passwordCambioObligatorio = props.passwordCambioObligatorio ?? false;
+    this._passwordCambioMotivo = props.passwordCambioMotivo ?? null;
 
     if (this._rol === RolUsuario.Postulante) {
       this.validarDni(props.dni);
@@ -196,6 +202,18 @@ export class Usuario {
     return this._passwordHash;
   }
 
+  get passwordProvisionalHasta(): Date | null {
+    return this._passwordProvisionalHasta;
+  }
+
+  get passwordCambioObligatorio(): boolean {
+    return this._passwordCambioObligatorio;
+  }
+
+  get passwordCambioMotivo(): PropiedadesUsuario['passwordCambioMotivo'] {
+    return this._passwordCambioMotivo;
+  }
+
   get rol(): RolUsuario {
     return this._rol;
   }
@@ -229,6 +247,9 @@ export class Usuario {
       throw new Error('El nuevo hash de contrasena no puede estar vacio.');
     }
     this._passwordHash = nuevoHash;
+    this._passwordProvisionalHasta = null;
+    this._passwordCambioObligatorio = false;
+    this._passwordCambioMotivo = null;
   }
 
   public cambiarCorreo(nuevoCorreo: string): void {
