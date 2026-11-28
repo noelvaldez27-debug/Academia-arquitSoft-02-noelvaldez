@@ -211,3 +211,11 @@ El responsable del proyecto aprobó el desarrollo funcional del backend y del fr
 
 Siguiente paso: el responsable ejecutará las evaluaciones autorizadas y aportará las evidencias para revisar AC01–AC08 y decidir el cierre del Sprint 2. Los guiones están en pruebas/carga/ y el protocolo de usabilidad en specs/frontend/usabilidad-ac06.md.
 Los commits 117234a y 54801af se publicaron por avance directo. Backend y frontend aprobaron [GitHub Actions](https://github.com/noelvaldez27-debug/Academia-arquitSoft-02-noelvaldez/actions/runs/45911430031). Se verificó que main y origin/main coincidían en 54801af antes del registro local de este traspaso.
+
+### Módulo 1 · credenciales de estudiantes
+
+Completadas y registradas en SDD las tareas 30–34: política de contraseña inicial aleatoria (DNI solo con opt-in en test/development), preservación de credencial al recuperar cuentas archivadas, auditoría prospectiva sin secretos, restablecimiento administrativo temporal con validación de rol/sede en PostgreSQL, consulta segura paginada y gestión desde la interfaz. Se añadieron migraciones 023 y 024; no se aplicaron a la base local. El Sprint 2 permanece abierto.
+
+Validación: backend `npm run test:cov -- --runInBand` aprobó 106 suites y 500 tests; frontend `npm test -- --runInBand --coverage` aprobó 11 suites y 48 tests; build TypeScript/Vite aprobado; Playwright focalizado aprobó escritorio y móvil. No se corrieron pruebas de carga ni campañas integrales. La especificación no determina umbral/ventana/almacenamiento para limitar intentos de login; no se inventó una política.
+
+Commits locales por tarea: `66b8dba`, `ba0ac02`, `0c5dbaf`, `da3c205` y `d7b47c4`. Siguiente paso exacto: publicar los commits ya autorizados, verificar ambos trabajos de GitHub Actions y luego dejar la comprobación manual de migración y flujos al responsable, sin aplicar migraciones a su BD local.
