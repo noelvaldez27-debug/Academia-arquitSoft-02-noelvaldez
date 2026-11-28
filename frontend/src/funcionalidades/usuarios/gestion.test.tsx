@@ -52,4 +52,3 @@ it('consulta historial vacío y muestra una sola vez el secreto tras confirmar i
   await usuario.click(within(secreto).getByRole('button', { name: 'Ocultar contraseña temporal' }));
   expect(screen.queryByText('temporal-sintetica-una-vez')).not.toBeInTheDocument();
 });
-
