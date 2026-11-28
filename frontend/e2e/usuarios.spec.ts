@@ -1,5 +1,58 @@
 import { expect, test } from '@playwright/test';
 
+test('consulta credenciales y restablece la clave una sola vez con identidad confirmada', async ({ page }) => {
+  const token = 'cabecera.' + Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 90 })).toString('base64url') + '.firma';
+  const estudiante = { id: '21', nombre: 'Estudiante Sintético', dni: '12345678', correo: '12345678@sofia.edu',
+    rol: 'POSTULANTE', activo: true, sedeId: '2', carrera: 'MEDICINA' };
+  let restablecida = false;
+  let consultasHistorial = 0;
+  await page.route('**/api/usuarios**', async route => {
+    const url = new URL(route.request().url());
+    const recurso = url.pathname.replace('/api/usuarios', '');
+    if (recurso === '/login') return route.fulfill({ json: { token, usuario: {
+      id: '8', nombre: 'Administración sintética', correo: 'admin@example.test', rol: 'ADMINISTRADOR', sedeId: '2',
+    } } });
+    if (recurso === '/sedes') return route.fulfill({ json: [{ id: '2', nombre: 'Sede sintética' }] });
+    if (recurso === '/ciclos') return route.fulfill({ json: [] });
+    if (recurso.startsWith('/estudiantes/21/credenciales/historial')) {
+      consultasHistorial++;
+      return route.fulfill({ json: { estado: { cambioObligatorio: restablecida, venceEn: restablecida ? '2030-01-02T03:04:05Z' : null },
+        eventos: restablecida ? [{ id: '1', evento: 'RESTABLECIMIENTO_ADMINISTRATIVO', creadoEn: '2030-01-01T00:00:00Z',
+          actor: { id: '8', nombre: 'Administración sintética' } }] : [], paginacion: { pagina: 1, limite: 20, total: restablecida ? 1 : 0 } } });
+    }
+    if (recurso === '/estudiantes/21/password/restablecer' && route.request().method() === 'POST') {
+      expect(route.request().postDataJSON()).toEqual({ identidadVerificada: true });
+      restablecida = true;
+      return route.fulfill({ headers: { 'Cache-Control': 'private, no-store' }, json: {
+        passwordTemporal: 'clave-temporal-ficticia', venceEn: '2030-01-02T03:04:05Z',
+      } });
+    }
+    if (route.request().method() === 'GET') return route.fulfill({ json: { usuarios: [estudiante], total: 1, pagina: 1, limite: 20 } });
+    return route.fulfill({ status: 204 });
+  });
+
+  await page.goto('/acceso');
+  await page.getByLabel('Correo institucional').fill('admin@example.test');
+  await page.getByLabel('Contraseña').fill('clave ficticia');
+  await page.getByRole('button', { name: 'Ingresar' }).click();
+  await page.getByRole('navigation').getByRole('link', { name: 'Estudiantes' }).click();
+  await page.getByRole('button', { name: 'Ver credenciales' }).click();
+  await expect(page.getByText('Sin registro disponible.')).toBeVisible();
+  await page.getByRole('button', { name: 'Restablecer contraseña' }).click();
+  const dialogo = page.getByRole('dialog', { name: 'Confirmar restablecimiento de contraseña' });
+  const confirmar = dialogo.getByRole('checkbox');
+  await expect(dialogo.getByRole('button', { name: 'Restablecer y mostrar clave temporal' })).toBeDisabled();
+  await confirmar.check();
+  await dialogo.getByRole('button', { name: 'Restablecer y mostrar clave temporal' }).click();
+  const secreto = page.getByRole('region', { name: 'Contraseña temporal de un solo uso' });
+  await expect(secreto.getByLabel('Contraseña temporal')).toHaveText('clave-temporal-ficticia');
+  await secreto.getByRole('button', { name: 'Ocultar contraseña temporal' }).click();
+  await expect(page.getByText('clave-temporal-ficticia')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Ver credenciales' }).click();
+  await expect(page.getByText('RESTABLECIMIENTO ADMINISTRATIVO')).toBeVisible();
+  expect(consultasHistorial).toBeGreaterThanOrEqual(2);
+});
+
 test('el administrador de sede registra, cambia condición y archiva en su sede', async ({ page }, info) => {
   const token = 'cabecera.' + Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 90 })).toString('base64url') + '.firma';
   const alumno = { id: '20', nombre: 'Estudiante sintético', dni: '87654321', correo: 'cuenta@example.test',

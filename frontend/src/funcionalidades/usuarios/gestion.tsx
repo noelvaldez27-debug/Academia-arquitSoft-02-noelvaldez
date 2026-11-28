@@ -8,6 +8,12 @@ interface Sede { id: string; nombre: string }
 interface Ciclo { id: string; nombre: string; iniciaEl: string; terminaEl: string; cerradoEn: string | null }
 interface Usuario { id: string; nombre: string; dni: string | null; correo: string; rol: string; activo: boolean; sedeId: string | null; carrera: string | null }
 interface Pagina { usuarios: Usuario[]; total: number; pagina: number; limite: number }
+interface HistorialCredenciales {
+  estado: { cambioObligatorio: boolean; venceEn: string | null };
+  eventos: { id: string; evento: string; creadoEn: string; actor: { id: string; nombre: string } }[];
+  paginacion: { pagina: number; limite: number; total: number };
+}
+interface PasswordTemporal { passwordTemporal: string; venceEn: string; nombre: string }
 const api = '/api/usuarios';
 const opciones = [{ valor: 'POSTULANTE', texto: 'Estudiantes' }, { valor: 'DOCENTE', texto: 'Docentes' }, { valor: 'ADMINISTRADOR', texto: 'Administradores' }];
 const condiciones = [{ valor: 'MATRICULADO', texto: 'Matriculado' }, { valor: 'LIBRE', texto: 'Libre' }];
@@ -43,6 +49,13 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
   const [ocupado, ocupar] = useState(false);
   const [recuperar, cambiarRecuperacion] = useState<Usuario>();
   const [entrega, cambiarEntrega] = useState<string>();
+  const [credencialesDe, seleccionarCredenciales] = useState<Usuario>();
+  const [historial, cambiarHistorial] = useState<HistorialCredenciales>();
+  const [cargandoHistorial, ocuparHistorial] = useState(false);
+  const [paginaHistorial, cambiarPaginaHistorial] = useState(1);
+  const [restablecerPara, prepararRestablecimiento] = useState<Usuario>();
+  const [identidadVerificada, confirmarIdentidad] = useState(false);
+  const [passwordTemporal, mostrarPasswordTemporal] = useState<PasswordTemporal>();
   const mutacion = useRef(false);
   const controla = seccion === 'usuarios' || seccion === 'estudiantes';
   const estudiantes = rol === 'POSTULANTE';
@@ -129,6 +142,40 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
     }
   };
 
+  async function consultarHistorial(usuario: Usuario, paginaSolicitada = 1) {
+    seleccionarCredenciales(usuario);
+    cambiarPaginaHistorial(paginaSolicitada);
+    cambiarHistorial(undefined);
+    cambiarError('');
+    ocuparHistorial(true);
+    try {
+      const query = new URLSearchParams({ pagina: String(paginaSolicitada), limite: '20' });
+      cambiarHistorial(await solicitar<HistorialCredenciales>(api + '/estudiantes/' + usuario.id + '/credenciales/historial?' + query));
+    } catch (e) { cambiarError(mensaje(e)); }
+    finally { ocuparHistorial(false); }
+  }
+
+  async function restablecerPassword() {
+    if (!restablecerPara || !identidadVerificada || ocupado) return;
+    ocupar(true);
+    cambiarError('');
+    cambiarExito('');
+    mostrarPasswordTemporal(undefined);
+    try {
+      const temporal = await solicitar<{ passwordTemporal: string; venceEn: string }>(
+        api + '/estudiantes/' + restablecerPara.id + '/password/restablecer',
+        { method: 'POST', datos: { identidadVerificada: true } },
+      );
+      mostrarPasswordTemporal({ ...temporal, nombre: restablecerPara.nombre });
+      cambiarExito('Contraseña temporal generada. Entrégala al estudiante en privado.');
+      prepararRestablecimiento(undefined);
+      confirmarIdentidad(false);
+      refrescar(n => n + 1);
+      if (credencialesDe?.id === restablecerPara.id) void consultarHistorial(restablecerPara, paginaHistorial);
+    } catch (e) { cambiarError(mensaje(e)); }
+    finally { ocupar(false); }
+  }
+
 
   return <div className="mt-6 grid gap-6">
     {error && <div><Estado tipo="error">{error}</Estado><Boton className="boton-secundario mt-2" onClick={() => { cambiarError(''); refrescar(n => n + 1); }}>Actualizar datos</Boton></div>}
@@ -154,6 +201,15 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
               <td className="p-3"><div className="flex flex-wrap gap-2">
                 {estudiantes && u.activo && <label className="flex items-center gap-2"><input type="checkbox" aria-label={'Seleccionar a ' + u.nombre} checked={seleccion.includes(u.id)} onChange={e => seleccionar(e.currentTarget.checked ? [...seleccion, u.id] : seleccion.filter(id => id !== u.id))} /> Seleccionar</label>}
                 {estudiantes && u.activo && <Boton className="boton-secundario" disabled={ocupado} onClick={() => archivar([u.id])}>Archivar</Boton>}
+                {estudiantes && <Boton className="boton-secundario" disabled={ocupado} onClick={() => {
+                  mostrarPasswordTemporal(undefined);
+                  void consultarHistorial(u);
+                }}>Ver credenciales</Boton>}
+                {estudiantes && u.activo && <Boton className="boton-secundario" disabled={ocupado} onClick={() => {
+                  mostrarPasswordTemporal(undefined);
+                  confirmarIdentidad(false);
+                  prepararRestablecimiento(u);
+                }}>Restablecer contraseña</Boton>}
                 {estudiantes && archivados && <Boton className="boton-secundario" disabled={ocupado} onClick={() => {
                   cambiarRecuperacion(u);
                   requestAnimationFrame(() => document.getElementById('gestion-nombre')?.focus());
@@ -182,6 +238,43 @@ export function GestionUsuarios({ seccion }: { seccion: string }) {
         </div>
       </>}
     </>}
+    {cargandoHistorial && <Estado tipo="carga">Consultando credenciales…</Estado>}
+    {credencialesDe && historial && <section className="grid gap-3 rounded-xl border border-slate-200 bg-white p-5" aria-label="Historial de credenciales">
+      <h2 className="text-lg font-bold">Credenciales de {credencialesDe.nombre}</h2>
+      <p>Estado: {historial.estado.cambioObligatorio ? 'Cambio obligatorio pendiente' : 'Sin cambio obligatorio'}
+        {historial.estado.venceEn && <> · Vence {new Date(historial.estado.venceEn).toLocaleString()}</>}</p>
+      {historial.eventos.length === 0 ? <Estado>Sin registro disponible.</Estado> : <ul className="grid gap-2">
+        {historial.eventos.map(evento => <li key={evento.id} className="border-t border-slate-200 pt-2">
+          <strong>{evento.evento.replaceAll('_', ' ')}</strong> · {new Date(evento.creadoEn).toLocaleString()} · Responsable: {evento.actor.nombre}
+        </li>)}
+      </ul>}
+      <div className="flex flex-wrap items-center gap-3">
+        <Boton className="boton-secundario" disabled={paginaHistorial <= 1 || cargandoHistorial}
+          onClick={() => void consultarHistorial(credencialesDe, paginaHistorial - 1)}>Eventos más recientes</Boton>
+        <span>Página {historial.paginacion.pagina} · {historial.paginacion.total} eventos</span>
+        <Boton className="boton-secundario" disabled={paginaHistorial * historial.paginacion.limite >= historial.paginacion.total || cargandoHistorial}
+          onClick={() => void consultarHistorial(credencialesDe, paginaHistorial + 1)}>Eventos anteriores</Boton>
+        <Boton className="boton-secundario" onClick={() => { seleccionarCredenciales(undefined); cambiarHistorial(undefined); }}>Cerrar historial</Boton>
+      </div>
+    </section>}
+    {restablecerPara && <section role="dialog" aria-modal="true" aria-label="Confirmar restablecimiento de contraseña" className="grid gap-4 rounded-xl border border-amber-300 bg-amber-50 p-5">
+      <h2 className="text-lg font-bold">Restablecer contraseña de {restablecerPara.nombre}</h2>
+      <p>El estudiante deberá cambiar esta contraseña temporal al iniciar sesión. Se mostrará una sola vez.</p>
+      <label className="flex items-start gap-2"><input type="checkbox" checked={identidadVerificada}
+        onChange={e => confirmarIdentidad(e.currentTarget.checked)} /> Confirmo que verifiqué la identidad del estudiante y le entregaré la clave en privado.</label>
+      <div className="flex gap-2">
+        <Boton disabled={!identidadVerificada || ocupado} onClick={() => void restablecerPassword()}>
+          {ocupado ? 'Restableciendo…' : 'Restablecer y mostrar clave temporal'}
+        </Boton>
+        <Boton className="boton-secundario" disabled={ocupado} onClick={() => prepararRestablecimiento(undefined)}>Cancelar</Boton>
+      </div>
+    </section>}
+    {passwordTemporal && <section aria-label="Contraseña temporal de un solo uso" aria-live="polite" className="grid gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-5">
+      <h2 className="text-lg font-bold">Contraseña temporal de {passwordTemporal.nombre}</h2>
+      <p>Vence {new Date(passwordTemporal.venceEn).toLocaleString()}. Entrégala al estudiante en privado. No volverá a mostrarse.</p>
+      <output className="select-all break-all rounded bg-white p-3 font-mono" aria-label="Contraseña temporal">{passwordTemporal.passwordTemporal}</output>
+      <Boton className="boton-secundario w-fit" onClick={() => mostrarPasswordTemporal(undefined)}>Ocultar contraseña temporal</Boton>
+    </section>}
     {seccion === 'sedes' && sedes && <ul className="grid gap-2">{sedesVisibles.map(s => <li className="panel-acceso" key={s.id}>{s.nombre}</li>)}</ul>}
     {seccion === 'ciclos' && ciclos && (ciclos.length ? <ul className="grid gap-2">{ciclos.map(c =>
       <li className="panel-acceso flex-wrap" key={c.id}><div>{c.nombre}<div className="text-sm">{c.iniciaEl} a {c.terminaEl} · {c.cerradoEn ? 'Cerrado' : 'Abierto'}</div></div>

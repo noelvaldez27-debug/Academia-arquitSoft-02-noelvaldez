@@ -185,6 +185,20 @@ it('evita enviar una confirmación de contraseña distinta a la nueva', async ()
   expect(api).toHaveBeenCalledTimes(1);
 });
 
+it('permite cambiar voluntariamente la contraseña desde Mi cuenta', async () => {
+  const api = apiAdministrativa('2', ruta => ruta === '/api/usuarios/password' ? { actualizado: true } : undefined);
+  montar('/acceso');
+  const usuario = await ingresar();
+  await usuario.click(within(await screen.findByRole('navigation')).getByRole('link', { name: 'Mi cuenta' }));
+  await usuario.type((await screen.findAllByLabelText('Contraseña actual'))[0], 'clave actual sintética');
+  await usuario.type(screen.getByLabelText('Nueva contraseña', { exact: true }), 'clave nueva sintética');
+  await usuario.type(screen.getByLabelText('Confirmar nueva contraseña'), 'clave nueva sintética');
+  await usuario.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
+  expect(await screen.findByText('Contraseña actualizada. Vuelve a ingresar.')).toBeVisible();
+  expect(api).toHaveBeenCalledWith('/api/usuarios/password', expect.objectContaining({ method: 'PATCH',
+    body: JSON.stringify({ passwordActual: 'clave actual sintética', passwordNueva: 'clave nueva sintética' }) }));
+});
+
 it('exige alcance de transferencia y conserva la aprobación para el autor', async () => {
   const resumen = { id: 'doc', cursoId: 'curso', estado: 'PREGUNTAS_PROPUESTAS', mime: 'application/pdf' };
   const api = apiAdministrativa(null, ruta => {
