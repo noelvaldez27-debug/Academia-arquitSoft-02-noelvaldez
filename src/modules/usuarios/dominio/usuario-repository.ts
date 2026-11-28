@@ -21,7 +21,8 @@ export interface ResultadoPaginadoUsuarios {
 export interface UsuarioRepository {
   guardar(usuario: Usuario, emision?: EmisionProvisional): Promise<Usuario>;
   actualizar(usuario: Usuario): Promise<void>;
-  cambiarPassword?(id: string, versionSesion: number, hash: string): Promise<boolean>;
+  cambiarPassword?(id: string, versionSesion: number, hash: string,
+    evento?: 'CAMBIO_VOLUNTARIO' | 'CAMBIO_OBLIGATORIO'): Promise<boolean>;
   buscarPorId(id: string): Promise<Usuario | null>;
   buscarPorDni(dni: string): Promise<Usuario | null>;
   buscarPorCorreo(correo: string): Promise<Usuario | null>;

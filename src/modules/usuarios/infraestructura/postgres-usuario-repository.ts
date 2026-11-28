@@ -88,6 +88,9 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
        ${emision ? `), entrega AS (
          INSERT INTO entregas_credenciales_usuarios (usuario_id, administrador_id, carga_id, referencia, version_sesion, vence, tipo_password)
          SELECT id, $11, $12, $13, version_sesion, now() + interval '24 hours', $14 FROM alta
+       ), auditoria AS (
+         INSERT INTO auditoria_credenciales_usuarios (usuario_id, actor_id, evento)
+         SELECT id, $11, 'ASIGNACION_INICIAL' FROM alta
        ) SELECT * FROM alta` : ''};`,
       [
         usuario.nombre,
@@ -169,14 +172,21 @@ export class PostgresUsuarioRepository implements UsuarioRepository {
     return this.mapearFilaAUsuario(res.rows[0]);
   }
 
-  public async cambiarPassword(id: string, versionSesion: number, hash: string): Promise<boolean> {
+  public async cambiarPassword(id: string, versionSesion: number, hash: string,
+    evento: 'CAMBIO_VOLUNTARIO' | 'CAMBIO_OBLIGATORIO' = 'CAMBIO_VOLUNTARIO'): Promise<boolean> {
     const resultado = await this.pool.query(
-      `UPDATE usuarios SET password_hash = $3, password_provisional_hasta = NULL,
+      `WITH actualizado AS (
+       UPDATE usuarios SET password_hash = $3, password_provisional_hasta = NULL,
          password_cambio_obligatorio = false, password_cambio_motivo = NULL,
          version_sesion = version_sesion + 1, actualizado_en = now()
        WHERE id = $1 AND activo AND version_sesion = $2
-         AND (password_provisional_hasta IS NULL OR password_provisional_hasta > now())`,
-      [id, versionSesion, hash],
+         AND (password_provisional_hasta IS NULL OR password_provisional_hasta > now())
+       RETURNING id
+       ), auditoria AS (
+         INSERT INTO auditoria_credenciales_usuarios (usuario_id, actor_id, evento)
+         SELECT id, id, $4 FROM actualizado
+       ) SELECT id FROM actualizado`,
+      [id, versionSesion, hash, evento],
     );
     return resultado.rowCount === 1;
   }

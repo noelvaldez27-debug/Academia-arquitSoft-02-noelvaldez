@@ -54,7 +54,8 @@ export class CambiarPasswordUseCase {
 
     const nuevoHash = await this.servicioHash.generarHash(comando.passwordNueva);
     if (this.usuarioRepository.cambiarPassword) {
-      if (!await this.usuarioRepository.cambiarPassword(comando.usuarioId, usuario.versionSesion, nuevoHash)) {
+      const evento = usuario.passwordCambioObligatorio ? 'CAMBIO_OBLIGATORIO' : 'CAMBIO_VOLUNTARIO';
+      if (!await this.usuarioRepository.cambiarPassword(comando.usuarioId, usuario.versionSesion, nuevoHash, evento)) {
         throw new ErrorAutenticacion('La sesión cambió. Vuelve a iniciar sesión.');
       }
       return;

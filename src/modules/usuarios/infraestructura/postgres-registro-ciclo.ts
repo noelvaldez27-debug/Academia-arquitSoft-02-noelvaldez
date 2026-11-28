@@ -51,20 +51,13 @@ export class PostgresRegistroCiclo {
       id = actual.id;
       await this.bd.query(
         `WITH recuperado AS (
-           UPDATE usuarios SET nombre = $2, sede_id = $3, carrera = $4, password_hash = $5,
-             password_provisional_hasta = now() + interval '24 hours', activo = true, actualizado_en = now()
-           WHERE id = $1 RETURNING id, version_sesion, password_provisional_hasta
-         ), entrega AS (
-           INSERT INTO entregas_credenciales_usuarios (usuario_id, administrador_id, carga_id, referencia, version_sesion, vence)
-           SELECT id, $6, $7, $8, version_sesion, password_provisional_hasta FROM recuperado
-           ON CONFLICT (usuario_id) DO UPDATE SET administrador_id = excluded.administrador_id,
-             carga_id = excluded.carga_id, referencia = excluded.referencia,
-             version_sesion = excluded.version_sesion, vence = excluded.vence
+           UPDATE usuarios SET nombre = $2, sede_id = $3, carrera = $4, activo = true,
+             version_sesion = version_sesion + 1, actualizado_en = now()
+           WHERE id = $1 RETURNING id
          )
          INSERT INTO auditoria_postulantes (postulante_id, administrador_id, operacion)
-         SELECT id, $6, 'RECUPERADO' FROM recuperado`,
-        [id, postulante.nombre, postulante.sedeId, postulante.carrera, emision.passwordHash,
-          actor.id, emision.cargaId ?? null, emision.referencia],
+         SELECT id, $5, 'RECUPERADO' FROM recuperado`,
+        [id, postulante.nombre, postulante.sedeId, postulante.carrera, actor.id],
       );
     } else {
       id = (await usuarios.guardar(postulante, emision)).id!;
@@ -123,19 +116,11 @@ export class PostgresRegistroCiclo {
             AND r.operacion = 'RECUPERADO' AND r.id > a.id)) AS elegible`, [actual.id],
       );
       if (actual.alcance || !elegible?.elegible) throw new ErrorConflicto('La cuenta inactiva no es elegible para recuperación académica.');
-      const emision = await emitirCredenciales('RECUPERACION');
       await this.bd.query(`WITH recuperado AS (
-          UPDATE usuarios SET password_hash = $2, password_provisional_hasta = now() + interval '24 hours',
-            activo = true, version_sesion = version_sesion + 1, actualizado_en = now()
-          WHERE id = $1 RETURNING id, version_sesion, password_provisional_hasta
-        ), entrega AS (
-          INSERT INTO entregas_credenciales_usuarios (usuario_id, administrador_id, carga_id, referencia, version_sesion, vence)
-          SELECT id, $3, $4, $5, version_sesion, password_provisional_hasta FROM recuperado
-          ON CONFLICT (usuario_id) DO UPDATE SET administrador_id=excluded.administrador_id,
-            carga_id=excluded.carga_id, referencia=excluded.referencia, version_sesion=excluded.version_sesion, vence=excluded.vence
+          UPDATE usuarios SET activo = true, version_sesion = version_sesion + 1, actualizado_en = now()
+          WHERE id = $1 RETURNING id
         ) INSERT INTO auditoria_postulantes (postulante_id,administrador_id,operacion)
-          SELECT id,$3,'RECUPERADO' FROM recuperado`,
-        [actual.id, emision.passwordHash, actor.id, emision.cargaId ?? null, emision.referencia]);
+          SELECT id,$2,'RECUPERADO' FROM recuperado`, [actual.id, actor.id]);
       await this.bd.query('INSERT INTO postulantes_ciclo (postulante_id,ciclo_id) VALUES ($1,$2)', [actual.id, cicloId]);
       return { usuario: await usuarioRequerido(usuarios, actual.id), resultado: 'recuperada' as const };
     }

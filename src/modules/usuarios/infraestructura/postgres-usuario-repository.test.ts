@@ -64,6 +64,33 @@ describe('PostgresUsuarioRepository (Pool simulado)', () => {
     expect(guardado.carrera).toBe('MEDICINA');
   });
 
+  it('registra la asignación inicial en la misma sentencia de alta y entrega', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [{
+      id: 21, nombre: 'Estudiante Sintético', dni: '12345678', correo: '12345678@sofia.edu', password_hash: 'hash-sintetico',
+      rol: 'POSTULANTE', activo: true, sede_id: 1, carrera: 'MEDICINA', alcance_administrador: null,
+    }] });
+    const repo = new PostgresUsuarioRepository(mockPool as Pool);
+    const estudiante = Usuario.crearPostulante({ nombre: 'Estudiante Sintético', dni: '12345678',
+      correo: '12345678@sofia.edu', passwordHash: 'hash-sintetico', sedeId: '1', carrera: 'Medicina' });
+    await repo.guardar(estudiante, { administradorId: '8', referencia: 'referencia-sintetica',
+      passwordHash: 'hash-sintetico', tipoPassword: 'ALEATORIA', requiereCambio: false });
+    expect(mockQuery.mock.calls[0][0]).toContain('INSERT INTO auditoria_credenciales_usuarios');
+    expect(mockQuery.mock.calls[0][0]).toContain("SELECT id, $11, 'ASIGNACION_INICIAL' FROM alta");
+    expect(mockQuery.mock.calls[0][1]).not.toContain('contraseña-en-claro-sintética');
+  });
+
+  it('registra cambios de contraseña en la misma operación y no audita si la versión no coincide', async () => {
+    mockQuery.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: 7 }] });
+    const repo = new PostgresUsuarioRepository(mockPool as Pool);
+    await expect(repo.cambiarPassword('7', 2, 'bcrypt-hash-sintetico', 'CAMBIO_OBLIGATORIO')).resolves.toBe(true);
+    expect(mockQuery.mock.calls[0][0]).toContain('INSERT INTO auditoria_credenciales_usuarios');
+    expect(mockQuery.mock.calls[0][1]).toEqual(['7', 2, 'bcrypt-hash-sintetico', 'CAMBIO_OBLIGATORIO']);
+
+    mockQuery.mockResolvedValueOnce({ rowCount: 0, rows: [] });
+    await expect(repo.cambiarPassword('7', 1, 'hash-sintetico', 'CAMBIO_VOLUNTARIO')).resolves.toBe(false);
+    expect(mockQuery.mock.calls[1][0]).toContain('SELECT id, id, $4 FROM actualizado');
+  });
+
   it('debe guardar un administrador general sin sede', async () => {
     mockQuery.mockResolvedValueOnce({
       rows: [
