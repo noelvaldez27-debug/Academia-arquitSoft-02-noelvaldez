@@ -28,4 +28,6 @@ export * from './consultar-usuario.use-case';
 export * from './generador-password-temporal.port';
 export * from './restablecer-password.port';
 export * from './restablecer-password.use-case';
+export * from './consultar-historial-credenciales.port';
+export * from './consultar-historial-credenciales.use-case';
 

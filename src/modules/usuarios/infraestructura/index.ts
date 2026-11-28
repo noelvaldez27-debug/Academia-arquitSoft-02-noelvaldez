@@ -9,3 +9,4 @@ export * from './bcryptjs-hash.adapter';
 export * from './jsonwebtoken-token.adapter';
 export * from './generador-password-temporal';
 export * from './postgres-restablecer-password';
+export * from './postgres-consultar-historial-credenciales';

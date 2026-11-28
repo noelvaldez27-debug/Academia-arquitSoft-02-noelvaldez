@@ -46,6 +46,9 @@ import { GeneradorPasswordTemporal } from './infraestructura/generador-password-
 import { PostgresRestablecerPassword } from './infraestructura/postgres-restablecer-password';
 import { RestablecerPasswordUseCase } from './aplicacion/restablecer-password.use-case';
 import { crearRutasRestablecerPassword } from './presentacion/restablecer-password.routes';
+import { PostgresConsultarHistorialCredenciales } from './infraestructura/postgres-consultar-historial-credenciales';
+import { ConsultarHistorialCredencialesUseCase } from './aplicacion/consultar-historial-credenciales.use-case';
+import { crearRutasHistorialCredenciales } from './presentacion/historial-credenciales.routes';
 
 import type { CacheConsultas } from '../../compartido/aplicacion/cache-consultas.port';
 
@@ -180,6 +183,8 @@ export class UsuariosModule {
     this.router.use(crearRutasRestablecerPassword(this.middlewareAutenticacion,
       new RestablecerPasswordUseCase(new PostgresRestablecerPassword(config.pool),
         new GeneradorPasswordTemporal(), hashAdapter)));
+    this.router.use(crearRutasHistorialCredenciales(this.middlewareAutenticacion,
+      new ConsultarHistorialCredencialesUseCase(new PostgresConsultarHistorialCredenciales(config.pool))));
     const ciclos = new PostgresCiclosAcademicos(config.pool);
     this.router.use(crearRutasCiclos(this.middlewareAutenticacion, () => ciclos.listar(),
       datos => ciclos.crear(randomUUID(), datos.nombre, datos.iniciaEl, datos.terminaEl),

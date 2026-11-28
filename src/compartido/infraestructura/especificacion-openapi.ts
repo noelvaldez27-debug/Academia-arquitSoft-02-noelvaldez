@@ -137,6 +137,29 @@ export const especificacionOpenApi = {
         },
       },
     },
+    '/api/usuarios/estudiantes/{id}/credenciales/historial': {
+      get: {
+        tags: ['Usuarios'], summary: 'Consultar estado e historial paginado de credenciales del estudiante',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', pattern: '^\\d+$' } },
+          { name: 'pagina', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
+          { name: 'limite', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 50, default: 20 } },
+        ],
+        responses: {
+          200: { description: 'Estado actual e historial; los eventos son una lista vacía si no hay registros', content: { 'application/json': { schema: {
+            type: 'object', required: ['estado', 'eventos', 'paginacion'], properties: {
+              estado: { type: 'object', properties: { cambioObligatorio: { type: 'boolean' }, venceEn: { type: 'string', format: 'date-time', nullable: true } } },
+              eventos: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, evento: { type: 'string' }, creadoEn: { type: 'string', format: 'date-time' }, actor: { type: 'object', properties: { id: { type: 'string' }, nombre: { type: 'string' } } } } } },
+              paginacion: { type: 'object', properties: { pagina: { type: 'integer' }, limite: { type: 'integer' }, total: { type: 'integer' } } },
+            },
+          } } } },
+          400: { description: 'Parámetros de paginación inválidos' },
+          401: { description: 'Sesión inválida o ausente' },
+          403: { description: 'Administrador o alcance de sede no autorizado' },
+        },
+      },
+    },
     '/api/usuarios/cargas-masivas/{id}/credenciales': descargaCredenciales('uuid'),
     '/api/usuarios/cargas-masivas': {
       get: {
