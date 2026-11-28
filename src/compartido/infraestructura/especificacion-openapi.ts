@@ -121,6 +121,22 @@ export const especificacionOpenApi = {
       },
     },
     '/api/usuarios/estudiantes/{id}/credenciales': descargaCredenciales('id'),
+    '/api/usuarios/estudiantes/{id}/password/restablecer': {
+      post: {
+        tags: ['Usuarios'], summary: 'Restablecer la contraseña temporal de un estudiante',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', pattern: '^\\d+$' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['identidadVerificada'],
+          properties: { identidadVerificada: { type: 'boolean', enum: [true], description: 'Confirma la verificación de identidad previa.' } } } } } },
+        responses: {
+          200: { description: 'Contraseña temporal de un solo uso; respuesta no almacenable', headers: { 'Cache-Control': { schema: { type: 'string', example: 'private, no-store' } } }, content: { 'application/json': { schema: { type: 'object', required: ['passwordTemporal', 'venceEn'], properties: { passwordTemporal: { type: 'string' }, venceEn: { type: 'string', format: 'date-time' } } } } } },
+          400: { description: 'Falta confirmar la verificación de identidad o el identificador es inválido' },
+          401: { description: 'Sesión inválida o ausente' },
+          403: { description: 'Administrador o alcance de sede no autorizado' },
+          500: { description: 'Error interno del servidor' },
+        },
+      },
+    },
     '/api/usuarios/cargas-masivas/{id}/credenciales': descargaCredenciales('uuid'),
     '/api/usuarios/cargas-masivas': {
       get: {

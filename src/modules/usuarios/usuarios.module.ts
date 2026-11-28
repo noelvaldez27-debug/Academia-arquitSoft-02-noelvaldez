@@ -42,6 +42,10 @@ import { PostgresCiclosAcademicos } from './infraestructura/postgres-ciclos-acad
 import { crearRutasCiclos } from './presentacion/ciclos.routes';
 import { leerYValidarExcel } from './infraestructura/leer-excel';
 import { resolverPasswordInicialDni } from './infraestructura/politica-password-inicial';
+import { GeneradorPasswordTemporal } from './infraestructura/generador-password-temporal';
+import { PostgresRestablecerPassword } from './infraestructura/postgres-restablecer-password';
+import { RestablecerPasswordUseCase } from './aplicacion/restablecer-password.use-case';
+import { crearRutasRestablecerPassword } from './presentacion/restablecer-password.routes';
 
 import type { CacheConsultas } from '../../compartido/aplicacion/cache-consultas.port';
 
@@ -173,6 +177,9 @@ export class UsuariosModule {
     );
 
     this.router = crearRutasUsuario(this.controller, this.middlewareAutenticacion);
+    this.router.use(crearRutasRestablecerPassword(this.middlewareAutenticacion,
+      new RestablecerPasswordUseCase(new PostgresRestablecerPassword(config.pool),
+        new GeneradorPasswordTemporal(), hashAdapter)));
     const ciclos = new PostgresCiclosAcademicos(config.pool);
     this.router.use(crearRutasCiclos(this.middlewareAutenticacion, () => ciclos.listar(),
       datos => ciclos.crear(randomUUID(), datos.nombre, datos.iniciaEl, datos.terminaEl),

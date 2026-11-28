@@ -25,4 +25,7 @@ export * from './listar-sedes.use-case';
 export * from './crear-sede.use-case';
 export * from './consultar-usuario.port';
 export * from './consultar-usuario.use-case';
+export * from './generador-password-temporal.port';
+export * from './restablecer-password.port';
+export * from './restablecer-password.use-case';
 
