@@ -219,3 +219,11 @@ Completadas y registradas en SDD las tareas 30–34: política de contraseña in
 Validación: backend `npm run test:cov -- --runInBand` aprobó 106 suites y 500 tests; frontend `npm test -- --runInBand --coverage` aprobó 11 suites y 48 tests; build TypeScript/Vite aprobado; Playwright focalizado aprobó escritorio y móvil. No se corrieron pruebas de carga ni campañas integrales. La especificación no determina umbral/ventana/almacenamiento para limitar intentos de login; no se inventó una política.
 
 Commits locales por tarea: `66b8dba`, `ba0ac02`, `0c5dbaf`, `da3c205` y `d7b47c4`. Siguiente paso exacto: publicar los commits ya autorizados, verificar ambos trabajos de GitHub Actions y luego dejar la comprobación manual de migración y flujos al responsable, sin aplicar migraciones a su BD local.
+
+### Ajuste de acceso y visibilidad de contraseñas
+
+La política inicial vigente genera contraseñas aleatorias por defecto. `USUARIOS_PASSWORD_INICIAL_DNI` solo afecta altas nuevas con `NODE_ENV=development` o `test`; en Compose se toma del `.env` y el valor predeterminado es `false`. Los usuarios antiguos no se migran a DNI: 023 conserva `password_hash` y vencimientos, marca cambio obligatorio solo si existía `password_provisional_hasta`; 024 crea auditoría vacía y no altera cuentas. El hash legado del generador anterior era el DNI; el hash provisional aleatorio sigue necesitando su credencial emitida mientras no venza.
+
+Completada tarea SDD 35: campo de contraseña compartido con ojo accesible en login, cambio voluntario y obligatorio; oculto por defecto, alternable por teclado. Tests focalizados frontend (3 casos en `aplicacion.test.tsx` y 1 en `controles.test.tsx`) y `npm run build` aprobados. Commit `fcc9139`. No se modificó la BD local ni se restablecieron cuentas.
+
+Siguiente paso exacto: publicar `fcc9139`, verificar CI; manualmente, intentar la contraseña históricamente asignada (para altas del generador legado, el DNI) y, si era una provisional vencida o desconocida, usar Gestión de estudiantes → Restablecer contraseña para esa cuenta tras verificar identidad. La contraseña nueva aleatoria solo se activa para altas futuras configurando `.env` con `NODE_ENV=development` y `USUARIOS_PASSWORD_INICIAL_DNI=true`; no cambia cuentas previas.
