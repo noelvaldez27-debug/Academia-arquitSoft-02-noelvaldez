@@ -33,7 +33,7 @@ test('consulta credenciales y restablece la clave una sola vez con identidad con
 
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('admin@example.test');
-  await page.getByLabel('Contraseña').fill('clave ficticia');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave ficticia');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.getByRole('navigation').getByRole('link', { name: 'Estudiantes' }).click();
   await page.getByRole('button', { name: 'Ver credenciales' }).click();
@@ -87,7 +87,7 @@ test('el administrador de sede registra, cambia condición y archiva en su sede'
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('sede@example.test');
-  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.getByRole('navigation').getByRole('link', { name: 'Estudiantes' }).click();
   await expect(page.getByLabel('Tipo de usuario')).toHaveCount(0);
@@ -133,7 +133,7 @@ test('la carga Excel muestra progreso real y permite elegir el historial', async
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('admin@example.test');
-  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.getByRole('navigation').getByRole('link', { name: 'Cargas Excel' }).click();
   await page.getByLabel('Archivo Excel (.xlsx)').setInputFiles({

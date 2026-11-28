@@ -20,7 +20,7 @@ test('compara resultados por tabla y solicita el refuerzo explícitamente', asyn
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('postulante@example.test');
-  await page.getByLabel('Contraseña').fill('clave local de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave local de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   const nav = page.getByRole('navigation');
   await nav.getByRole('link', { name: 'Mi historial' }).click();

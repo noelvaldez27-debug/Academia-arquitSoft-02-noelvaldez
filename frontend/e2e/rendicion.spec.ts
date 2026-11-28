@@ -36,7 +36,7 @@ test('inicia una vez y reanuda el intento propio en ficha impresa', async ({ pag
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('postulante@example.test');
-  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('link', { name: 'Simulacros' }).click();
   await page.getByRole('button', { name: 'Ver instrucciones' }).click();
@@ -86,7 +86,7 @@ test('guarda cambios sin conexión, reenvía el mismo ID tras perder la confirma
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('postulante@example.test');
-  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('link', { name: 'Simulacros' }).click();
   await page.getByRole('button', { name: 'Reanudar intento' }).click();
@@ -134,7 +134,7 @@ test('bloquea marcas al vencer y espera el cierre efectivo sin enviar un cierre 
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('postulante@example.test');
-  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('link', { name: 'Simulacros' }).click();
   await page.getByRole('button', { name: 'Reanudar intento' }).click();
@@ -164,7 +164,7 @@ test('una revisión ajena conserva la marca del servidor hasta que el usuario de
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('postulante@example.test');
-  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('link', { name: 'Simulacros' }).click();
   await page.getByRole('button', { name: 'Reanudar intento' }).click();

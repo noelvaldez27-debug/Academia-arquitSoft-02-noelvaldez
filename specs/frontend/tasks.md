@@ -45,3 +45,7 @@
   - [x] F6.2a. Validar el ciclo sintético integral, navegación por rol, OpenAPI y regresión local.
   - [x] F6.2b. Registrar cobertura, mediciones preliminares, brechas y protocolo AC06.
   - [ ] F6.2c. Incorporar los resultados reales de AC06 y verificar su criterio de aceptación.
+
+## Mantenimiento de pruebas E2E
+
+- [x] E2E.1. Hacer exactos los selectores de etiqueta de contraseña para evitar colisión con el botón accesible de mostrar/ocultar; conservar cobertura Playwright de escritorio y móvil.

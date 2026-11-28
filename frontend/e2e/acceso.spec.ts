@@ -12,7 +12,7 @@ test('protege rutas, muestra el panel del rol y deja una captura local', async (
   await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
   await page.screenshot({ path: info.outputPath('acceso.png'), fullPage: true });
   await page.getByLabel('Correo institucional').fill('docente@example.test');
-  await page.getByLabel('Contraseña').fill('clave local de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave local de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await expect(page).toHaveURL(/\/panel\/docente$/);
   await expect(page.getByRole('navigation').getByRole('link', { name: 'Separatas' })).toBeVisible();
@@ -28,7 +28,7 @@ test('ofrece un error recuperable si la API falla', async ({ page }) => {
   await page.route('**/api/usuarios/login', route => route.fulfill({ status: 503 }));
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('docente@example.test');
-  await page.getByLabel('Contraseña').fill('clave local de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave local de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await expect(page.getByRole('alert')).toContainText('servicio no está disponible');
 });

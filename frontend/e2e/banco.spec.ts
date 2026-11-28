@@ -30,7 +30,7 @@ test('el administrador crea una pregunta con cinco alternativas y ordena el simu
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('admin@example.test');
-  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   const menu = page.getByRole('navigation');
   await menu.getByRole('link', { name: 'Banco de preguntas' }).click();
@@ -80,7 +80,7 @@ test('el docente sube una separata y aprueba su propuesta sin autorización exte
   });
   await page.goto('/acceso');
   await page.getByLabel('Correo institucional').fill('docente@example.test');
-  await page.getByLabel('Contraseña').fill('clave de prueba');
+  await page.getByLabel('Contraseña', { exact: true }).fill('clave de prueba');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.getByRole('navigation').getByRole('link', { name: 'Separatas' }).click();
   await page.getByRole('combobox', { name: 'Curso', exact: true }).selectOption('c1');

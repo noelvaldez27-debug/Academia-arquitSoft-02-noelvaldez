@@ -33,7 +33,7 @@ for (const perfil of perfiles) {
     });
     await page.goto('/acceso');
     await page.getByLabel('Correo institucional').fill('cuenta@example.test');
-    await page.getByLabel('Contraseña').fill('clave local de prueba');
+    await page.getByLabel('Contraseña', { exact: true }).fill('clave local de prueba');
     await page.getByRole('button', { name: 'Ingresar' }).click();
     await expect(page).toHaveURL(new RegExp('/panel/' + perfil.ruta + '$'));
     const menu = page.getByRole('navigation');
